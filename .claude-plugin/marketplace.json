@@ -1,0 +1,12 @@
+{
+  "name": "proofgate",
+  "description": "ProofGate: a local security gate for the AI coding loop.",
+  "owner": { "name": "ProofGate team" },
+  "plugins": [
+    {
+      "name": "proofgate",
+      "source": "./plugin",
+      "description": "A local security gate for the AI coding loop: secrets blocked as they are written, access-control bugs proven by attacking the app as a second user, fixes accepted only when the attack fails and the feature still works."
+    }
+  ]
+}
