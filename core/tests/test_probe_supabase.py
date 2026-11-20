@@ -199,3 +199,118 @@ async def test_flask_projects_still_use_the_flask_probe(tmp_path):
     (dst / "supabase").mkdir()  # even with a supabase folder next to it, an app.py entry means the Flask probe
     out = await run_probe(dst)
     assert out.result.launched and [c.rule for c in out.result.proven] == ["cross-user-read"]
+
+
+# ------------------------------------------------------------------------------------------- Next.js route replay
+import base64
+import re as _re
+
+from proofgate.probe import nextjs as nx
+
+
+def test_routes_are_discovered_from_the_demo_with_their_dynamic_segments_and_tables():
+    routes = nx.discover_routes(DEMO)
+    by = {(r.method, r.pattern): r for r in routes}
+    get = by[("GET", "/api/notes/[id]")]
+    assert get.params == ("id",) and get.tables == ("notes",) and get.file == "app/api/notes/[id]/route.ts" and get.line > 1
+    assert ("PUT", "/api/notes/[id]") in by and get.fill("abc") == "/api/notes/abc"
+    search = by[("GET", "/api/search")]
+    assert search.params == () and search.query_params == ("q",) and "notes" in search.tables  # the table is named inside SQL text
+
+
+def test_the_session_cookie_is_base64url_json_and_is_chunked_when_large():
+    cookies = nx.session_cookies("myref", {"access_token": "a.b.c", "user": {"id": "u"}})
+    (name, value), = cookies.items()
+    assert name == "sb-myref-auth-token" and value.startswith("base64-")
+    raw = value.removeprefix("base64-")
+    assert json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))["user"]["id"] == "u"
+    big = nx.session_cookies("myref", {"access_token": "x" * 7000})
+    assert list(big) == ["sb-myref-auth-token.0", "sb-myref-auth-token.1", "sb-myref-auth-token.2"] and all(len(v) <= 3180 for v in big.values())
+    assert "".join(big.values()).startswith("base64-")
+
+
+class FakeNext:
+    """A stand-in for the demo's /api/notes/[id] handler. `leaky` = the planted flaw (service-role client, no owner check)."""
+
+    def __init__(self, fake: FakeSupabase, leaky: bool):
+        self.fake, self.leaky, self.requests = fake, leaky, []
+
+    def transport(self):
+        return httpx.MockTransport(self.handle)
+
+    def handle(self, req: httpx.Request) -> httpx.Response:
+        self.requests.append(req)
+        cookie = req.headers.get("cookie", "")
+        m = _re.search(r"sb-\w+-auth-token=base64-([\w-]+)", cookie)
+        if not m:
+            return httpx.Response(401, json={"error": "not signed in"})
+        raw = m.group(1)
+        uid = json.loads(base64.urlsafe_b64decode(raw + "=" * (-len(raw) % 4)))["user"]["id"]
+        if req.url.path == "/api/search":
+            q = req.url.params.get("q", "")
+            rows = [n for n in self.fake.notes.values() if (self.leaky and "OR '1'='1'" in q) or q in n["title"] or q in n["body"]]
+            return httpx.Response(200, json=rows if self.leaky else [n for n in rows if n["user_id"] == uid])
+        note = self.fake.notes.get(req.url.path.rsplit("/", 1)[1])
+        if note is None:
+            return httpx.Response(404, json={"error": "no"})
+        if not self.leaky and note["user_id"] != uid:
+            return httpx.Response(404, json={"error": "no"})
+        if req.method == "PUT":
+            note.update(json.loads(req.content))
+        return httpx.Response(200, json=note)
+
+
+class FakeDev:
+    url = "http://127.0.0.1:1"
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *a):
+        return None
+
+
+def replay_for(nxt: FakeNext, project=DEMO):
+    return nx.NextReplay(project, "abcdefghijklmnopqrst", nx.discover_routes(project), {}, dev_factory=lambda: FakeDev(), transport=nxt.transport())
+
+
+async def probe_with_next(fake, nxt):
+    api = sp.SupabaseApi(target(), httpx.AsyncClient(transport=fake.transport(), timeout=5), delay=0)
+    return await sp.SupabaseProbe(target(), CONTRACT, FakeDb(fake), api, next_replay=replay_for(nxt)).run()
+
+
+async def test_a_route_that_uses_the_service_role_client_is_proven_even_when_rls_holds():
+    fake = FakeSupabase("C")  # RLS is correct...
+    res = await probe_with_next(fake, FakeNext(fake, leaky=True))  # ...but the route skips it
+    routes = [c for c in res.checks if c.file and c.file.startswith("app/")]
+    assert {(c.rule, c.verdict) for c in routes} == {("cross-user-read", "PROVEN"), ("cross-user-write", "PROVEN"), ("sql-injection", "PROVEN")}
+    assert all(c.verdict == "HELD" for c in res.checks if c.file == "supabase:public.notes")  # PostgREST itself holds
+    f = next(x for x in res.to_findings(CONTRACT) if x.rule == "cross-user-read")
+    assert f.location.file == "app/api/notes/[id]/route.ts" and f.location.function == "GET" and "PGCANARY_A_«masked»" in f.evidence.response_excerpt
+    assert fake.users == {}  # cleanup still ran
+
+
+async def test_a_route_that_checks_ownership_is_held_and_the_owner_oracles_pass():
+    fake = FakeSupabase("C")
+    res = await probe_with_next(fake, FakeNext(fake, leaky=False))
+    assert res.proven == [] and {c.verdict for c in res.checks} == {"HELD"}
+    assert res.oracles["A can use GET /api/notes/[id] for own notes"] is True and res.oracles["A can use PUT /api/notes/[id] for own notes"] is True
+    assert "GET /api/notes/[id]" in res.tested_routes
+    assert "GET /api/search" in res.tested_routes and res.oracles["A can search own notes through GET /api/search"] is True  # the injection payload found nothing
+
+
+async def test_the_replay_sends_the_users_session_and_never_a_key():
+    fake = FakeSupabase("C")
+    nxt = FakeNext(fake, leaky=True)
+    await probe_with_next(fake, nxt)
+    assert nxt.requests and all("cookie" in r.headers and SECRET not in str(r.headers) and PUBLISHABLE not in str(r.headers) for r in nxt.requests)
+
+
+async def test_without_node_modules_the_routes_are_untested_not_safe(tmp_path):
+    proj = tmp_path / "app-copy"
+    shutil.copytree(DEMO / "app", proj / "app")
+    replay = nx.NextReplay(proj, "abcdefghijklmnopqrst", nx.discover_routes(proj), {})  # the real dev server: node_modules is missing here
+    fake = FakeSupabase("C")
+    api = sp.SupabaseApi(target(), httpx.AsyncClient(transport=fake.transport(), timeout=5), delay=0)
+    res = await sp.SupabaseProbe(target(), CONTRACT, FakeDb(fake), api, next_replay=replay).run()
+    assert any("not replayed" in u and "npm install" in u for u in res.untested) and not [c for c in res.checks if c.file.startswith("app/")]

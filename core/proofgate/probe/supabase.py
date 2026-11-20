@@ -44,6 +44,10 @@ class LiveDb(Protocol):
 
 class PsycopgDb:
     def __init__(self, conn: Any):
+        # AUTOCOMMIT matters: in a default psycopg connection the first statement (the column lookup) opens a transaction that stays open, so a later
+        # `conn.transaction()` is only a SAVEPOINT and our row delete is never committed. The uncommitted delete then holds a row lock, and the Auth
+        # server's own `delete user` (which cascades to the same rows) waits on it. Found live on a hosted project.
+        conn.autocommit = True
         self.conn = conn
 
     def columns(self, table: str) -> list[dict[str, Any]]:
@@ -169,8 +173,8 @@ def _rows(r: httpx.Response) -> list[dict[str, Any]]:
 
 
 class SupabaseProbe:
-    def __init__(self, target: SupabaseTarget, contract: Contract, db: LiveDb | None = None, api: SupabaseApi | None = None):
-        self.t, self.contract, self.db = target, contract, db
+    def __init__(self, target: SupabaseTarget, contract: Contract, db: LiveDb | None = None, api: SupabaseApi | None = None, next_replay: Any = None):
+        self.t, self.contract, self.db, self.next = target, contract, db, next_replay
         self.api = api or SupabaseApi(target)
         self.result = ProbeResult(launched=True)
         self.sessions: list[Session] = []
@@ -197,6 +201,11 @@ class SupabaseProbe:
         except httpx.HTTPError as e:
             res.untested.append(f"Supabase probe could not reach the project: {type(e).__name__}")
         finally:
+            if self.next is not None:
+                try:
+                    await self.next.close()
+                except Exception:  # noqa: BLE001
+                    pass
             await self._cleanup([t for t, _ in owned], dict(owned))
             await self.api.aclose()
         res.notes.append(f"supabase probe: {self.api.calls} API call(s) to the {self.t.backend} backend; test users and rows deleted" )
@@ -246,6 +255,8 @@ class SupabaseProbe:
         check("b", "cross-user-list", "B", "GET", f"{label}?select=*", r, canary in r.text or mark in r.text, reads)
         r = await self.api.rest("GET", table, f"select=*&id=eq.{row_id}", who=b)
         check("a", "cross-user-read", "B", "GET", f"{label}?id=eq.<A's id>", r, canary in r.text or mark in r.text, reads)
+        if self.next is not None:  # the app's own route handlers, while A's row still exists and still holds a canary
+            await self.next.replay_table(res, table, row_id, [canary, mark], text_col, a, b)
         evil = new_canary("B")
         r = await self.api.rest("PATCH", table, f"id=eq.{row_id}", who=b, json_body={text_col: evil})
         check("d", "cross-user-write", "B", "PATCH", f"{label}?id=eq.<A's id>", r, r.status_code < 300 and bool(_rows(r)), updates)

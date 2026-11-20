@@ -66,7 +66,16 @@ async def run_supabase_probe(project: Path, contract: Contract, *, backend: str 
             result_note = ""
     else:
         result_note = "SUPABASE_DB_URL is not set: table columns cannot be inspected and rows cannot be cleaned up directly"
-    res = await SupabaseProbe(tgt, contract, db).run()
+    replay = None
+    from .nextjs import NextReplay, discover_routes
+
+    routes = discover_routes(project)
+    if routes:
+        from urllib.parse import urlparse
+
+        env = {"NEXT_PUBLIC_SUPABASE_URL": tgt.url, "NEXT_PUBLIC_SUPABASE_ANON_KEY": tgt.anon_key, "SUPABASE_SERVICE_ROLE_KEY": tgt.service_role_key}
+        replay = NextReplay(project, (urlparse(tgt.url).hostname or "").split(".")[0], routes, env)
+    res = await SupabaseProbe(tgt, contract, db, next_replay=replay).run()
     if result_note:
         res.notes.append(result_note)
     return ProbeOutcome(res, contract, [tgt.override_note] if tgt.override_note else [])
