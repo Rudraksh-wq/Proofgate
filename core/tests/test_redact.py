@@ -126,3 +126,13 @@ def test_logging_filter_redacts_message_and_args():
     install_logging_filter(logger)
     logger.info("calling with key %s", raw)
     assert raw not in buf.getvalue() and "SECRET:google-api-key" in buf.getvalue()
+
+
+def test_redaction_is_fast_on_long_blobs():
+    """Regression: an unbounded name prefix in the env-secret pattern made a long alphanumeric run take minutes."""
+    import time
+
+    for blob in ("x" * 200_000, "ab12" * 50_000, "a" * 100_000 + "=" + "b" * 100_000):
+        t = time.perf_counter()
+        redact(blob)
+        assert time.perf_counter() - t < 5
