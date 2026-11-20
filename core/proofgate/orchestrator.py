@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
-from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l8_access
+from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l5_database, l8_access
 from .layers.base import LayerResult, Runner, run_tool
 from .models import LIMITS_STATEMENT, Receipt, Report, Tested, ToolRecord
 from .normalize import normalize
@@ -23,7 +23,7 @@ from .sarif import to_sarif
 from .report_html import to_html
 
 ALL_LAYERS = list(range(1, 10))  # --full: everything, including the probe (L8) which starts the app
-FAST_LAYERS = [1, 2, 3, 4, 6, 9]  # plan 2 tiering: fast = L1-L4, L6, L9 on the changed files
+FAST_LAYERS = [1, 2, 3, 4, 5, 6, 9]  # L5 here is the static SQL check; Splinter needs the live stack  # plan 2 tiering: fast = L1-L4, L6, L9 on the changed files
 DEFAULT_LAYERS = FAST_LAYERS  # a plain `scan` never launches the app; use --full or `prove`
 FAST_TIMEOUT_S = 10.0
 _STATUS_BADNESS = ["ok", "skipped", "unpinned", "timeout", "mismatch", "error"]
@@ -48,13 +48,15 @@ async def _call(layer: int, project: Path, runner: Runner, kw: dict[str, Any]) -
     if layer == 4:
         return await l4_supply_chain.run(project, cache=kw.get("cache"), client=kw.get("client"), offline=kw.get("offline"),
                                          tools_dir=kw.get("tools_dir"), **common)
+    if layer == 5:
+        return await l5_database.run(project, contract=kw.get("contract"))
     if layer == 8:
         return await l8_access.run(project, contract=kw.get("contract"), target=kw.get("target"),
                                    i_own_this=bool(kw.get("i_own_this")))
     raise NotImplementedError(layer)
 
 
-IMPLEMENTED = {1, 2, 3, 4, 8}
+IMPLEMENTED = {1, 2, 3, 4, 5, 8}
 
 
 def _git_commit(project: Path) -> str | None:
