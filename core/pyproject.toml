@@ -5,14 +5,21 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "proofgate"
 version = "0.0.1"
+description = "Local security gate for the AI coding loop"
+license = { text = "MIT" }
 requires-python = ">=3.11"
-dependencies = ["pydantic>=2"]
+dependencies = ["pydantic>=2", "httpx>=0.27"]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
 
 [project.scripts]
 proofgate = "proofgate.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["proofgate*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
