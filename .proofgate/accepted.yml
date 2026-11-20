@@ -1,0 +1,10 @@
+# ProofGate accepted risks. Commit this file: it records who accepted what, why, and until when.
+# Add entries with `proofgate accept <fingerprint> --reason "..." --expires 90d`. An agent must never run that command.
+schema: proofgate.accepted/v1
+accepted:
+  - fingerprint: "sha256:x"
+    reason: "why"
+    owner: "Lenovo"
+    expires: 2026-12-21
+    forced: false
+    created: 2026-11-21

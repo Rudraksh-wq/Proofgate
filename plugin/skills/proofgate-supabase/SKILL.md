@@ -23,4 +23,6 @@ Every table in `public` that holds user data needs row-level security **on**, an
 - A view skips RLS unless created `with (security_invoker = true)`.
 - Never put the `service_role` key in code, a bundle, or a `NEXT_PUBLIC_` variable.
 
+Never run `proofgate accept` or edit `.proofgate/accepted.yml` to get past a finding: only the user may accept a risk.
+
 After writing policies, run `scan_project` and `prove`. A fix is accepted only if the second user is still locked out **and** the owner can still read, create, update and delete their own rows - `using (false)` is rejected for that reason.

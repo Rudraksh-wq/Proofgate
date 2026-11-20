@@ -17,6 +17,7 @@ from typing import Any, Awaitable, Callable
 from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l5_database, l6_config, l8_access, l9_bundle
 from .layers.base import LayerResult, Runner, run_tool
 from .models import LIMITS_STATEMENT, Receipt, Report, Tested, ToolRecord
+from . import accepted as accepted_mod
 from .hook import read_fail_open_count
 from .normalize import normalize
 from .redact import redact
@@ -126,13 +127,20 @@ async def run_scan(project_dir: str | Path, *, layers: list[int] | None = None, 
     tool_error = tool_error or not layers_run or any(t.status in _TOOL_ERRORS for t in tools)
     raw = [f for res in results for f in res.findings]
     norm = normalize(raw)
+    try:
+        risks = accepted_mod.load(project)
+    except accepted_mod.AcceptedError as e:
+        risks = []
+        notes.append(f"accepted risks: {redact(str(e))}: ignored, every finding stays open")
+    findings, accepted_list, accepted_notes = accepted_mod.apply(norm.findings, risks)
+    notes += [f"accepted risks: {n}" for n in accepted_notes]
 
     probe = next((r for r in results if r.layer == 8), None)
     attacked, held = (probe.receipt_counts or (0, 0)) if probe else (0, 0)
     report = Report(
         project=project.name, scanned_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         layers_run=sorted(layers_run), raw_warning_count=norm.raw_warning_count, unique_count=norm.unique_count,
-        proven_count=norm.proven_count, findings=norm.findings, fixes=[],
+        proven_count=norm.proven_count, findings=findings, fixes=[], accepted_risks=accepted_list,
         receipt=Receipt(rules_attacked=attacked, rules_held=held, commit=_git_commit(project)),
         tested=Tested(tables=probe.tested_tables if probe else [], routes=probe.tested_routes if probe else []),
         untested=probe.untested if probe else [], tools=tools, limits_statement=LIMITS_STATEMENT, notes=notes,

@@ -110,6 +110,13 @@ def to_html(report: Report) -> str:
         f'<p class="muted">{receipt}</p>',
         "<h2>Findings</h2>" + findings,
     ]
+    if report.accepted_risks:
+        rows = "".join(
+            f"<tr><td>{_e(x.title)}</td><td>{_e(x.severity)}{', proven' if x.proven else ''}</td><td>{_e(x.owner)}</td>"
+            f"<td>{_e(x.expires.isoformat())}</td><td>{'FORCED' if x.forced else ''}</td><td>{_e(x.reason)}</td></tr>" for x in report.accepted_risks)
+        sections.append('<h2>Accepted risks</h2><p class="muted">A person accepted these; they do not count toward the exit code. '
+                        'They are listed so the decision stays visible.</p><table><tr><th>Finding</th><th>Severity</th><th>Owner</th>'
+                        '<th>Expires</th><th></th><th>Reason</th></tr>' + rows + "</table>")
     if fixes:
         sections.append("<h2>Fixes</h2>" + fixes)
     if notes:

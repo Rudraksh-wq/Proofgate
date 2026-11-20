@@ -30,4 +30,6 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
 - Do not return the protected row inside an error body.
 - Do not read secrets through a `NEXT_PUBLIC_` variable: those are sent to every visitor's browser.
 
+Never run `proofgate accept` or edit `.proofgate/accepted.yml` to get past a finding: only the user may accept a risk.
+
 When ProofGate proves a route leaks, write the smallest change (usually the two lines above), call `verify_fix`, and keep the regression test it generates.

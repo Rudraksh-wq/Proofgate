@@ -186,8 +186,8 @@ def test_hook_bad_args_still_exit_0(capsys, monkeypatch):
     assert main(["hook", "sideways"]) == 0
 
 
-def test_accepted_risk_model_matches_cli_output(capsys):
-    _, out, _ = run(capsys, "accept", "sha256:x", "--reason", "why", "--expires", "2030-01-01")
+def test_accepted_risk_model_matches_cli_output(capsys, tmp_path):
+    _, out, _ = run(capsys, "accept", "sha256:x", "--reason", "why", "--expires", "2030-01-01", "--dir", str(tmp_path))
     body = out[out.index("{"):]
     assert AcceptedRisk.model_validate_json(body).fingerprint == "sha256:x"
 

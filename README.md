@@ -67,7 +67,13 @@ proofgate scan . --full        # also attack the app locally
 proofgate prove .              # attack the app as a second user (localhost only)
 proofgate fix . --finding <id> # a verified patch + regression test + rule (nothing is applied for you)
 proofgate rollback <id>        # prints the git command that undoes it; never runs it
+proofgate accept <fingerprint> --reason "..." --expires 90d   # a person accepts a risk (see below)
 ```
+
+**Accepted risks.** `proofgate accept` writes `.proofgate/accepted.yml`, the one file in `.proofgate/` you commit. An accepted finding is marked
+`accepted-risk`, stays listed in the report under "Accepted risks", and does not fail `--fail-on`. Entries expire (the finding reopens with a
+note). A finding that is **proven and critical** needs `--force` and is shown in every summary. There is no MCP tool for this and the agent
+rules forbid running it: only a person decides. `// proofgate-ignore` comments still do nothing.
 
 Exit codes: `0` nothing at or above `--fail-on`, `1` findings, `2` a tool or layer failed (never treated as clean).
 A GitHub Actions workflow with SARIF upload is in `.github/workflows/proofgate.yml` (every action pinned by commit SHA).

@@ -31,7 +31,7 @@ def _dump(model) -> str:
 
 def _exit_for(findings: list[Finding], fail_on: str) -> int:
     t = SEV.index(fail_on)
-    return 1 if any(SEV.index(f.severity) >= t for f in findings) else 0
+    return 1 if any(SEV.index(f.severity) >= t and f.status != "accepted-risk" for f in findings) else 0  # accepted risks never fail the gate
 
 
 def _project(path: str) -> Path:
@@ -124,6 +124,11 @@ def _agent_text(report: Report) -> str:
         lines.append(f"- [{f.severity}{', proven' if f.proven else ''}] {f.title.split(' (')[0]} ({f.location.file}:{f.location.line})")
     if len(report.findings) > 14:
         lines.append(f"... and {len(report.findings) - 14} more in .proofgate/report.json")
+    from .accepted import forced_lines
+
+    lines.extend(forced_lines(report.accepted_risks))  # forced acceptances of proven criticals are never hidden
+    if report.accepted_risks:
+        lines.append(f"{len(report.accepted_risks)} accepted risk(s) are excluded from the exit code (see .proofgate/accepted.yml).")
     lines.extend(f"note: {n}" for n in report.notes[:2])
     lines.append(report.limits_statement or "")
     return "\n".join(lines[:20])
@@ -154,11 +159,21 @@ def cmd_scan(a) -> int:
         print(redact(_agent_text(report)))
     else:
         print(f"wrote {paths['html']}")
+    _print_accepted_summary(report)
     if outcome.tool_error:
         print("error: a layer or tool failed; this result is NOT a clean bill of health (see notes in the report)",
               file=sys.stderr)
         return 2
     return _exit_for(report.findings, a.fail_on)
+
+
+def _print_accepted_summary(report: Report) -> None:
+    from .accepted import forced_lines
+
+    if report.accepted_risks:
+        print(f"accepted risks: {len(report.accepted_risks)} (not counted toward --fail-on)", file=sys.stderr)
+    for line in forced_lines(report.accepted_risks):
+        print(redact(line), file=sys.stderr)
 
 
 def cmd_prove(a) -> int:
@@ -248,9 +263,46 @@ def _parse_expires(text: str) -> dt.date:
         raise CliError("--expires must look like 90d or YYYY-MM-DD")
 
 
+def _last_report(d: Path) -> Report | None:
+    try:
+        return Report.model_validate_json((d / ".proofgate" / "report.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+
+
 def cmd_accept(a) -> int:
-    risk = AcceptedRisk(fingerprint=a.fingerprint, reason=a.reason, owner=a.owner, expires=_parse_expires(a.expires))
-    print(f"[stub] would append to .proofgate/accepted.yml:\n{_dump(risk)}")
+    """A PERSON accepts a risk (agents must never run this). Writes .proofgate/accepted.yml, which is committed."""
+    from . import accepted
+
+    d = _project(a.dir)
+    try:
+        if a.list:
+            risks = accepted.load(d)
+            if not risks:
+                print("no accepted risks")
+            for r in risks:
+                state = "EXPIRED" if r.is_expired() else "active"
+                print(f"{state}  {r.fingerprint}  owner={r.owner}  expires={r.expires.isoformat()}{'  FORCED' if r.forced else ''}  reason: {redact(r.reason)}")
+            return 0
+        if not a.fingerprint or not a.reason:
+            raise CliError('usage: proofgate accept <fingerprint> --reason "..." [--expires 90d] [--owner NAME] [--force]  (or --list)')
+        report = _last_report(d)
+        fingerprint, finding = a.fingerprint, None
+        if report is not None:
+            finding = next((f for f in report.findings if f.fingerprint == fingerprint or f.id == fingerprint), None)
+            if finding is not None and finding.fingerprint:
+                fingerprint = finding.fingerprint
+        if finding is None:
+            if fingerprint.startswith("f_"):
+                raise CliError(f"finding id {fingerprint} is not in .proofgate/report.json: run `proofgate scan` first, or pass the fingerprint")
+            print("note: this fingerprint is not in the last report, so ProofGate cannot check whether it is a proven critical problem; "
+                  "such an entry is ignored unless it was made with --force", file=sys.stderr)
+        risk = accepted.add(d, fingerprint, reason=a.reason, expires=_parse_expires(a.expires), owner=a.owner, force=a.force, finding=finding)
+    except accepted.AcceptedError as e:
+        raise CliError(str(e))
+    print(_dump(risk))
+    warn = "\nWARNING: forced acceptance of a proven critical problem; it will be shown in every summary" if a.force and finding and accepted.needs_force(finding) else ""
+    print(f"recorded in {accepted.FILE_REL}: commit this file so the decision is reviewed with the code{warn}", file=sys.stderr)
     return 0
 
 
@@ -374,11 +426,14 @@ def build_parser() -> argparse.ArgumentParser:
     s = add("verify", cmd_verify, help="run the tournament gates on a patch")
     s.add_argument("--finding", required=True)
     s.add_argument("--patch", required=True)
-    s = add("accept", cmd_accept, dir_=False, help="record an accepted risk")
-    s.add_argument("fingerprint")
-    s.add_argument("--reason", required=True)
-    s.add_argument("--owner", default="unknown")
-    s.add_argument("--expires", default="90d")
+    s = add("accept", cmd_accept, dir_=False, help="record an accepted risk (a person, never an agent)")
+    s.add_argument("fingerprint", nargs="?", help="finding fingerprint (or finding id from the last report)")
+    s.add_argument("--reason")
+    s.add_argument("--owner", default=None, help="default: the current user")
+    s.add_argument("--expires", default="90d", help="30d, 90d... or YYYY-MM-DD")
+    s.add_argument("--force", action="store_true", help="required to accept a finding that is proven and critical")
+    s.add_argument("--list", action="store_true", help="list accepted risks")
+    s.add_argument("--dir", default=".", help="project folder (default: current)")
     s = add("hook", cmd_hook, dir_=False, help="hook entry point (JSON on stdin)")
     s.add_argument("phase", choices=["pre", "post", "stop"])
     s.add_argument("--mode", choices=["exit2", "json"], default="exit2",

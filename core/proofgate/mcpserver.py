@@ -204,6 +204,7 @@ def build_server() -> FastMCP:
         return wrap(f"{r.raw_warning_count} raw -> {r.unique_count} unique -> {r.proven_count} proven; layers run: {r.layers_run}.{note}",
                     {"counts": {"raw": r.raw_warning_count, "unique": r.unique_count, "proven": r.proven_count},
                      "findings": [_finding_dict(f) for f in r.findings[:60]], "notes": r.notes[:20], "untested": r.untested,
+                     "accepted_risks": [x.model_dump(mode="json") for x in r.accepted_risks][:20],
                      "tool_error": out.tool_error, "limits": r.limits_statement})
 
     @mcp.tool()
