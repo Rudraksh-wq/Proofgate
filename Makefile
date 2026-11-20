@@ -16,3 +16,11 @@ bench:
 .PHONY: smoke
 smoke:
 	$(PYTHON) scripts/smoke.py
+
+# Put the demo database in one RLS variant. Hosted needs the project ref in PROOFGATE_ALLOWED_PROJECT_REFS and I_OWN_THIS=1:
+#   make reset-demo VARIANT=A BACKEND=hosted I_OWN_THIS=1
+VARIANT ?= A
+BACKEND ?= auto
+.PHONY: reset-demo
+reset-demo:
+	$(PYTHON) scripts/reset_demo.py --variant $(VARIANT) --backend $(BACKEND) $(if $(I_OWN_THIS),--i-own-this)

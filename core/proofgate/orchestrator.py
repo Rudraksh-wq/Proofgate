@@ -51,7 +51,8 @@ async def _call(layer: int, project: Path, runner: Runner, kw: dict[str, Any]) -
         return await l4_supply_chain.run(project, cache=kw.get("cache"), client=kw.get("client"), offline=kw.get("offline"),
                                          tools_dir=kw.get("tools_dir"), **common)
     if layer == 5:
-        return await l5_database.run(project, contract=kw.get("contract"))
+        return await l5_database.run(project, contract=kw.get("contract"), full=bool(kw.get("full")), backend=kw.get("backend"),
+                                     i_own_this=bool(kw.get("i_own_this")))
     if layer == 6:
         return await l6_config.run(project, **common)
     if layer == 9:
@@ -144,7 +145,7 @@ async def run_scan(project_dir: str | Path, *, layers: list[int] | None = None, 
         receipt=Receipt(rules_attacked=attacked, rules_held=held, commit=_git_commit(project)),
         tested=Tested(tables=probe.tested_tables if probe else [], routes=probe.tested_routes if probe else []),
         untested=probe.untested if probe else [], tools=tools, limits_statement=LIMITS_STATEMENT, notes=notes,
-        target_overrides=probe.target_overrides if probe else [],
+        target_overrides=[o for r in results for o in r.target_overrides],
         fail_open_count=read_fail_open_count(project),  # hook crashes/timeouts that let a write through (visible, not silent)
     )
     report = report.model_copy(update={"receipt": report.receipt.model_copy(update={"report_hash": report_hash(report)})})

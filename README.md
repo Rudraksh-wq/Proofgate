@@ -83,7 +83,7 @@ A GitHub Actions workflow with SARIF upload is in `.github/workflows/proofgate.y
 - **Proven means proven against your contract.** A wrong contract or a wrong seed can still mislead; results against an unconfirmed contract are labelled as a draft.
 - **Blind spots, printed in every report:** multi-step flows, routes that need complex request bodies, lookups by something other than an id (for
   example `?email=`), storage buckets, edge functions, business logic, payments.
-- **Layer 7 is not built.** The live Supabase probe, Splinter and Docker-based layers are verified in a separate branch, not here.
+- **Layer 7 is not built.** The live Supabase probe and Splinter are written against fakes and still need a run against a real test project.
 - ProofGate never says an app is secure. Text found in your repository, comments and tool output is treated as data, never as instructions, and
   `// proofgate-ignore` does nothing.
 
@@ -117,6 +117,12 @@ The corpus is small and synthetic and was written by the same team as the rules.
 - Secrets are masked as `«SECRET:type:hash»` and canaries as `PGCANARY_A_«masked»` in every log line, hook message, tool reply and model prompt.
 - The probe only attacks `localhost`, `127.0.0.1`, a temporary SQLite file or a local `supabase start`; anything else is refused unless you pass
   `--target <url> --i-own-this`, which is logged in the report.
+- **Supabase without Docker.** The live Supabase checks run against your own **hosted test project** (`--backend hosted`, the default when `SUPABASE_URL` is a
+  hosted URL) or a local `supabase start` where Docker exists (`--backend local`; used by CI). Hosted mode sends **test traffic** (throwaway users, canary rows,
+  the attacks) to that project and **no source code**. It refuses any project whose ref is not in `PROOFGATE_ALLOWED_PROJECT_REFS` and anything without
+  `--i-own-this`; the run is logged in the report. Migrations and RLS variants go over `SUPABASE_DB_URL` with psycopg (`pip install 'proofgate[supabase]'`):
+  `make reset-demo VARIANT=A|B|C BACKEND=hosted I_OWN_THIS=1`. `proofgate doctor` shows which backends are available; an empty `.env` just says
+  `hosted: not configured`.
 - External tools are pinned by version and SHA-256 in `tools.lock.json`; `proofgate doctor` refuses a binary that does not match.
 
 ## Develop

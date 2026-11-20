@@ -148,7 +148,7 @@ def cmd_scan(a) -> int:
             raise CliError(f"--layers must be comma-separated integers 1-9, got {a.layers!r}")
         if any(not 1 <= x <= 9 for x in layers):
             raise CliError("--layers values must be between 1 and 9")
-    outcome = asyncio.run(run_scan(d, layers=layers, fast=a.fast, full=a.full))
+    outcome = asyncio.run(run_scan(d, layers=layers, fast=a.fast, full=a.full, backend=a.backend, i_own_this=a.i_own_this))
     report = outcome.report
     paths = write_outputs(d, report, sarif=a.format == "sarif")
     if a.format == "json":
@@ -183,7 +183,7 @@ def cmd_prove(a) -> int:
     from .orchestrator import run_scan, write_outputs
 
     d = _project(a.dir)
-    outcome = asyncio.run(run_scan(d, layers=[8], target=a.target, i_own_this=a.i_own_this))
+    outcome = asyncio.run(run_scan(d, layers=[8], target=a.target, i_own_this=a.i_own_this, backend=a.backend))
     report = outcome.report
     write_outputs(d, report)
     print(_dump(report))
@@ -376,13 +376,27 @@ def cmd_doctor(a) -> int:
         print(f"pinned {res.name} {res.version or '(version unknown)'} -> {path}")
         return 0
     checks = asyncio.run(check_all(lock))
+    backends = _backend_rows(a.dir)
     if a.json:
-        print(json.dumps([c.__dict__ for c in checks], indent=2))
+        # the tool list keeps its shape; Supabase backends follow as entries named "supabase:<backend>"
+        print(json.dumps([c.__dict__ for c in checks] + [{"name": f"supabase:{n}", "status": st, "version": None, "detail": d} for n, st, d in backends], indent=2))
     else:
         for c in checks:
             print(f"{c.status:9} {c.name:12} {c.version or '-'}" + (f"  ({c.detail})" if c.detail else ""))
+        print("\nsupabase backends (Docker is optional):")
+        for name, status, detail in backends:
+            print(f"  {name:8} {status:15} {detail}")
     bad = {"mismatch"} | ({"missing", "unpinned"} if a.strict else set())
     return 1 if any(c.status in bad for c in checks) else 0
+
+
+def _backend_rows(directory: str | None) -> list[tuple[str, str, str]]:
+    from .supabase_target import SupabaseTargetRefused, backend_status, load_config
+
+    try:
+        return backend_status(load_config(directory or "."))
+    except SupabaseTargetRefused as e:
+        return [("config", "invalid", redact(str(e)))]
 
 
 class _Parser(argparse.ArgumentParser):
@@ -417,9 +431,12 @@ def build_parser() -> argparse.ArgumentParser:
     mode.add_argument("--fast", action="store_true")
     mode.add_argument("--full", action="store_true")
     s.add_argument("--format", choices=FORMATS, default="json")
+    s.add_argument("--backend", choices=["hosted", "local", "auto"], default=None, help="Supabase backend (default: PROOFGATE_SUPABASE_BACKEND or auto)")
+    s.add_argument("--i-own-this", action="store_true", help="confirm that a hosted Supabase test project is yours (needed for hosted live checks)")
     s = add("prove", cmd_prove, fail_on=True, help="run the Doppelganger probe")
     s.add_argument("--target", default="local")
     s.add_argument("--i-own-this", action="store_true")
+    s.add_argument("--backend", choices=["hosted", "local", "auto"], default=None, help="Supabase backend (default: PROOFGATE_SUPABASE_BACKEND or auto)")
     s = add("fix", cmd_fix, help="run the fix pipeline for one finding")
     s.add_argument("--finding", required=True)
     s.add_argument("--no-vaccine", action="store_true", help="skip the regression test and the learned rule")
@@ -447,6 +464,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--pin", metavar="TOOL", help="record the SHA-256 + version of the installed tool")
     s.add_argument("--strict", action="store_true", help="fail on missing or unpinned tools too")
     s.add_argument("--json", action="store_true")
+    s.add_argument("--dir", default=".", help="project folder whose .env configures the Supabase backends (default: current)")
     return p
 
 
