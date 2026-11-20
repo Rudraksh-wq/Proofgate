@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 from .models import AcceptedRisk, Contract, Finding, FixResult, Report
+from .redact import redact_obj
 from .sample import SAMPLE_CONTRACT, SAMPLE_FINDING, SAMPLE_FIX, sample_report
 
 SEV = ["low", "medium", "high", "critical"]
@@ -24,7 +25,8 @@ class CliError(Exception):
 
 
 def _dump(model) -> str:
-    return model.model_dump_json(indent=2, by_alias=True)
+    # every output path goes through the redactor (plan 8)
+    return redact_obj(model).model_dump_json(indent=2, by_alias=True)
 
 
 def _exit_for(findings: list[Finding], fail_on: str) -> int:

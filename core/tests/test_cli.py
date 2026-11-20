@@ -122,3 +122,13 @@ def test_accepted_risk_model_matches_cli_output(capsys):
     _, out, _ = run(capsys, "accept", "sha256:x", "--reason", "why", "--expires", "2030-01-01")
     body = out[out.index("{"):]
     assert AcceptedRisk.model_validate_json(body).fingerprint == "sha256:x"
+
+
+def test_cli_output_is_redacted(capsys, app, monkeypatch, no_leaks):
+    from conftest import fake_secrets
+    from proofgate import sample
+
+    raw = fake_secrets()["stripe"]
+    monkeypatch.setitem(sample.SAMPLE_FINDING, "title", f"key {raw} in code")
+    code, out, _ = run(capsys, "prove", str(app))
+    no_leaks(out, secrets=[raw])
