@@ -37,5 +37,6 @@ make reset-demo VARIANT=A      # install a variant and replay the migrations
 npm run dev                    # http://localhost:3000
 ```
 
-Status of this folder: files written and type-checked; the live run against `supabase start` is pending real-tool
-verification (it needs Docker and the Supabase CLI).
+Status of this folder: `npm install`, `tsc --noEmit` and `next build` pass, and the SQL parses with the Postgres
+parser (pglast). The live run against `supabase start` is **pending real-tool verification** (it needs a running
+Docker daemon and the Supabase CLI).
