@@ -1,0 +1,389 @@
+{
+ "errors": [],
+ "generated_at": "2026-11-20T12:52:43Z",
+ "metrics": {
+  "{{PROJECT}}\\c01_clean\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 165,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\c02_clean_helper\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 164,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\c03_bait\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 169,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v01_idor_read\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 165,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v02_idor_write\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 165,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v03_idor_param\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 166,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v04_missing_role\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 163,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v05_unauth_admin\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 162,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v06_mass_assign\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 166,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v07_sqli\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 1,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 165,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v08_cmdi\\app.py": {
+   "CONFIDENCE.HIGH": 2,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 1,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 168,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v09_hardcoded_keys\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 1,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 167,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v10_service_role_in_bundle\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 165,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v11_hallucinated_dep\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 165,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v12_outdated_dep\\app.py": {
+   "CONFIDENCE.HIGH": 0,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 0,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 0,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 165,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "{{PROJECT}}\\v13_debug_tls\\app.py": {
+   "CONFIDENCE.HIGH": 1,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 1,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 2,
+   "SEVERITY.LOW": 0,
+   "SEVERITY.MEDIUM": 0,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 169,
+   "nosec": 0,
+   "skipped_tests": 0
+  },
+  "_totals": {
+   "CONFIDENCE.HIGH": 3,
+   "CONFIDENCE.LOW": 0,
+   "CONFIDENCE.MEDIUM": 5,
+   "CONFIDENCE.UNDEFINED": 0,
+   "SEVERITY.HIGH": 3,
+   "SEVERITY.LOW": 2,
+   "SEVERITY.MEDIUM": 3,
+   "SEVERITY.UNDEFINED": 0,
+   "loc": 2649,
+   "nosec": 0,
+   "skipped_tests": 0
+  }
+ },
+ "results": [
+  {
+   "code": "",
+   "col_offset": 26,
+   "end_col_offset": 74,
+   "filename": "{{PROJECT}}\\c03_bait\\app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 119,
+   "line_range": [
+    119
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "",
+   "col_offset": 27,
+   "end_col_offset": 44,
+   "filename": "{{PROJECT}}\\v06_mass_assign\\app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 195,
+   "line_range": [
+    195
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "",
+   "col_offset": 10,
+   "end_col_offset": 47,
+   "filename": "{{PROJECT}}\\v07_sqli\\app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 89,
+    "link": "https://cwe.mitre.org/data/definitions/89.html"
+   },
+   "issue_severity": "MEDIUM",
+   "issue_text": "Possible SQL injection vector through string-based query construction.",
+   "line_number": 172,
+   "line_range": [
+    172
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+   "test_id": "B608",
+   "test_name": "hardcoded_sql_expressions"
+  },
+  {
+   "code": "",
+   "col_offset": 4,
+   "end_col_offset": 21,
+   "filename": "{{PROJECT}}\\v08_cmdi\\app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Consider possible security implications associated with the subprocess module.",
+   "line_number": 180,
+   "line_range": [
+    180
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b404-import-subprocess",
+   "test_id": "B404",
+   "test_name": "blacklist"
+  },
+  {
+   "code": "",
+   "col_offset": 10,
+   "end_col_offset": 84,
+   "filename": "{{PROJECT}}\\v08_cmdi\\app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 78,
+    "link": "https://cwe.mitre.org/data/definitions/78.html"
+   },
+   "issue_severity": "HIGH",
+   "issue_text": "subprocess call with shell=True identified, security issue.",
+   "line_number": 183,
+   "line_range": [
+    183
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b602_subprocess_popen_with_shell_equals_true.html",
+   "test_id": "B602",
+   "test_name": "subprocess_popen_with_shell_equals_true"
+  },
+  {
+   "code": "",
+   "col_offset": 20,
+   "end_col_offset": 54,
+   "filename": "{{PROJECT}}\\v09_hardcoded_keys\\app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 259,
+    "link": "https://cwe.mitre.org/data/definitions/259.html"
+   },
+   "issue_severity": "LOW",
+   "issue_text": "Possible hardcoded password: '<key removed from fixture>'",
+   "line_number": 11,
+   "line_range": [
+    11
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html",
+   "test_id": "B105",
+   "test_name": "hardcoded_password_string"
+  },
+  {
+   "code": "",
+   "col_offset": 11,
+   "end_col_offset": 53,
+   "filename": "{{PROJECT}}\\v13_debug_tls\\app.py",
+   "issue_confidence": "HIGH",
+   "issue_cwe": {
+    "id": 295,
+    "link": "https://cwe.mitre.org/data/definitions/295.html"
+   },
+   "issue_severity": "HIGH",
+   "issue_text": "Call to requests with verify=False disabling SSL certificate checks, security issue.",
+   "line_number": 87,
+   "line_range": [
+    87
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b501_request_with_no_cert_validation.html",
+   "test_id": "B501",
+   "test_name": "request_with_no_cert_validation"
+  },
+  {
+   "code": "",
+   "col_offset": 4,
+   "end_col_offset": 103,
+   "filename": "{{PROJECT}}\\v13_debug_tls\\app.py",
+   "issue_confidence": "MEDIUM",
+   "issue_cwe": {
+    "id": 94,
+    "link": "https://cwe.mitre.org/data/definitions/94.html"
+   },
+   "issue_severity": "HIGH",
+   "issue_text": "A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.",
+   "line_number": 217,
+   "line_range": [
+    217
+   ],
+   "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b201_flask_debug_true.html",
+   "test_id": "B201",
+   "test_name": "flask_debug_true"
+  }
+ ]
+}

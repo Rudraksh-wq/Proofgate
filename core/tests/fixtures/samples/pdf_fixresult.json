@@ -1,0 +1,24 @@
+{
+  "finding_id": "f_7c1a",
+  "tier": "B",
+  "candidates": 3,
+  "winner": {
+    "patch": "--- a/app.py\n+++ b/app.py\n...",
+    "diff_lines": 3
+  },
+  "gates": {
+    "exploit_blocked": true,
+    "feature_works": true,
+    "tests_pass": true,
+    "no_new_findings": true,
+    "diff_is_small": true
+  },
+  "rejected": [
+    {
+      "reason": "feature_works=false: owner can no longer read own note"
+    }
+  ],
+  "regression_test": "tests/test_proofgate_regressions.py::test_f_7c1a",
+  "learned_rule": "Every query on notes must filter by owner_id = current user.",
+  "accepted": true
+}

@@ -1,0 +1,62 @@
+{
+  "v01_correct": {
+    "app": "v01_idor_read",
+    "kind": "correct",
+    "should_accept": true
+  },
+  "v01_lazy": {
+    "app": "v01_idor_read",
+    "kind": "lazy",
+    "should_accept": false
+  },
+  "v01_partial": {
+    "app": "v01_idor_read",
+    "kind": "partial",
+    "should_accept": false
+  },
+  "v05_correct": {
+    "app": "v05_unauth_admin",
+    "kind": "correct",
+    "should_accept": true
+  },
+  "v05_lazy": {
+    "app": "v05_unauth_admin",
+    "kind": "lazy",
+    "should_accept": false
+  },
+  "v05_partial": {
+    "app": "v05_unauth_admin",
+    "kind": "partial",
+    "should_accept": false
+  },
+  "v06_correct": {
+    "app": "v06_mass_assign",
+    "kind": "correct",
+    "should_accept": true
+  },
+  "v06_lazy": {
+    "app": "v06_mass_assign",
+    "kind": "lazy",
+    "should_accept": false
+  },
+  "v06_partial": {
+    "app": "v06_mass_assign",
+    "kind": "partial",
+    "should_accept": false
+  },
+  "v07_correct": {
+    "app": "v07_sqli",
+    "kind": "correct",
+    "should_accept": true
+  },
+  "v07_lazy": {
+    "app": "v07_sqli",
+    "kind": "lazy",
+    "should_accept": false
+  },
+  "v07_partial": {
+    "app": "v07_sqli",
+    "kind": "partial",
+    "should_accept": false
+  }
+}

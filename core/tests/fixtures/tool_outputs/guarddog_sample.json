@@ -1,0 +1,21 @@
+[
+  {
+    "dependency": "flask-notes-sanitizer-pgx7k2",
+    "version": "1.0.0",
+    "result": {
+      "issues": 2,
+      "errors": {},
+      "results": {
+        "typosquatting": "This package closely resembles the name of a popular package",
+        "exec-base64": [{"location": "setup.py:12", "code": "exec(base64.b64decode(...))", "message": "decodes and runs hidden code"}],
+        "empty-information": null
+      },
+      "path": "/tmp/x"
+    }
+  },
+  {
+    "dependency": "flask",
+    "version": "3.1.0",
+    "result": {"issues": 0, "errors": {}, "results": {"typosquatting": null}, "path": "/tmp/y"}
+  }
+]

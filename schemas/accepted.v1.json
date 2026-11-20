@@ -1,0 +1,54 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "created": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created"
+    },
+    "expires": {
+      "format": "date",
+      "title": "Expires",
+      "type": "string"
+    },
+    "fingerprint": {
+      "title": "Fingerprint",
+      "type": "string"
+    },
+    "forced": {
+      "default": false,
+      "title": "Forced",
+      "type": "boolean"
+    },
+    "owner": {
+      "title": "Owner",
+      "type": "string"
+    },
+    "reason": {
+      "title": "Reason",
+      "type": "string"
+    },
+    "schema": {
+      "const": "proofgate.accepted/v1",
+      "default": "proofgate.accepted/v1",
+      "title": "Schema",
+      "type": "string"
+    }
+  },
+  "required": [
+    "fingerprint",
+    "reason",
+    "owner",
+    "expires"
+  ],
+  "title": "AcceptedRisk",
+  "type": "object"
+}

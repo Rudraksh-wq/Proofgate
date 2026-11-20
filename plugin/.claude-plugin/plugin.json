@@ -1,0 +1,10 @@
+{
+  "name": "proofgate",
+  "version": "0.1.0",
+  "description": "A local security gate for the AI coding loop: blocks leaked secrets as they are written, proves access-control bugs by attacking the app as a second user, and accepts a fix only when the same attack fails and the owner's feature still works.",
+  "author": { "name": "ProofGate team" },
+  "homepage": "https://github.com/Rudraksh-wq/Proofgate",
+  "repository": "https://github.com/Rudraksh-wq/Proofgate",
+  "license": "MIT",
+  "keywords": ["security", "supabase", "nextjs", "flask", "access-control", "rls", "secrets"]
+}

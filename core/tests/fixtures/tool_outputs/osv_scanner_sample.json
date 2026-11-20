@@ -1,0 +1,49 @@
+{
+  "results": [
+    {
+      "source": {"path": "{{PROJECT}}/requirements.txt", "type": "lockfile"},
+      "packages": [
+        {
+          "package": {"name": "requests", "version": "2.19.0", "ecosystem": "PyPI"},
+          "vulnerabilities": [
+            {
+              "id": "GHSA-x84v-xcm2-53pg",
+              "aliases": ["CVE-2018-18074", "PYSEC-2018-28"],
+              "summary": "Insufficiently Protected Credentials in Requests",
+              "affected": [{"package": {"name": "requests", "ecosystem": "PyPI"},
+                            "ranges": [{"type": "ECOSYSTEM", "events": [{"introduced": "0"}, {"fixed": "2.20.0"}]}]}],
+              "database_specific": {"severity": "HIGH"}
+            },
+            {
+              "id": "GHSA-j8r2-6x86-q33q",
+              "aliases": ["CVE-2023-32681"],
+              "summary": "Unintended leak of Proxy-Authorization header in requests",
+              "affected": [{"package": {"name": "requests", "ecosystem": "PyPI"},
+                            "ranges": [{"type": "ECOSYSTEM", "events": [{"introduced": "2.3.0"}, {"fixed": "2.31.0"}]}]}],
+              "database_specific": {"severity": "MODERATE"}
+            }
+          ],
+          "groups": [
+            {"ids": ["GHSA-x84v-xcm2-53pg"], "aliases": ["CVE-2018-18074"], "max_severity": "7.5"},
+            {"ids": ["GHSA-j8r2-6x86-q33q"], "aliases": ["CVE-2023-32681"], "max_severity": "6.1"}
+          ]
+        },
+        {
+          "package": {"name": "flask", "version": "3.1.0", "ecosystem": "PyPI"},
+          "vulnerabilities": [],
+          "groups": []
+        }
+      ]
+    },
+    {
+      "source": {"path": "/somewhere/else/entirely/package-lock.json", "type": "lockfile"},
+      "packages": [
+        {
+          "package": {"name": "lodash", "version": "4.17.15", "ecosystem": "npm"},
+          "vulnerabilities": [{"id": "GHSA-35jh-r3h4-6jhm", "aliases": ["CVE-2021-23337"], "summary": "x", "affected": []}],
+          "groups": [{"ids": ["GHSA-35jh-r3h4-6jhm"], "max_severity": "7.2"}]
+        }
+      ]
+    }
+  ]
+}

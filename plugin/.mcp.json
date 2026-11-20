@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "proofgate": {
+      "command": "proofgate-mcp",
+      "args": []
+    }
+  }
+}
