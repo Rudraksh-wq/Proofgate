@@ -272,8 +272,11 @@ async def _run_docker_zap(url: str, port: int, result: LayerResult) -> list[Find
         return None
     with tempfile.TemporaryDirectory(prefix="proofgate-zapdocker-") as td:
         os.chmod(td, 0o777)
-        args = ["run", "--rm", "--add-host", "host.docker.internal:host-gateway", "-v", f"{td}:/zap/wrk:rw", "ghcr.io/zaproxy/zaproxy:stable",
-                "zap-baseline.py", "-t", f"http://host.docker.internal:{port}", "-J", "report.json", "-I"]
+        # the app listens on 127.0.0.1 only: on Linux the container shares the host network; Docker Desktop reaches the host by name
+        net = ["--network", "host"] if sys.platform.startswith("linux") else ["--add-host", "host.docker.internal:host-gateway"]
+        host = "127.0.0.1" if sys.platform.startswith("linux") else "host.docker.internal"
+        args = ["run", "--rm", *net, "-v", f"{td}:/zap/wrk:rw", "ghcr.io/zaproxy/zaproxy:stable",
+                "zap-baseline.py", "-t", f"http://{host}:{port}", "-J", "report.json", "-I"]
         res = await exec_binary(docker, args, name="zap-docker", timeout=ZAP_TIMEOUT_S)
         result.tools.append(res.to_record())
         report = Path(td) / "report.json"

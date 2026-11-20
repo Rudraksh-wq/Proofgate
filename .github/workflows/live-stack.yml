@@ -1,0 +1,200 @@
+# Live verification on a Linux runner, where Docker exists. This is how the checks that cannot run on the Windows laptop get verified:
+# a real `supabase start`, Semgrep's own rule tests, a real Docker ZAP baseline, and the smoke suite.
+#
+# No repository secrets are used or needed: the local Supabase stack uses its documented throwaway defaults, and everything else is public.
+# Every action is pinned by its full commit SHA (a tag can be moved; a SHA cannot). Update the SHAs deliberately.
+name: Live verification
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-stack-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROOFGATE_OFFLINE: "1"
+  # Supabase's own lint SQL, pinned to a commit. It is downloaded, never bundled.
+  SPLINTER_SHA: cc529aa9d3eeffd2e64576c7591e60b22abd205c
+
+jobs:
+  supabase-live:
+    name: Supabase local stack (variants A, B, C)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DEMO: demo-apps/nextjs-supabase
+      SUPABASE_URL: http://127.0.0.1:54321
+      SUPABASE_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      PROOFGATE_SUPABASE_BACKEND: local
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install ProofGate with the Supabase extra
+        run: pip install -e "./core[supabase]"
+
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
+        with:
+          version: latest
+
+      - name: Start the local Supabase stack (Docker on the runner)
+        working-directory: ${{ env.DEMO }}
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,realtime,storage-api,postgres-meta
+
+      - name: Fetch Splinter (Supabase's lint SQL, pinned commit)
+        run: |
+          mkdir -p tools
+          curl -fsSL "https://raw.githubusercontent.com/supabase/splinter/${SPLINTER_SHA}/splinter.sql" -o tools/splinter.sql
+          test -s tools/splinter.sql
+
+      - name: Variant A, B, C - reset, check the database really behaves like the variant, scan, probe
+        run: |
+          set -u
+          fail=0
+          for v in A B C; do
+            echo "::group::variant $v"
+            python scripts/reset_demo.py --variant "$v" --backend local || fail=1
+            python scripts/ci_live_check.py "$v" || fail=1
+            # layer 5 live: static checks plus Splinter over the same connection
+            PROOFGATE_SPLINTER_SQL="$PWD/tools/splinter.sql" proofgate scan "$DEMO" --full --backend local --fail-on critical --format sarif > "scan-$v.sarif" || echo "scan exit $? (findings are expected on A and B)"
+            cp "$DEMO/.proofgate/report.json" "report-$v.json" || true
+            cp "$DEMO/.proofgate/report.html" "report-$v.html" || true
+            # the Next.js route probe arrives in feat/15; until then this records the routes as untested, never as safe
+            proofgate prove "$DEMO" --backend local > "prove-$v.json" || echo "prove exit $? (recorded)"
+            echo "::endgroup::"
+          done
+          exit $fail
+
+      - name: Keep the reports and SARIF
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: supabase-live-reports
+          path: |
+            scan-*.sarif
+            report-*.json
+            report-*.html
+            prove-*.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Stop the stack
+        if: always()
+        working-directory: ${{ env.DEMO }}
+        run: supabase stop --no-backup || true
+
+  semgrep-rules:
+    name: Semgrep rule tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install Semgrep and ProofGate
+        run: pip install semgrep "./core[dev]"
+
+      - name: semgrep --test on our rules
+        run: semgrep --test --metrics=off --config core/proofgate/rules core/rule_tests
+
+      - name: The Semgrep adapter tests, now with a real semgrep
+        run: python -m pytest -q core/tests/test_layer2_sast.py -rs
+
+  zap-baseline:
+    name: ZAP baseline via Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install ProofGate with the demo's dependencies
+        run: pip install "./core[dev]"
+
+      - name: Layer 7 on the running Flask demo app (Docker is up here, so the Docker ZAP path is used)
+        run: |
+          docker info > /dev/null
+          python demo-apps/generate_corpus.py
+          PROOFGATE_DAST_REFRESH=1 proofgate scan demo-apps/flask-corpus/c01_clean --layers 7 --fail-on critical --format sarif > zap.sarif || echo "exit $? (recorded)"
+          cp demo-apps/flask-corpus/c01_clean/.proofgate/report.json zap-report.json
+          python - <<'PY'
+          import json
+          r = json.load(open("zap-report.json"))
+          tools = {t["name"]: t["status"] for t in r["tools"]}
+          print("tools:", tools)
+          print("notes:", *r["notes"], sep="\n  ")
+          assert tools.get("zap-docker") == "ok", "the Docker ZAP baseline did not run"
+          assert r["layers_run"] == [7]
+          print(len(r["findings"]), "finding(s) from ZAP")
+          PY
+
+      - name: Keep the report and SARIF
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: zap-reports
+          path: |
+            zap.sarif
+            zap-report.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  smoke:
+    name: make smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Install
+        run: |
+          pip install -e "./core[dev]"
+          cd web && npm ci
+
+      - name: make smoke (T1-T12; the live-stack tests skip here with their stated reason and are covered by the other jobs)
+        run: make smoke
+
+      - name: The unit suite (offline)
+        run: python -m pytest -q -x
+
+      - name: Keep the smoke output
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: smoke-leftovers
+          path: |
+            **/.proofgate/report.json
+            **/.proofgate/report.html
+          if-no-files-found: ignore
+          retention-days: 7
