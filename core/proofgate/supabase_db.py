@@ -93,9 +93,16 @@ def splinter_findings(rows: list[dict[str, Any]]) -> list[Finding]:
 def run_splinter(conn: Any, sql_text: str) -> list[Finding]:
     """Run the lint SQL over the connection (read-only: Splinter only selects) and map its rows to findings."""
     cur = conn.execute(sql_text)
-    names = [getattr(d, "name", d[0] if isinstance(d, (tuple, list)) else d) for d in (cur.description or [])]
-    rows = [dict(zip(names, row)) for row in cur.fetchall()]
-    return splinter_findings(rows)
+    # splinter.sql is several statements (SET, a DO block, then the lint query): the rows are in the LAST result set that has columns
+    names: list[str] = []
+    rows: list[Any] = []
+    while True:
+        if cur.description:
+            names = [getattr(d, "name", d[0] if isinstance(d, (tuple, list)) else d) for d in cur.description]
+            rows = cur.fetchall()
+        if not (hasattr(cur, "nextset") and cur.nextset()):
+            break
+    return splinter_findings([dict(zip(names, row)) for row in rows])
 
 
 def splinter_for_target(target: SupabaseTarget, sql_path: Path | None) -> list[Finding]:

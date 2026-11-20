@@ -15,3 +15,6 @@ build/
 demo-apps/flask-corpus/v09_hardcoded_keys/app.py
 demo-apps/flask-corpus/c03_bait/app.py
 demo-apps/flask-corpus/v10_service_role_in_bundle/static/bundle.js
+
+# Supabase's own lint SQL, downloaded (never committed): see docs/DECISIONS.md
+tools/splinter.sql

@@ -201,6 +201,9 @@ class FakeCursor:
     def fetchall(self):
         return self._rows
 
+    def nextset(self):
+        return False
+
 
 class FakeConn:
     def __init__(self, rows=(), names=()):
@@ -296,6 +299,7 @@ def test_splinter_rows_become_layer_5_findings():
 
 
 def test_splinter_sql_is_found_through_the_env_var_or_tools_dir(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)  # the ./tools fallback must not see this repository's real download
     assert db.find_splinter_sql([tmp_path]) is None
     (tmp_path / "tools").mkdir()
     (tmp_path / "tools" / "splinter.sql").write_text("select 1", encoding="utf-8")
@@ -500,3 +504,64 @@ def test_a_dotenv_that_is_a_folder_of_env_files_is_read(tmp_path):
     (tmp_path / ".env" / "SUPABASE.env").write_text(f"SUPABASE_URL={URL}\nSUPABASE_SERVICE_ROLE_KEY={NEW_SECRET}\n", encoding="utf-8")
     c = st.load_config(tmp_path, environ={})
     assert c.url == URL and st.key_kind(c.service_role_key) == "secret"
+
+
+def test_a_password_with_an_at_sign_or_other_url_characters_is_encoded():
+    pw = "p@ss/w#rd:1"  # fake
+    raw = f"postgresql://postgres.{REF}:{pw}@aws-0-eu.pooler.supabase.com:5432/postgres"
+    fixed = st.normalize_db_url(raw)
+    from urllib.parse import urlparse, unquote
+
+    u = urlparse(fixed)
+    assert u.hostname == "aws-0-eu.pooler.supabase.com" and unquote(u.password) == pw and u.path == "/postgres" and u.port == 5432
+    assert st.db_url_ref(fixed) == REF
+    assert st.normalize_db_url(fixed) == fixed  # already encoded: unchanged
+    assert st.normalize_db_url(DBURL) == DBURL and st.normalize_db_url("") == ""
+
+
+def test_load_config_normalises_the_database_url(tmp_path):
+    (tmp_path / ".env").write_text(f"SUPABASE_DB_URL=postgresql://postgres.{REF}:a@b@aws-0-eu.pooler.supabase.com:5432/postgres\n", encoding="utf-8")
+    assert "a%40b" in st.load_config(tmp_path, environ={}).db_url
+
+
+def test_the_env_file_is_found_in_a_parent_folder_up_to_the_repository_root(tmp_path):
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    (repo / "demo" / "app").mkdir(parents=True)
+    (repo / ".env").write_text(f"SUPABASE_URL={URL}\n", encoding="utf-8")
+    assert st.load_config(repo / "demo" / "app", environ={}).url == URL
+    (tmp_path / "outside").mkdir()
+    (tmp_path / ".env").write_text(f"SUPABASE_URL={URL}\n", encoding="utf-8")
+    assert st.load_config(tmp_path / "outside", environ={}).url == URL  # no repository boundary: the nearest .env wins
+    (tmp_path / "outside" / ".git").mkdir()
+    assert st.load_config(tmp_path / "outside", environ={}).url == ""  # a repository boundary stops the search
+
+
+class MultiSetCursor:
+    """Like psycopg after a multi-statement string: SET -> no columns, DO -> no columns, SELECT -> rows."""
+
+    def __init__(self):
+        self._sets = [(None, []), (None, []), ([("name",), ("level",), ("title",), ("detail",), ("cache_key",)], [("rls_disabled_in_public", "ERROR", "RLS Disabled", "x", "k1")])]
+        self._i = 0
+
+    @property
+    def description(self):
+        return self._sets[self._i][0]
+
+    def fetchall(self):
+        return self._sets[self._i][1]
+
+    def nextset(self):
+        if self._i + 1 < len(self._sets):
+            self._i += 1
+            return True
+        return False
+
+
+def test_splinter_reads_the_last_result_set_of_a_multi_statement_script():
+    class C:
+        def execute(self, sql):
+            return MultiSetCursor()
+
+    found = db.run_splinter(C(), "set local search_path = ''; do $$ begin end $$; select 1")
+    assert [f.rule for f in found] == ["splinter:rls_disabled_in_public"]
