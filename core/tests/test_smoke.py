@@ -198,3 +198,94 @@ async def test_t6_variant_c_is_clean_and_select_using_true_on_an_owner_table_is_
 
 def test_t6_live_probe_of_variants_a_b_c():
     pytest.skip("needs live stack (supabase start + Docker) - verified in chore/verify-live-tools; the static half above runs here")
+
+
+# ============================================================================= T7 tournament
+@pytest.mark.parametrize("fix,app,rule", [
+    ("v01", "v01_idor_read", "cross-user-read"), ("v05", "v05_unauth_admin", "admin-route-unauthenticated"),
+    ("v06", "v06_mass_assign", "mass-assignment"), ("v07", "v07_sqli", "sql-injection")])
+async def test_t7_correct_accepted_lazy_and_partial_rejected_with_the_right_reason(probed, fix, app, rule):
+    out = probed[app]
+    finding = next(f for f in out.result.to_findings(out.contract) if f.rule == rule)
+    base = await compute_baseline(CORPUS / app, out.contract)
+    old = (CORPUS / app / "app.py").read_text(encoding="utf-8")
+    verdicts = {}
+    for kind in ("correct", "lazy", "partial"):
+        patch = make_diff("app.py", old, (FIXES / f"{fix}_{kind}" / "app.py").read_text(encoding="utf-8"))
+        verdicts[kind] = await run_tournament(CORPUS / app, finding, [Candidate(patch, "B", kind)], out.contract, baseline=base)
+    assert verdicts["correct"].accepted
+    assert not verdicts["lazy"].accepted and "feature_works=false" in verdicts["lazy"].rejected[0].reason
+    assert not verdicts["partial"].accepted and "exploit_blocked=false" in verdicts["partial"].rejected[0].reason
+
+
+async def test_t7_an_edited_old_migration_is_rejected(tmp_path):
+    proj = tmp_path / "sb"
+    shutil.copytree(DEMO / "supabase", proj / "supabase")
+    shutil.copy(DEMO / "supabase/variants/a_rls_off.sql", proj / "supabase/migrations/20240201000000_rls_variant.sql")
+    finding = next(f for f in (await l5.run(proj)).findings if f.rule.endswith("rls-disabled"))
+    rel = "supabase/migrations/20240201000000_rls_variant.sql"
+    old = (proj / rel).read_text(encoding="utf-8")
+    edit = make_diff(rel, old, "alter table public.notes enable row level security;\ncreate policy p on public.notes for all using (auth.uid() = user_id);\n")
+    res = await run_tournament(proj, finding, [Candidate(edit, "B", "edit-history")], load_contract(proj))
+    assert not res.accepted and "existing migration" in res.rejected[0].reason and res.gates.migrations_replayed is False
+
+
+# ============================================================================= T8 vaccinate
+async def test_t8_regression_test_fails_then_passes_and_rules_land_once_in_every_agent_file(probed, tmp_path):
+    proj = copy(CORPUS / "v01_idor_read", tmp_path)
+    out = probed["v01_idor_read"]
+    finding = out.result.to_findings(out.contract)[0]
+    res = await fix_finding(proj, finding, out.contract)
+    vac = await build_vaccine(proj, finding, res, out.contract)
+    assert res.accepted and vac.verified is True  # the generated test failed on the original and passed with the fix
+    apply_patch(proj, res.winner.patch)
+    apply_patch(proj, vac.patch)
+    for rel in AGENT_FILES:
+        text = (proj / rel).read_text(encoding="utf-8")
+        assert text.count("Every query on notes must filter by owner_id = current user.") == 1, rel
+        assert text.count("<!-- proofgate:begin -->") == 1
+    again = await build_vaccine(proj, finding, res, out.contract, verify=False)
+    assert again.patch == ""  # vaccinating twice adds nothing: no duplicates
+
+
+# ============================================================================= T9 MCP
+async def test_t9_secure_this_project_runs_the_four_tools_on_the_flask_app(tmp_path):
+    ws = tmp_path / "ws"
+    app = ws / "v01"
+    shutil.copytree(CORPUS / "v01_idor_read", app)
+    old = (app / "app.py").read_text(encoding="utf-8")
+    async with Session(ws) as s:
+        tools = {t.name for t in (await s.client.list_tools()).tools}
+        assert tools == set(TOOL_NAMES)
+        contract = data_of(await s.call("get_contract", project_dir=str(app)))["contract"]
+        assert contract["owned_resources"][0]["name"] == "notes"
+        scan = data_of(await s.call("scan_project", project_dir=str(app)))
+        assert scan["counts"]["unique"] >= 0 and scan["limits"].endswith("secure.")
+        proven = data_of(await s.call("prove", project_dir=str(app)))["proven"]
+        assert [p["rule"] for p in proven] == ["cross-user-read"]
+        good = make_diff("app.py", old, (FIXES / "v01_correct" / "app.py").read_text(encoding="utf-8"))
+        verdict = await s.call("verify_fix", project_dir=str(app), finding_id=proven[0]["id"], patch=good)
+        assert "ACCEPTED" in verdict
+        explained = data_of(await s.call("explain_finding", finding_id=proven[0]["id"]))["explanation"]
+        assert LIMITS_STATEMENT in explained
+    assert (app / "app.py").read_text(encoding="utf-8") == old  # nothing was applied to the project
+
+
+async def test_t9_the_nextjs_app_gets_the_static_half_of_the_workflow(tmp_path):
+    ws = tmp_path / "ws"
+    app = ws / "next"
+    shutil.copytree(DEMO, app, ignore=shutil.ignore_patterns("node_modules", ".next", "tsconfig.tsbuildinfo", "next-env.d.ts"))
+    shutil.copy(DEMO / "supabase/variants/a_rls_off.sql", app / "supabase/migrations/20240201000000_rls_variant.sql")
+    async with Session(ws) as s:
+        contract = data_of(await s.call("get_contract", project_dir=str(app)))["contract"]
+        assert contract["owned_resources"][0]["name"] == "notes"
+        scan = data_of(await s.call("scan_project", project_dir=str(app)))
+        rules = {f["rule"] for f in scan["findings"]}
+        assert {"proofgate.sql-rls-disabled", "proofgate.sql-function-security-definer"} <= rules
+        assert any(r.startswith("proofgate.js-") or r.startswith("proofgate.next-") for r in rules)
+        blocked = await s.call("scan_file", path=str(app / "lib" / "k.ts"), content=f'export const k = "{KEY}";\n')
+        assert "BLOCKING" in blocked
+
+
+def test_t9_prove_and_verify_fix_on_the_nextjs_app():
+    pytest.skip("needs live stack (supabase start + Docker) - verified in chore/verify-live-tools; static scan above runs here")
