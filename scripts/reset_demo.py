@@ -30,7 +30,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--project", default=str(DEMO))
     a = ap.parse_args(argv)
     project = Path(a.project)
-    env_file = next((p for p in (project / ".env", ROOT / ".env") if p.is_file()), project / ".env")
+    # the repo-root .env is the fallback only for the demo itself, so an explicit --project never picks up your real project by accident
+    candidates = [project / ".env"] + ([ROOT / ".env"] if project.resolve() == DEMO.resolve() else [])
+    env_file = next((p for p in candidates if p.exists()), project / ".env")
     try:
         cfg = load_config(project, env_file=env_file)
         target = resolve_target(cfg, backend=a.backend, i_own_this=a.i_own_this)

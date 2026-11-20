@@ -47,6 +47,10 @@ class BackendUnavailable(Exception):
 def read_env_file(path: Path) -> dict[str, str]:
     """KEY=VALUE lines of a .env file. Values are returned to the caller and never logged."""
     out: dict[str, str] = {}
+    if path.is_dir():  # `.env` created as a folder (for example `.env/SUPABASE.env`): read the *.env files inside, in name order
+        for child in sorted(path.glob("*.env")):
+            out.update(read_env_file(child))
+        return out
     try:
         text = path.read_text(encoding="utf-8")
     except OSError:
@@ -117,6 +121,33 @@ def load_config(project: str | Path | None = None, environ: dict[str, str] | Non
         url=get("SUPABASE_URL").rstrip("/"), anon_key=get("SUPABASE_ANON_KEY"), service_role_key=get("SUPABASE_SERVICE_ROLE_KEY"),
         db_url=get("SUPABASE_DB_URL"), allowed_refs=parse_refs(get("PROOFGATE_ALLOWED_PROJECT_REFS")), backend=backend,
         i_own_this_env=get("PROOFGATE_I_OWN_THIS") == "1")
+
+
+# ------------------------------------------------------------------------------------------- key formats
+def key_kind(value: str | None) -> str:
+    """What kind of Supabase API key this is, from its shape only: secret | publishable | jwt | empty | unknown.
+    New projects use `sb_secret_...` / `sb_publishable_...` (not JWTs); older ones use JWTs with role service_role / anon."""
+    v = (value or "").strip()
+    if not v:
+        return "empty"
+    if v.startswith("sb_secret_"):
+        return "secret"
+    if v.startswith("sb_publishable_"):
+        return "publishable"
+    if v.startswith("eyJ") and v.count(".") == 2:
+        return "jwt"
+    return "unknown"
+
+
+def api_headers(api_key: str, user_jwt: str | None = None) -> dict[str, str]:
+    """Headers for PostgREST / Auth calls. A JWT-style key is also sent as the Bearer token (legacy behaviour). The new `sb_` keys are NOT JWTs:
+    they go in `apikey` only, and a Bearer token, when there is one, is the signed-in user's own JWT."""
+    h = {"apikey": api_key}
+    if user_jwt:
+        h["Authorization"] = f"Bearer {user_jwt}"
+    elif key_kind(api_key) == "jwt":
+        h["Authorization"] = f"Bearer {api_key}"
+    return h
 
 
 # ------------------------------------------------------------------------------------------- the guard
@@ -271,7 +302,8 @@ def backend_status(config: SupabaseConfig, *, local_ok: tuple[bool, str] | None 
         for name, val in (("SUPABASE_ANON_KEY", config.anon_key), ("SUPABASE_SERVICE_ROLE_KEY", config.service_role_key), ("SUPABASE_DB_URL", config.db_url)):
             if not val:
                 problems.append(f"{name} is empty")
-        rows.append(("hosted", "blocked" if problems else "configured", "; ".join(problems) if problems else f"project {ref}; needs --i-own-this to run"))
+        kinds = f"anon key: {key_kind(config.anon_key)}, service key: {key_kind(config.service_role_key)}"
+        rows.append(("hosted", "blocked" if problems else "configured", "; ".join(problems) if problems else f"project {ref}; {kinds}; needs --i-own-this to run"))
     ok, why = local_ok or local_available()
     rows.append(("local", "available" if ok else "unavailable", why + ("" if ok else " (optional: used only where Docker exists, such as CI)")))
     try:
