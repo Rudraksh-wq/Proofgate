@@ -1,0 +1,23 @@
+# ProofGate
+
+> ProofGate is a local security gate for AI-written web apps (Python/Flask, Next.js + Supabase).
+> It runs 9 layers of checks, proves access-control bugs by attacking the app as a second user
+> on a local throwaway database, and only accepts fixes that stop the attack while the owner's
+> feature still works. Nothing is uploaded; the website does not scan code.
+
+## Install
+- [Claude Code plugin](https://<site>/install#claude-code): `/plugin marketplace add Rudraksh-wq/Proofgate` then `/plugin install proofgate@proofgate`
+- [MCP server config](https://<site>/install#mcp): `{"mcpServers":{"proofgate":{"command":"proofgate-mcp"}}}`
+- [CLI](https://<site>/install#cli): `pipx install proofgate && proofgate init`
+
+## For AI agents
+- [Agent workflow](https://<site>/docs/agent-workflow.md): get_contract → scan_project → prove → verify_fix
+- [MCP tools reference](https://<site>/docs/mcp-tools.md)
+- [Finding JSON schema](https://<site>/schemas/finding.v1.json)
+
+## Limits
+- [What ProofGate cannot prove](https://<site>/limits.md)
+
+## Optional
+- [Benchmark method and results](https://<site>/benchmark.md)
+- [Everything in one file](https://<site>/llms-full.txt)
