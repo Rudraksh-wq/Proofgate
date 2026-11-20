@@ -48,9 +48,35 @@ def _check_target(a) -> None:
 
 
 def cmd_init(a) -> int:
+    """Detect the stack, save a DRAFT contract, and write the agent integration files (MCP config, hooks, rules).
+    Existing files are merged, never overwritten; Windsurf's global MCP config is written as a snippet, not edited."""
+    import asyncio
+
+    from .agents import InitError, detect_agents, detect_stack, init_agent
+    from .ai.contract import build_contract
+
     d = _project(a.dir)
-    print(f"[stub] would detect stack, draft contract, install hooks and verify tools in {d}")
-    return 0
+    stack = detect_stack(d)
+    print(f"stack: {', '.join(stack) or 'not recognised'}")
+    agents = [a.agent] if a.agent else detect_agents(d)
+    refused = False
+    for agent in agents:
+        try:
+            changes = init_agent(d, agent, dry_run=a.dry_run)
+        except InitError as e:
+            raise CliError(str(e))
+        print(f"{agent}:" + (" (dry run, nothing written)" if a.dry_run else ""))
+        for c in changes:
+            refused |= c.action == "refused"
+            print(f"  {c.action:9} {c.path}" + (f"  - {c.note}" if c.note else ""))
+    saved = d / ".proofgate" / "contract.json"
+    if not saved.is_file() and not a.dry_run:
+        res = asyncio.run(build_contract(d))
+        saved.parent.mkdir(exist_ok=True)
+        saved.write_text(_dump(res.contract), encoding="utf-8", newline="\n")
+        print("contract: draft saved to .proofgate/contract.json; check it, then `proofgate contract <dir> --confirm`")
+    print("next: `proofgate doctor` to verify the tools, then scan with `proofgate scan <dir>`")
+    return 2 if refused else 0
 
 
 def cmd_contract(a) -> int:
@@ -325,7 +351,9 @@ def build_parser() -> argparse.ArgumentParser:
         s.set_defaults(fn=fn)
         return s
 
-    add("init", cmd_init, help="detect stack, draft contract, install hooks")
+    s = add("init", cmd_init, help="detect stack, draft contract, write agent configs")
+    s.add_argument("--agent", choices=["cursor", "codex", "windsurf", "claude"], help="default: detect from the project")
+    s.add_argument("--dry-run", action="store_true")
     s = add("contract", cmd_contract, help="build/show/confirm the Intent Contract")
     s.add_argument("--confirm", action="store_true")
     s.add_argument("--refresh", action="store_true", help="rebuild instead of reusing .proofgate/contract.json")

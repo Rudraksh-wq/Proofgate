@@ -144,7 +144,8 @@ def pre(payload: dict[str, Any], *, project_dir: str | None = None, mode: str = 
 def post(payload: dict[str, Any], *, project_dir: str | None = None) -> HookOutcome:
     """Start `proofgate scan --fast` detached and return at once."""
     out = HookOutcome()
-    if payload.get("tool_name") not in WRITE_TOOLS:
+    cursor_edit = payload.get("hook_event_name") == "afterFileEdit" and isinstance(payload.get("file_path"), str)  # Cursor's shape
+    if payload.get("tool_name") not in WRITE_TOOLS and not cursor_edit:
         return out
     root = _project_root(payload, project_dir)
     kwargs: dict[str, Any] = {"stdin": subprocess.DEVNULL, "stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL, "cwd": str(root)}
