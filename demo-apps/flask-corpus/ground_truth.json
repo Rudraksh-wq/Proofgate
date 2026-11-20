@@ -1,0 +1,136 @@
+{
+  "c01_clean": [],
+  "c02_clean_helper": [],
+  "c03_bait": [],
+  "v01_idor_read": [
+    {
+      "category": "access",
+      "cwe": "CWE-639",
+      "label": "cross-user-read",
+      "file": "app.py",
+      "line": 132
+    }
+  ],
+  "v02_idor_write": [
+    {
+      "category": "access",
+      "cwe": "CWE-639",
+      "label": "cross-user-write",
+      "file": "app.py",
+      "line": 141
+    }
+  ],
+  "v03_idor_param": [
+    {
+      "category": "access",
+      "cwe": "CWE-639",
+      "label": "list-by-user-id-param",
+      "file": "app.py",
+      "line": 112
+    }
+  ],
+  "v04_missing_role": [
+    {
+      "category": "access",
+      "cwe": "CWE-862",
+      "label": "admin-route-missing-role-check",
+      "file": "app.py",
+      "line": 201
+    }
+  ],
+  "v05_unauth_admin": [
+    {
+      "category": "access",
+      "cwe": "CWE-306",
+      "label": "admin-route-unauthenticated",
+      "file": "app.py",
+      "line": 201
+    }
+  ],
+  "v06_mass_assign": [
+    {
+      "category": "access",
+      "cwe": "CWE-915",
+      "label": "mass-assignment-role",
+      "file": "app.py",
+      "line": 190
+    }
+  ],
+  "v07_sqli": [
+    {
+      "category": "injection",
+      "cwe": "CWE-89",
+      "label": "sql-injection-search",
+      "file": "app.py",
+      "line": 168
+    }
+  ],
+  "v08_cmdi": [
+    {
+      "category": "injection",
+      "cwe": "CWE-78",
+      "label": "shell-injection-export",
+      "file": "app.py",
+      "line": 178
+    }
+  ],
+  "v09_hardcoded_keys": [
+    {
+      "category": "secrets",
+      "cwe": "CWE-798",
+      "label": "hardcoded-stripe-live-key",
+      "file": "app.py",
+      "line": 11
+    },
+    {
+      "category": "secrets",
+      "cwe": "CWE-798",
+      "label": "hardcoded-service-role-key",
+      "file": "app.py",
+      "line": 12
+    }
+  ],
+  "v10_service_role_in_bundle": [
+    {
+      "category": "bundle",
+      "cwe": "CWE-798",
+      "label": "service-role-key-in-frontend-bundle",
+      "file": "static/bundle.js",
+      "line": 3
+    }
+  ],
+  "v11_hallucinated_dep": [
+    {
+      "category": "supply-chain",
+      "cwe": "CWE-829",
+      "label": "nonexistent-package-in-requirements",
+      "file": "requirements.txt",
+      "line": 2
+    }
+  ],
+  "v12_outdated_dep": [
+    {
+      "category": "deps",
+      "cwe": "CWE-1395",
+      "label": "requests-2.19.0-known-vulnerabilities",
+      "file": "requirements.txt",
+      "line": 2
+    }
+  ],
+  "v13_debug_tls": [
+    {
+      "category": "config",
+      "cwe": "CWE-489",
+      "label": "flask-debug-true",
+      "file": "app.py",
+      "line": 217
+    },
+    {
+      "category": "web",
+      "cwe": "CWE-295",
+      "label": "tls-verification-disabled",
+      "file": "app.py",
+      "line": 87
+    }
+  ]
+}
