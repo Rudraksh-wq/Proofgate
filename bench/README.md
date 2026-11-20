@@ -34,7 +34,8 @@ recall counts ground-truth items (one finding can cover two neighbouring items).
 - The corpus and ProofGate's rules were written by the same team. The held-out set exists so that someone else's apps (labelled by
   manual two-user testing *before* running ProofGate) can answer "is the gain real or tuned to the corpus?". Until it exists, no held-out
   number exists, and `results.json` says so.
-- Layer 7 (dast-lite / ZAP) is not part of the measured columns. Layers 6, 7 and 9 were added after this benchmark was measured, so `config`, `web` and `bundle` results do not include them until `make bench` is re-run.
+- Re-measured on 2026-11-21 with layers 6, 7 and 9 built. **`proofgate_full` precision fell to 0.19** because layer 7 (`dast-lite`) reports real but unlabelled findings (missing security headers, cookie flags, server version) on every app, and the corpus has no ground truth for them, so each counts as a false positive. `proofgate_full_no_dast` is the same scan without layer 7 (0.81 / 0.93 / 0.87, unchanged): it isolates that effect. Neither number says dast-lite is wrong; it says this corpus cannot score it.
+- No Supabase backend is used by the benchmark (the corpus is Flask). The live Supabase results are in `docs/VERIFICATION.md`.
 - `fast` does not attack the app, so its access recall is 0 by design; `full` adds the Doppelganger probe.
 
 ## Honesty rules

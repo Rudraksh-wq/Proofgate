@@ -44,7 +44,7 @@ export default function Benchmark() {
           </tbody>
         </table>
       </div>
-      <p className="muted">&ldquo;ProofGate fast&rdquo; does not attack the app, so its access recall is 0 by design. &ldquo;ProofGate full&rdquo; adds the second-user probe.</p>
+      <p className="muted">&ldquo;ProofGate fast&rdquo; does not attack the app, so its access recall is 0 by design. &ldquo;ProofGate full&rdquo; adds the second-user probe and layer 7. Layer 7 (<code>dast-lite</code>) reports real but unlabelled findings such as missing security headers on every app, and this corpus has no ground truth for them, so they all count as false positives and pull precision down. The row &ldquo;without layer 7&rdquo; shows the same scan without it. The benchmark uses no Supabase backend: the corpus is Flask.</p>
 
       <h2>Raw, unique, proven</h2>
       <div className="scroll">

@@ -132,16 +132,18 @@ async def run_proofgate(apps: list[Path], lock: ToolLock, skip_network: bool, ca
     out: dict[str, dict] = {}
     gate = asyncio.Semaphore(3)
 
-    async def one(app: Path, full: bool):
+    async def one(app: Path, full: bool, layers: list[int] | None = None):
         async with gate:
             t = time.perf_counter()
-            res = await run_scan(app, fast=not full, full=full, lock=lock, tools_dir=TOOLS_DIR, offline=skip_network,
+            res = await run_scan(app, layers=layers, fast=not full and layers is None, full=full, lock=lock, tools_dir=TOOLS_DIR, offline=skip_network,
                                  cache=PackageCache(cache_dir / "packages.json"))
             return app, res, time.perf_counter() - t
 
-    for mode, full in (("proofgate_fast", False), ("proofgate_full", True)):
+    # proofgate_full_no_dast is the full scan WITHOUT layer 7: the corpus has no labelled HTTP-header/cookie flaws, so every dast-lite finding counts as a
+    # false positive here. Both are reported so the effect of that layer on precision is visible, not hidden.
+    for mode, full, layers in (("proofgate_fast", False, None), ("proofgate_full", True, None), ("proofgate_full_no_dast", True, [1, 2, 3, 4, 5, 6, 8, 9])):
         rows, proven_rows, per_app, secs = [], [], {}, []
-        for app, res, dt_s in await asyncio.gather(*(one(a, full) for a in apps)):
+        for app, res, dt_s in await asyncio.gather(*(one(a, full, layers) for a in apps)):
             r = res.report
             rows += rows_of(app.name, r.findings, mode)
             proven_rows += rows_of(app.name, [f for f in r.findings if f.proven], mode)
@@ -267,7 +269,7 @@ async def run(args) -> dict:
         "schema": "proofgate.bench/v1",
         "generated_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "proofgate_version": __version__,
-        "environment": {"python": platform.python_version(), "platform": platform.platform(), "network": not args.skip_network,
+        "environment": {"supabase_backend": "none (the corpus is Flask: no Supabase layer is exercised here; see docs/VERIFICATION.md for the hosted-project runs)", "python": platform.python_version(), "platform": platform.platform(), "network": not args.skip_network,
                         "subset": sorted(only) if only else None, "tolerance_lines": TOLERANCE, "bench_seconds": None},
         "tools": tool_info,
         "corpus": {"apps": len(apps), "ground_truth_items": len(truth), "clean_apps": sum(1 for a in apps if a.name.startswith("c")),
