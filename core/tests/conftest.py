@@ -50,3 +50,11 @@ def corpus_rendered():
     import generate_corpus
 
     return generate_corpus.materialize()
+
+
+@pytest.fixture(autouse=True)
+def hermetic_env(monkeypatch, tmp_path_factory):
+    """Tests never touch the network or the user's real cache unless they opt in explicitly."""
+    monkeypatch.setenv("PROOFGATE_OFFLINE", "1")
+    monkeypatch.setenv("PROOFGATE_CACHE_DIR", str(tmp_path_factory.mktemp("proofgate-cache")))
+    monkeypatch.delenv("PROOFGATE_TOOLS_DIR", raising=False)
