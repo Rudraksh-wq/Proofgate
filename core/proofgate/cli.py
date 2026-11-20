@@ -54,17 +54,37 @@ def cmd_init(a) -> int:
 
 
 def cmd_contract(a) -> int:
-    """Show the Intent Contract (a deterministic draft until the Gemini contract lands). --confirm records that a
-    human accepted it; unconfirmed results are labelled "against draft contract"."""
-    from .probe import load_contract
+    """Build, show and confirm the Intent Contract. Gemini proposes (redacted, optional); a deterministic heuristic wins
+    ties; anything that would make data MORE public is listed in needs_confirmation and NOT applied until you name it
+    with --accept-public. Without --confirm the contract stays a draft ("against draft contract")."""
+    import asyncio
+
+    from .ai.contract import build_contract, confirm_contract
+    from .models import Contract as ContractModel
 
     d = _project(a.dir)
-    contract = load_contract(d)
+    saved = d / ".proofgate" / "contract.json"
+    contract = None
+    if saved.is_file() and not a.refresh:
+        try:
+            contract = ContractModel.model_validate_json(saved.read_text(encoding="utf-8"))
+        except ValueError:
+            contract = None
+    if contract is None:
+        result = asyncio.run(build_contract(d))
+        contract = result.contract
+        for note in result.notes:
+            print(f"note: {note}", file=sys.stderr)
     if a.confirm:
-        contract = contract.model_copy(update={"confirmed_by_user": True})
+        contract, unresolved = confirm_contract(contract, a.accept_public)
+        if unresolved:
+            print("note: still owner-only (not accepted): " + ", ".join(unresolved)
+                  + "\n      pass --accept-public <item> for each one you really want public", file=sys.stderr)
+    elif a.accept_public:
+        raise CliError("--accept-public only makes sense together with --confirm")
     out = d / ".proofgate"
     out.mkdir(exist_ok=True)
-    (out / "contract.json").write_text(_dump(contract), encoding="utf-8", newline="\n")
+    saved.write_text(_dump(contract), encoding="utf-8", newline="\n")
     print(_dump(contract))
     if not contract.confirmed_by_user:
         print("note: draft contract. Check the rules, then run `proofgate contract <dir> --confirm`.", file=sys.stderr)
@@ -252,6 +272,9 @@ def build_parser() -> argparse.ArgumentParser:
     add("init", cmd_init, help="detect stack, draft contract, install hooks")
     s = add("contract", cmd_contract, help="build/show/confirm the Intent Contract")
     s.add_argument("--confirm", action="store_true")
+    s.add_argument("--refresh", action="store_true", help="rebuild instead of reusing .proofgate/contract.json")
+    s.add_argument("--accept-public", action="append", default=[], metavar="ITEM",
+                   help="allow one item from needs_confirmation to become public (repeatable; only with --confirm)")
     s = add("scan", cmd_scan, fail_on=True, help="run the layers, write .proofgate/report.json")
     s.add_argument("--layers")
     mode = s.add_mutually_exclusive_group()
