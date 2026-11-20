@@ -16,3 +16,4 @@ secret-shaped text at run time.
 | `pip_audit_requests_2_19_0.json` | **Real** `pip-audit 2.10.1 -r requirements.txt --no-deps --disable-pip -f json` for `requests==2.19.0` (advisory descriptions trimmed to 120 chars) | `test_layer3_deps.py` |
 | `npm_audit_lodash.json` | **Real** `npm audit --json --package-lock-only` for `lodash@4.17.15` (npm 11) | `test_layer3_deps.py` |
 | `osv_scanner_sample.json` | OSV-Scanner v2 `--format json` schema, hand-written (osv-scanner not installed): pending real-tool verification | `test_layer3_deps.py` |
+| `guarddog_sample.json` | GuardDog `<eco> verify --output-format json`, hand-written, tolerant parser: pending real-tool verification | `test_layer4_packages.py` |
