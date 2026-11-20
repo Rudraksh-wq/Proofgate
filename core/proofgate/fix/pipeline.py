@@ -63,19 +63,30 @@ def deterministic_candidates(project: Path, finding: Finding, contract: Contract
 
 
 async def fix_finding(project: str | Path, finding: Finding, contract: Contract, *, extra: list[Candidate] | None = None,
-                      baseline: Baseline | None = None) -> FixResult:
+                      baseline: Baseline | None = None, tier_c: bool = True, gemini=None) -> FixResult:
+    """Deterministic candidates first; Tier C (Gemini, paid key, redacted) only when no template fits."""
     project = Path(project).resolve()
     cands, learned = deterministic_candidates(project, finding, contract)
     cands += extra or []
+    notes: list[str] = []
+    if not cands and tier_c:
+        from ..ai.tier_c import tier_c_candidates
+
+        tc = await tier_c_candidates(project, finding, contract, client=gemini)
+        cands += tc.candidates
+        notes += [f"tier C discarded an answer: {d}" for d in tc.discarded]
+        if tc.skipped:
+            notes.append(tc.skipped)
     if not cands:
         return FixResult(
             finding_id=finding.id, tier=classify(finding), candidates=0, winner=None,
             gates={"exploit_blocked": False, "feature_works": False, "tests_pass": False, "no_new_findings": False,  # type: ignore[arg-type]
                    "diff_is_small": False},
             rejected=[{"reason": f"no deterministic fix exists for {finding.rule}: needs a human or Tier C"}],  # type: ignore[list-item]
-            accepted=False, pre_fix_commit=pre_fix_commit(project))
-    return await run_tournament(project, finding, cands, contract, baseline=baseline, learned_rule=learned,
-                                pre_fix_commit=pre_fix_commit(project))
+            accepted=False, pre_fix_commit=pre_fix_commit(project), notes=notes)
+    result = await run_tournament(project, finding, cands, contract, baseline=baseline, learned_rule=learned,
+                                  pre_fix_commit=pre_fix_commit(project))
+    return result.model_copy(update={"notes": sorted({*result.notes, *notes})}) if notes else result
 
 
 async def verify_patch(project: str | Path, finding: Finding, patch: str, contract: Contract, *, tier: str | None = None) -> FixResult:
