@@ -35,10 +35,10 @@ def test_scan_vulnerable_app_writes_a_real_report_and_exits_1(capsys, vuln_app):
     code, out, _ = run(capsys, "scan", str(vuln_app))
     assert code == 1
     report = Report.model_validate_json((vuln_app / ".proofgate" / "report.json").read_text(encoding="utf-8"))
-    assert report.layers_run == [1, 2, 3, 4, 5]
+    assert report.layers_run == [1, 2, 3, 4, 5, 6, 9]
     assert {f.rule for f in report.findings} >= {"stripe-live-secret-key", "supabase-service-role-key"}
     assert report.limits_statement and "doesn't mean your app is secure" in report.limits_statement
-    assert any("layer 6: not built yet" in n for n in report.notes)  # unbuilt layers are said out loud
+    assert not any("not built yet" in n for n in report.notes)  # layers 6 and 9 are built; nothing is silently unbuilt
     assert (vuln_app / ".proofgate" / "report.html").is_file()
     assert json.loads(out)["schema"] == "proofgate.report/v1"
 

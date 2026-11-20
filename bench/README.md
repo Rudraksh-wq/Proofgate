@@ -34,7 +34,7 @@ recall counts ground-truth items (one finding can cover two neighbouring items).
 - The corpus and ProofGate's rules were written by the same team. The held-out set exists so that someone else's apps (labelled by
   manual two-user testing *before* running ProofGate) can answer "is the gain real or tuned to the corpus?". Until it exists, no held-out
   number exists, and `results.json` says so.
-- Layers 6, 7 and 9 are not built yet, so `config` and `bundle` results mostly reflect the other layers.
+- Layer 7 is not built yet. Layers 6 and 9 were added after this benchmark was measured, so `config` and `bundle` results do not include them until `make bench` is re-run.
 - `fast` does not attack the app, so its access recall is 0 by design; `full` adds the Doppelganger probe.
 
 ## Honesty rules

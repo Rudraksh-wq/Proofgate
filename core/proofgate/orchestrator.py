@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
-from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l5_database, l8_access
+from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l5_database, l6_config, l8_access, l9_bundle
 from .layers.base import LayerResult, Runner, run_tool
 from .models import LIMITS_STATEMENT, Receipt, Report, Tested, ToolRecord
 from .hook import read_fail_open_count
@@ -51,13 +51,17 @@ async def _call(layer: int, project: Path, runner: Runner, kw: dict[str, Any]) -
                                          tools_dir=kw.get("tools_dir"), **common)
     if layer == 5:
         return await l5_database.run(project, contract=kw.get("contract"))
+    if layer == 6:
+        return await l6_config.run(project, **common)
+    if layer == 9:
+        return await l9_bundle.run(project, full=bool(kw.get("full")))
     if layer == 8:
         return await l8_access.run(project, contract=kw.get("contract"), target=kw.get("target"),
                                    i_own_this=bool(kw.get("i_own_this")))
     raise NotImplementedError(layer)
 
 
-IMPLEMENTED = {1, 2, 3, 4, 5, 8}
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 8, 9}
 
 
 def _git_commit(project: Path) -> str | None:
@@ -90,6 +94,7 @@ async def run_scan(project_dir: str | Path, *, layers: list[int] | None = None, 
                    runner: Runner = run_tool, fast_timeout: float = FAST_TIMEOUT_S, **layer_kwargs: Any) -> ScanOutcome:
     """layer_kwargs: lock, tools_dir, offline, cache, client (layers 1-4); contract, target, i_own_this (layer 8)."""
     project = Path(project_dir).resolve()
+    layer_kwargs.setdefault("full", full)
     requested = sorted(set(layers if layers else (FAST_LAYERS if fast else ALL_LAYERS if full else DEFAULT_LAYERS)))
     runnable = [n for n in requested if n in IMPLEMENTED]
     notes = [f"layer {n}: not built yet in this version: not run" for n in requested if n not in IMPLEMENTED]

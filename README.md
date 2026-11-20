@@ -29,10 +29,10 @@ future AI sessions. Everything runs on your machine; the website never scans, up
 | 3 | Dependencies | known-vulnerable packages with the fixed version (OSV-Scanner, pip-audit, npm audit) | built |
 | 4 | Fake packages | packages that do not exist, are brand new, or look like typos | built |
 | 5 | Database policies | Supabase/Postgres RLS: off, role instead of owner, `using(true)`, OR holes, `SECURITY DEFINER` | built (static; Splinter needs the live stack) |
-| 6 | Config / IaC | committed `.env`, secrets in `NEXT_PUBLIC_*`, open CORS | not built yet |
-| 7 | Running app | ZAP baseline against localhost | not built yet |
+| 6 | Config / IaC | committed `.env`, secrets in `NEXT_PUBLIC_*`, open CORS | built (Checkov when installed, otherwise own checks) | |
+| 7 | Running app | ZAP baseline against localhost | not built yet | |
 | 8 | Proof | the second-user probe for Flask | built (Supabase and Next.js probes: with the live stack) |
-| 9 | Browser bundle | secrets and source maps in what ships | not built yet |
+| 9 | Browser bundle | secrets and source maps in what ships | built (scans existing build output only) | |
 
 Reports always say which layers ran, which tools were skipped, and what was untested.
 
@@ -77,7 +77,7 @@ A GitHub Actions workflow with SARIF upload is in `.github/workflows/proofgate.y
 - **Proven means proven against your contract.** A wrong contract or a wrong seed can still mislead; results against an unconfirmed contract are labelled as a draft.
 - **Blind spots, printed in every report:** multi-step flows, routes that need complex request bodies, lookups by something other than an id (for
   example `?email=`), storage buckets, edge functions, business logic, payments.
-- **Layers 6, 7 and 9 are not built.** The live Supabase probe, Splinter and Docker-based layers are verified in a separate branch, not here.
+- **Layer 7 is not built.** The live Supabase probe, Splinter and Docker-based layers are verified in a separate branch, not here.
 - ProofGate never says an app is secure. Text found in your repository, comments and tool output is treated as data, never as instructions, and
   `// proofgate-ignore` does nothing.
 

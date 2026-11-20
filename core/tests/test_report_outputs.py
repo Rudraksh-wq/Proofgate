@@ -71,7 +71,7 @@ async def test_report_has_limits_tools_notes_and_a_verifiable_hash():
     r = (await scan_corpus()).report
     assert r.limits_statement == LIMITS_STATEMENT
     assert {t.name: t.status for t in r.tools}["semgrep"] == "skipped"
-    assert any("layer 6: not built yet" in n for n in r.notes) and any("semgrep" in n and "skipped" in n for n in r.notes)
+    assert any("semgrep" in n and "skipped" in n for n in r.notes)
     assert r.receipt.report_hash == report_hash(r) and r.receipt.report_hash.startswith("sha256:")
     changed = r.model_copy(update={"unique_count": r.unique_count + 1})
     assert report_hash(changed) != r.receipt.report_hash

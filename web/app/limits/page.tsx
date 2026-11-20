@@ -32,7 +32,7 @@ export default function Limits() {
       <ul>
         <li><b>&ldquo;Proven&rdquo; means proven against your contract.</b> A canary crossing a boundary is strong evidence, but a wrong contract or a wrong seed can still mislead. Results against an unconfirmed contract are labelled as a draft.</li>
         <li><b>Untested is not safe.</b> A table that could not be seeded, or a route that could not be reached, is listed as untested.</li>
-        <li><b>Layers 6, 7 and 9 are not built yet.</b> Reports say which layers ran.</li>
+        <li><b>Layer 7 is not built yet.</b> Reports say which layers ran.</li>
         <li><b>The live Supabase checks need a local stack.</b> Without it, ProofGate checks your migrations statically and says so.</li>
         <li><b>The benchmark is small and synthetic.</b> See <a href="/benchmark/">the benchmark page</a> for exactly what was measured and what was not.</li>
       </ul>
