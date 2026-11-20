@@ -19,3 +19,6 @@ proofgate = "proofgate.cli:main"
 [tool.setuptools.packages.find]
 include = ["proofgate*"]
 
+[tool.setuptools.package-data]
+proofgate = ["tools.lock.json"]
+
