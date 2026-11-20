@@ -176,7 +176,7 @@ class ToolRecord(_Strict):
     name: str
     version: str | None = None
     sha256: str | None = None
-    status: Literal["ok", "skipped", "mismatch", "error"]
+    status: Literal["ok", "skipped", "mismatch", "unpinned", "timeout", "error"]
 
 
 class Report(_Versioned):

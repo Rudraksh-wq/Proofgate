@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 from .models import AcceptedRisk, Contract, Finding, FixResult, Report
-from .sample import SAMPLE_CONTRACT, SAMPLE_FINDING, SAMPLE_FIX, SAMPLE_TOOLS, sample_report
+from .sample import SAMPLE_CONTRACT, SAMPLE_FINDING, SAMPLE_FIX, sample_report
 
 SEV = ["low", "medium", "high", "critical"]
 FORMATS = ["json", "sarif", "html", "agent"]
@@ -187,10 +187,33 @@ def cmd_rollback(a) -> int:
 
 
 def cmd_doctor(a) -> int:
-    for t in SAMPLE_TOOLS:
-        print(f"{t['name']}: {t['status']}")
-    print("[stub] real checksum verification arrives with feat/03")
-    return 0
+    """Exit 1 if any tool's checksum/version mismatches the lock (never run those). --strict: also
+    fail on missing/unpinned tools. Exit 2 if the lock file itself is unusable."""
+    import asyncio
+
+    from .doctor import check_all, pin_tool
+    from .toollock import ToolLock
+
+    try:
+        lock = ToolLock.load()
+    except Exception as e:  # noqa: BLE001
+        raise CliError(f"cannot read tools.lock.json: {e}")
+    if a.pin:
+        try:
+            res = pin_tool(a.pin, lock)
+        except (KeyError, FileNotFoundError) as e:
+            raise CliError(str(e))
+        path = lock.save()
+        print(f"pinned {res.name} {res.version or '(version unknown)'} -> {path}")
+        return 0
+    checks = asyncio.run(check_all(lock))
+    if a.json:
+        print(json.dumps([c.__dict__ for c in checks], indent=2))
+    else:
+        for c in checks:
+            print(f"{c.status:9} {c.name:12} {c.version or '-'}" + (f"  ({c.detail})" if c.detail else ""))
+    bad = {"mismatch"} | ({"missing", "unpinned"} if a.strict else set())
+    return 1 if any(c.status in bad for c in checks) else 0
 
 
 class _Parser(argparse.ArgumentParser):
@@ -239,7 +262,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--open", action="store_true")
     s = add("rollback", cmd_rollback, dir_=False, help="print the git command to undo a fix")
     s.add_argument("finding_id")
-    add("doctor", cmd_doctor, dir_=False, help="check external tools and checksums")
+    s = add("doctor", cmd_doctor, dir_=False, help="check external tools and checksums")
+    s.add_argument("--pin", metavar="TOOL", help="record the SHA-256 + version of the installed tool")
+    s.add_argument("--strict", action="store_true", help="fail on missing or unpinned tools too")
+    s.add_argument("--json", action="store_true")
     return p
 
 
