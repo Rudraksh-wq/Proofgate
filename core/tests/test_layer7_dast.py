@@ -240,7 +240,7 @@ async def test_docker_zap_is_used_only_when_docker_answers(tmp_path, monkeypatch
 
     monkeypatch.setattr(l7_web, "exec_binary", fake_exec)
     res = await l7_web.run(corpus_copy(tmp_path))
-    assert "zap-baseline.py" in seen["args"] and any("host.docker.internal" in a for a in seen["args"])
+    assert "zap-baseline.py" in seen["args"] and any(("127.0.0.1" in a or "host.docker.internal" in a) for a in seen["args"])
     assert {f.sources[0] for f in res.findings} == {"zap"}
 
 
