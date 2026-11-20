@@ -169,9 +169,9 @@ def test_report_requires_prior_scan(capsys, app):
     assert run(capsys, "report", str(app))[0] == 0
 
 
-def test_rollback_prints_command_only(capsys):
-    code, out, _ = run(capsys, "rollback", "f_7c1a")
-    assert code == 0 and "git revert" in out
+def test_rollback_needs_a_recorded_fix(capsys, app):
+    code, out, err = run(capsys, "rollback", "f_7c1a", "--dir", str(app))
+    assert code == 2 and "not found" in err  # real rollback behaviour is covered in test_vaccinate_rollback.py
 
 
 @pytest.mark.parametrize("stdin", ['{"tool_input": {"file_path": "a.py"}}', "", "not json", "[1,2]"])
