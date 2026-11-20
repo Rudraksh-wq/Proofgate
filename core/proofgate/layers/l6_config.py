@@ -28,6 +28,7 @@ _ENV_FILE = re.compile(r"^\.env(\..+)?$")
 _ENV_TEMPLATE = re.compile(r"\.(example|sample|template|dist|defaults?)$", re.IGNORECASE)
 _PUBLIC_NAME = re.compile(r"\bNEXT_PUBLIC_[A-Z0-9_]*(SERVICE|SECRET|PRIVATE)[A-Z0-9_]*")
 _CODE_EXT = {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".py", ".json", ".yml", ".yaml", ".toml"}
+_CORS_EXT = {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".py"}  # not yaml/json: Semgrep rule files quote these patterns as text
 _ORIGIN_STAR = re.compile(r"""(?:origins?|Access-Control-Allow-Origin)["']?\s*[:=,(]\s*\[?\s*["']\*["']""", re.IGNORECASE)
 _CRED_TRUE = re.compile(
     r"""(?:supports_credentials|credentials|Access-Control-Allow-Credentials)["']?\s*[:=,(]?\s*(?:value\s*:\s*)?["']?(?:true|True)\b""", re.IGNORECASE)
@@ -124,7 +125,7 @@ def check_public_names(project: Path) -> list[Finding]:
 def check_cors(project: Path) -> list[Finding]:
     out = []
     for p in iter_files(project):
-        if p.suffix not in _CODE_EXT:
+        if p.suffix not in _CORS_EXT:
             continue
         text = read_text(p) or ""
         if "redentials" not in text or "rigin" not in text:
