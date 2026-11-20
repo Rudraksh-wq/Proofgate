@@ -25,6 +25,24 @@ SCHEMA_RELOAD_WAIT_S = 2.0
 current_live: ContextVar[LiveCtx | None] = ContextVar("proofgate_live", default=None)
 
 
+def live_from_env(project: Path) -> LiveCtx | None:
+    """For the MCP server and hooks, where an agent (not a person) calls: live verification is ON only if the HUMAN wrote
+    `PROOFGATE_I_OWN_THIS=1` and `PROOFGATE_SUPABASE_BACKEND=hosted|local` into the environment or the git-ignored `.env`. There is no tool argument
+    for it. (The allow-list of project refs still applies. An agent that can edit `.env` can change these too: the guard protects against an
+    accidental target, not against an agent with write access to your files.)"""
+    from ..supabase_target import SupabaseTargetRefused, load_config
+
+    try:
+        cfg = load_config(project)
+    except SupabaseTargetRefused:
+        return None
+    if not cfg.i_own_this_env or cfg.backend not in ("hosted", "local"):
+        return None
+    import os
+
+    return LiveCtx(cfg.backend, True, (os.environ.get("PROOFGATE_DEMO_VARIANT") or "").upper() or None, Path(project).resolve())
+
+
 def live_applies(project: Path, live: LiveCtx | None) -> bool:
     """Live replay is only for Supabase/Next.js projects without a Flask entry file, and only when the caller asked for it."""
     if live is None:

@@ -303,7 +303,7 @@ async def _evaluate(project: Path, finding: Finding, cand: Candidate, contract: 
                 if not gates.feature_works:
                     ev.reasons.append(f"feature_works=false: {ORACLE_PHRASES['owner_can_read'].format(r=r)} "
                                       "(no policy lets the owner use the table any more)")
-                ev.notes.append("Supabase fix checked by static replay of all migrations; live replay pending (needs a configured Supabase backend: feat/15)")
+                ev.notes.append("Supabase fix checked by static replay of all migrations; to verify it on a real database pass --backend hosted --i-own-this --variant A|B|C")
             elif base.probe_ran and (has_runnable_app(copy) or live_applies(copy, current_live.get())):
                 out = await _probe(copy, contract)
                 if out.error:
