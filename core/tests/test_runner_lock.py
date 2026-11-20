@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import sys
 import time
 
@@ -144,3 +145,15 @@ def test_doctor_cli_exit_codes(tmp_path, monkeypatch, capsys):
     assert main(["doctor", "--json"]) == 0
     assert json.loads(capsys.readouterr().out)[0]["status"] == "ok"
     assert main(["doctor", "--pin", "ghost"]) == 2
+
+
+def test_the_lock_file_round_trips_byte_for_byte_in_its_one_line_per_tool_format():
+    from proofgate.toollock import DEFAULT_LOCK_PATH, ToolLock
+
+    import tempfile
+
+    lock = ToolLock.load()
+    out = Path(tempfile.mkdtemp()) / "lock.json"
+    lock.save(out)
+    assert out.read_text(encoding="utf-8") == Path(DEFAULT_LOCK_PATH).read_text(encoding="utf-8")
+    assert all(line.startswith('    "') for line in out.read_text(encoding="utf-8").splitlines()[3:-2])  # one tool per line: small diffs

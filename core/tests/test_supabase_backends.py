@@ -201,6 +201,9 @@ class FakeCursor:
     def fetchall(self):
         return self._rows
 
+    def nextset(self):
+        return False
+
 
 class FakeConn:
     def __init__(self, rows=(), names=()):
@@ -296,6 +299,7 @@ def test_splinter_rows_become_layer_5_findings():
 
 
 def test_splinter_sql_is_found_through_the_env_var_or_tools_dir(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)  # the ./tools fallback must not see this repository's real download
     assert db.find_splinter_sql([tmp_path]) is None
     (tmp_path / "tools").mkdir()
     (tmp_path / "tools" / "splinter.sql").write_text("select 1", encoding="utf-8")
@@ -335,6 +339,7 @@ async def test_layer5_full_refusal_is_a_skip_with_the_reason(tmp_path, monkeypat
 async def test_layer5_full_runs_splinter_for_an_allowed_project_and_logs_the_override(tmp_path, monkeypatch):
     shutil.copytree(DEMO / "supabase", tmp_path / "supabase")
     (tmp_path / ".env").write_text(f"SUPABASE_URL={URL}\nSUPABASE_DB_URL={DBURL}\nPROOFGATE_ALLOWED_PROJECT_REFS={REF}\n", encoding="utf-8")
+    monkeypatch.setattr(db, "live_findings_for_target", lambda t, c: [])
     monkeypatch.setattr(db, "splinter_for_target", lambda t, p: db.splinter_findings([dict(zip(NAMES, ROWS[0]))]))
     res = await l5.run(tmp_path, full=True, i_own_this=True)
     assert {t.name: t.status for t in res.tools}["splinter"] == "ok"
@@ -357,6 +362,7 @@ async def test_a_live_failure_is_an_error_not_a_clean_result(tmp_path, monkeypat
     def boom(t, p):
         raise RuntimeError(f"secret detail {DBURL}")
 
+    monkeypatch.setattr(db, "live_findings_for_target", lambda t, c: [])
     monkeypatch.setattr(db, "splinter_for_target", boom)
     res = await l5.run(tmp_path, full=True, i_own_this=True)
     assert {t.name: t.status for t in res.tools}["splinter"] == "error" and DBURL not in " ".join(res.notes)
@@ -500,3 +506,97 @@ def test_a_dotenv_that_is_a_folder_of_env_files_is_read(tmp_path):
     (tmp_path / ".env" / "SUPABASE.env").write_text(f"SUPABASE_URL={URL}\nSUPABASE_SERVICE_ROLE_KEY={NEW_SECRET}\n", encoding="utf-8")
     c = st.load_config(tmp_path, environ={})
     assert c.url == URL and st.key_kind(c.service_role_key) == "secret"
+
+
+def test_a_password_with_an_at_sign_or_other_url_characters_is_encoded():
+    pw = "p@ss/w#rd:1"  # fake
+    raw = f"postgresql://postgres.{REF}:{pw}@aws-0-eu.pooler.supabase.com:5432/postgres"
+    fixed = st.normalize_db_url(raw)
+    from urllib.parse import urlparse, unquote
+
+    u = urlparse(fixed)
+    assert u.hostname == "aws-0-eu.pooler.supabase.com" and unquote(u.password) == pw and u.path == "/postgres" and u.port == 5432
+    assert st.db_url_ref(fixed) == REF
+    assert st.normalize_db_url(fixed) == fixed  # already encoded: unchanged
+    assert st.normalize_db_url(DBURL) == DBURL and st.normalize_db_url("") == ""
+
+
+def test_load_config_normalises_the_database_url(tmp_path):
+    (tmp_path / ".env").write_text(f"SUPABASE_DB_URL=postgresql://postgres.{REF}:a@b@aws-0-eu.pooler.supabase.com:5432/postgres\n", encoding="utf-8")
+    assert "a%40b" in st.load_config(tmp_path, environ={}).db_url
+
+
+def test_the_env_file_is_found_in_a_parent_folder_up_to_the_repository_root(tmp_path):
+    repo = tmp_path / "repo"
+    (repo / ".git").mkdir(parents=True)
+    (repo / "demo" / "app").mkdir(parents=True)
+    (repo / ".env").write_text(f"SUPABASE_URL={URL}\n", encoding="utf-8")
+    assert st.load_config(repo / "demo" / "app", environ={}).url == URL
+    (tmp_path / "outside").mkdir()
+    (tmp_path / ".env").write_text(f"SUPABASE_URL={URL}\n", encoding="utf-8")
+    assert st.load_config(tmp_path / "outside", environ={}).url == URL  # no repository boundary: the nearest .env wins
+    (tmp_path / "outside" / ".git").mkdir()
+    assert st.load_config(tmp_path / "outside", environ={}).url == ""  # a repository boundary stops the search
+
+
+class MultiSetCursor:
+    """Like psycopg after a multi-statement string: SET -> no columns, DO -> no columns, SELECT -> rows."""
+
+    def __init__(self):
+        self._sets = [(None, []), (None, []), ([("name",), ("level",), ("title",), ("detail",), ("cache_key",)], [("rls_disabled_in_public", "ERROR", "RLS Disabled", "x", "k1")])]
+        self._i = 0
+
+    @property
+    def description(self):
+        return self._sets[self._i][0]
+
+    def fetchall(self):
+        return self._sets[self._i][1]
+
+    def nextset(self):
+        if self._i + 1 < len(self._sets):
+            self._i += 1
+            return True
+        return False
+
+
+def test_splinter_reads_the_last_result_set_of_a_multi_statement_script():
+    class C:
+        def execute(self, sql):
+            return MultiSetCursor()
+
+    found = db.run_splinter(C(), "set local search_path = ''; do $$ begin end $$; select 1")
+    assert [f.rule for f in found] == ["splinter:rls_disabled_in_public"]
+
+
+# ------------------------------------------------------------------------------------------- live schema (catalog queries on a fake connection)
+class CatalogConn:
+    """Answers the four catalog queries by looking at what they select from."""
+
+    def __init__(self, tables, policies, funcs, views):
+        self.data = {"pg_policies": policies, "pg_proc": funcs, "relkind = 'v'": views, "relkind in": tables}
+
+    def execute(self, sql):
+        for key in ("pg_policies", "pg_proc", "relkind = 'v'", "relkind in"):
+            if key in sql:
+                return FakeCursor(self.data[key])
+        raise AssertionError(sql)
+
+
+def test_live_schema_feeds_the_same_contract_aware_checks():
+    from proofgate.models import Contract, OwnedResource
+
+    conn = CatalogConn(
+        tables=[("notes", True), ("open_table", False)],
+        policies=[("notes", "authed", "ALL", "PERMISSIVE", ["public"], "(auth.role() = 'authenticated'::text)", None)],
+        funcs=[("run_sql", True, True)], views=[("v_notes", None)])
+    sch = db.live_schema(conn)
+    assert sch.tables["notes"].rls and not sch.tables["open_table"].rls and sch.tables["notes"].policies["authed"].cmd == "all"
+    assert sch.funcs["public.run_sql"].definer and not sch.funcs["public.run_sql"].revoked and not sch.views["v_notes"].invoker
+    from proofgate.layers.l5_database import check_schema
+
+    contract = Contract(owned_resources=[OwnedResource(name="notes", owner_field="user_id", actions=["read", "write"])], profile_editable_fields=[],
+                        admin_only_routes=[], public_routes=[], rules=[], confirmed_by_user=True, source="fallback")
+    rules = {f.rule.split("sql-")[1] for f in check_schema(sch, contract)}
+    assert {"rls-disabled", "policy-role-without-uid", "function-security-definer", "view-bypasses-rls"} <= rules
+    assert all(f.location.file == "live-database" for f in check_schema(sch, contract))

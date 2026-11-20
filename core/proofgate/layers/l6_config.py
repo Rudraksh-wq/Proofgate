@@ -7,7 +7,8 @@ Own checks (no tool needed):
   next-production-source-maps    `productionBrowserSourceMaps: true` in next.config.*
 
 Checkov (Terraform, Dockerfile, Kubernetes, GitHub Actions...) runs when installed and is skipped and recorded when it is not.
-Its adapter is tested against recorded sample output: pending real-tool verification.
+Its adapter is tested against a real Checkov 3.4.6 recording (verified 2026-11-21 on Windows). Checkov's Windows launcher is a `.cmd` wrapper that the
+hash-pinning runner cannot execute, so on Windows Checkov is skipped and recorded; it runs on Linux (CI).
 """
 from __future__ import annotations
 
@@ -201,9 +202,11 @@ async def _checkov(project: Path, runner: Runner, lock, timeout: float, result: 
         if res.returncode not in (0, 1):  # 1 = checks failed
             result.notes.append(f"checkov exited {res.returncode}: {redact(res.stderr[-300:])}")
             return []
-        sarif = Path(td) / "results.sarif"
-        text = sarif.read_text(encoding="utf-8") if sarif.exists() else res.stdout
+        written = sorted(Path(td).glob("*.sarif"))  # real Checkov 3.4.6 writes results_sarif.sarif; the name has changed between versions
+        text = written[0].read_text(encoding="utf-8") if written else ""
         if not text.strip():
+            if res.returncode == 1:  # 1 = checks failed, so a report should exist
+                result.notes.append("checkov: it reported failed checks but wrote no SARIF file; its findings were not read")
             return []
         try:
             return parse_checkov_sarif(text, project)

@@ -51,7 +51,12 @@ class ToolLock(BaseModel):
 
     def save(self, path: Path | None = None) -> Path:
         p = path or Path(os.environ.get("PROOFGATE_TOOLS_LOCK") or DEFAULT_LOCK_PATH)
-        text = json.dumps(self.model_dump(mode="json", by_alias=True), indent=2, sort_keys=True) + "\n"
+        data = self.model_dump(mode="json", by_alias=True)
+        tools = data.pop("tools", {})
+        # one line per tool keeps the diff of a `doctor --pin` to the tools that changed
+        entries = [f"    {json.dumps(name)}: {json.dumps(entry, sort_keys=True)}" for name, entry in sorted(tools.items())]
+        head = [f"  {json.dumps(k)}: {json.dumps(v)}" for k, v in sorted(data.items())]
+        text = "{\n" + ",\n".join(head + ['  "tools": {\n' + ",\n".join(entries) + "\n  }"]) + "\n}\n"
         p.write_text(text, encoding="utf-8", newline="\n")
         return p
 

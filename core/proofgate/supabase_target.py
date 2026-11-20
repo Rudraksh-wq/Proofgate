@@ -93,6 +93,22 @@ class SupabaseConfig:
         return bool(self.url)
 
 
+def normalize_db_url(url: str) -> str:
+    """Percent-encode a password that contains `@`, `/`, `#` or other URL characters, so a pasted connection string still works.
+    libpq splits the host at the FIRST `@`; a raw `@` inside the password otherwise turns part of the password into the host name."""
+    if "://" not in url:
+        return url
+    scheme, rest = url.split("://", 1)
+    i = rest.rfind("@")  # the real end of the user info is the LAST "@" (a path or query never contains one)
+    if i < 0 or ":" not in rest[:i]:
+        return url
+    userinfo, hostpath = rest[:i], rest[i + 1:]
+    user, pw = userinfo.split(":", 1)
+    from urllib.parse import quote, unquote
+
+    return f"{scheme}://{user}:{quote(unquote(pw), safe='')}@{hostpath}"
+
+
 def parse_refs(text: str | None) -> tuple[str, ...]:
     refs = []
     for part in (text or "").split(","):
@@ -105,12 +121,23 @@ def parse_refs(text: str | None) -> tuple[str, ...]:
     return tuple(refs)
 
 
+def find_env(project: Path) -> Path:
+    """The project's `.env`, else the nearest one in a parent folder up to the repository root (the folder that holds `.git`)."""
+    project = project.resolve()
+    for d in (project, *project.parents):
+        if (d / ".env").exists():
+            return d / ".env"
+        if (d / ".git").exists():
+            break
+    return project / ".env"
+
+
 def load_config(project: str | Path | None = None, environ: dict[str, str] | None = None, *, env_file: Path | None = None) -> SupabaseConfig:
     """Process environment first, then the project's git-ignored `.env`. Nothing is exported or logged."""
     env = dict(os.environ if environ is None else environ)
     file_vals: dict[str, str] = {}
     if env_file is None and project is not None:
-        env_file = Path(project) / ".env"
+        env_file = find_env(Path(project))
     if env_file is not None:
         file_vals = read_env_file(env_file)
     get = lambda k: (env.get(k) or file_vals.get(k) or "").strip()  # noqa: E731
@@ -119,7 +146,7 @@ def load_config(project: str | Path | None = None, environ: dict[str, str] | Non
         raise SupabaseTargetRefused(f"PROOFGATE_SUPABASE_BACKEND must be one of {', '.join(BACKENDS)}, got {backend!r}")
     return SupabaseConfig(
         url=get("SUPABASE_URL").rstrip("/"), anon_key=get("SUPABASE_ANON_KEY"), service_role_key=get("SUPABASE_SERVICE_ROLE_KEY"),
-        db_url=get("SUPABASE_DB_URL"), allowed_refs=parse_refs(get("PROOFGATE_ALLOWED_PROJECT_REFS")), backend=backend,
+        db_url=normalize_db_url(get("SUPABASE_DB_URL")), allowed_refs=parse_refs(get("PROOFGATE_ALLOWED_PROJECT_REFS")), backend=backend,
         i_own_this_env=get("PROOFGATE_I_OWN_THIS") == "1")
 
 

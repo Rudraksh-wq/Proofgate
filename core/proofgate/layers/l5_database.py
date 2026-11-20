@@ -18,7 +18,8 @@ nobody enabled RLS on is reported as exactly that.
 
 LIVE part (Splinter lint SQL over a psycopg connection, with `--full`): runs against the configured Supabase backend (your own hosted test
 project, or a local stack where Docker exists), only after the target guard passes. Not configured, refused or no splinter.sql: a recorded
-skip, never a crash. Pending real-tool verification until it has run against a real project.
+skip, never a crash. Verified on 2026-11-21 against a real hosted Supabase test project (variants A, B and C): Splinter flags A, and the
+contract-aware checks on the live catalogs flag B's role-only policy, which Splinter does not.
 """
 from __future__ import annotations
 
@@ -332,10 +333,10 @@ def sql_files(project: Path) -> list[tuple[str, str]]:
     return sorted(found)
 
 
-async def _live(project: Path, res: LayerResult, backend: str | None, i_own_this: bool) -> None:
+async def _live(project: Path, res: LayerResult, backend: str | None, i_own_this: bool, contract: Contract) -> None:
     import asyncio
 
-    from ..supabase_db import find_splinter_sql, splinter_for_target
+    from ..supabase_db import find_splinter_sql, live_findings_for_target, splinter_for_target
     from ..supabase_target import BackendUnavailable, SupabaseTargetRefused, load_config, resolve_target
 
     def skip(why: str) -> None:
@@ -348,6 +349,18 @@ async def _live(project: Path, res: LayerResult, backend: str | None, i_own_this
         return skip(str(e))
     except SupabaseTargetRefused as e:
         return skip(f"refused: {e}")
+    if target.override_note:
+        res.target_overrides.append(target.override_note)
+    try:  # the contract-aware checks on what the database REALLY has (not only on the migrations)
+        live = await asyncio.to_thread(live_findings_for_target, target, contract)
+        res.findings += live
+        res.tools.append(ToolRecord(name="proofgate-live-sql", status="ok"))
+        res.notes.append(f"live database: contract-aware checks ran on the {target.backend} backend ({len(live)} finding(s))")
+    except BackendUnavailable as e:
+        return skip(str(e))
+    except Exception as e:  # noqa: BLE001
+        res.tools.append(ToolRecord(name="proofgate-live-sql", status="error"))
+        res.notes.append(f"live database: contract-aware checks failed: {type(e).__name__}")
     try:
         found = await asyncio.to_thread(splinter_for_target, target, find_splinter_sql([project]))
     except BackendUnavailable as e:
@@ -359,8 +372,6 @@ async def _live(project: Path, res: LayerResult, backend: str | None, i_own_this
     res.tools.append(ToolRecord(name="splinter", status="ok"))
     res.findings += found
     res.notes.append(f"splinter: ran against the {target.backend} backend ({len(found)} finding(s))")
-    if target.override_note:
-        res.target_overrides.append(target.override_note)
 
 
 async def run(project_dir: str | Path, *, contract: Contract | None = None, full: bool = False, backend: str | None = None,
@@ -385,7 +396,7 @@ async def run(project_dir: str | Path, *, contract: Contract | None = None, full
     res.notes += [redact(e) for e in sch.errors]
     res.findings = check_schema(sch, contract)
     if full:
-        await _live(project, res, backend, i_own_this)
+        await _live(project, res, backend, i_own_this, contract)
     else:
         res.tools.append(ToolRecord(name="splinter", status="skipped"))
         res.notes.append("splinter: skipped: the live checks run with --full against a configured Supabase backend; static checks ran instead")

@@ -93,9 +93,16 @@ def splinter_findings(rows: list[dict[str, Any]]) -> list[Finding]:
 def run_splinter(conn: Any, sql_text: str) -> list[Finding]:
     """Run the lint SQL over the connection (read-only: Splinter only selects) and map its rows to findings."""
     cur = conn.execute(sql_text)
-    names = [getattr(d, "name", d[0] if isinstance(d, (tuple, list)) else d) for d in (cur.description or [])]
-    rows = [dict(zip(names, row)) for row in cur.fetchall()]
-    return splinter_findings(rows)
+    # splinter.sql is several statements (SET, a DO block, then the lint query): the rows are in the LAST result set that has columns
+    names: list[str] = []
+    rows: list[Any] = []
+    while True:
+        if cur.description:
+            names = [getattr(d, "name", d[0] if isinstance(d, (tuple, list)) else d) for d in cur.description]
+            rows = cur.fetchall()
+        if not (hasattr(cur, "nextset") and cur.nextset()):
+            break
+    return splinter_findings([dict(zip(names, row)) for row in rows])
 
 
 def splinter_for_target(target: SupabaseTarget, sql_path: Path | None) -> list[Finding]:
@@ -104,5 +111,50 @@ def splinter_for_target(target: SupabaseTarget, sql_path: Path | None) -> list[F
     conn = target.connect()
     try:
         return run_splinter(conn, sql_path.read_text(encoding="utf-8"))
+    finally:
+        conn.close()
+
+
+# ------------------------------------------------------------------------------------------- the live schema (for the contract-aware checks)
+LIVE_FILE = "live-database"
+
+
+def live_schema(conn: Any):
+    """Read tables, RLS flags, policies, functions and views of the `public` schema from the catalogs into layer 5's Schema model, so the SAME
+    contract-aware checks that run on migrations also run on what the database really has."""
+    from .layers.l5_database import Func, Policy, Schema, Table, View
+
+    sch = Schema()
+    for name, rls in conn.execute(
+            "select c.relname, c.relrowsecurity from pg_class c join pg_namespace n on n.oid = c.relnamespace "
+            "where n.nspname = 'public' and c.relkind in ('r', 'p') order by 1").fetchall():
+        sch.tables[name.lower()] = Table(name, LIVE_FILE, 1, rls=bool(rls))
+    for table, pname, cmd, permissive, roles, qual, check in conn.execute(
+            "select tablename, policyname, cmd, permissive, roles, qual, with_check from pg_policies where schemaname = 'public' order by 1, 2").fetchall():
+        t = sch.tables.get(str(table).lower())
+        if t is None:
+            continue
+        t.policies[str(pname)] = Policy(
+            name=str(pname), table=str(table), cmd=str(cmd).lower(), permissive=str(permissive).upper() == "PERMISSIVE",
+            roles=[str(r) for r in (roles or [])], qual=qual, check=check, file=LIVE_FILE, line=1)
+    for name, definer, anon_can in conn.execute(
+            "select p.proname, p.prosecdef, has_function_privilege('anon', p.oid, 'execute') from pg_proc p "
+            "join pg_namespace n on n.oid = p.pronamespace where n.nspname = 'public' and p.prokind = 'f' "
+            "and not exists (select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e') order by 1").fetchall():
+        sch.funcs[f"public.{name}"] = Func(str(name), "public", bool(definer), LIVE_FILE, 1, revoked=not anon_can)
+    for name, opts in conn.execute(
+            "select c.relname, c.reloptions from pg_class c join pg_namespace n on n.oid = c.relnamespace "
+            "where n.nspname = 'public' and c.relkind = 'v' order by 1").fetchall():
+        invoker = any(str(o).replace(" ", "").lower() in ("security_invoker=true", "security_invoker=on") for o in (opts or []))
+        sch.views[str(name).lower()] = View(str(name), invoker, LIVE_FILE, 1)
+    return sch
+
+
+def live_findings_for_target(target: SupabaseTarget, contract: Any) -> list[Finding]:
+    from .layers.l5_database import check_schema
+
+    conn = target.connect()
+    try:
+        return check_schema(live_schema(conn), contract)
     finally:
         conn.close()
