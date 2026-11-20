@@ -339,6 +339,7 @@ async def test_layer5_full_refusal_is_a_skip_with_the_reason(tmp_path, monkeypat
 async def test_layer5_full_runs_splinter_for_an_allowed_project_and_logs_the_override(tmp_path, monkeypatch):
     shutil.copytree(DEMO / "supabase", tmp_path / "supabase")
     (tmp_path / ".env").write_text(f"SUPABASE_URL={URL}\nSUPABASE_DB_URL={DBURL}\nPROOFGATE_ALLOWED_PROJECT_REFS={REF}\n", encoding="utf-8")
+    monkeypatch.setattr(db, "live_findings_for_target", lambda t, c: [])
     monkeypatch.setattr(db, "splinter_for_target", lambda t, p: db.splinter_findings([dict(zip(NAMES, ROWS[0]))]))
     res = await l5.run(tmp_path, full=True, i_own_this=True)
     assert {t.name: t.status for t in res.tools}["splinter"] == "ok"
@@ -361,6 +362,7 @@ async def test_a_live_failure_is_an_error_not_a_clean_result(tmp_path, monkeypat
     def boom(t, p):
         raise RuntimeError(f"secret detail {DBURL}")
 
+    monkeypatch.setattr(db, "live_findings_for_target", lambda t, c: [])
     monkeypatch.setattr(db, "splinter_for_target", boom)
     res = await l5.run(tmp_path, full=True, i_own_this=True)
     assert {t.name: t.status for t in res.tools}["splinter"] == "error" and DBURL not in " ".join(res.notes)
@@ -565,3 +567,36 @@ def test_splinter_reads_the_last_result_set_of_a_multi_statement_script():
 
     found = db.run_splinter(C(), "set local search_path = ''; do $$ begin end $$; select 1")
     assert [f.rule for f in found] == ["splinter:rls_disabled_in_public"]
+
+
+# ------------------------------------------------------------------------------------------- live schema (catalog queries on a fake connection)
+class CatalogConn:
+    """Answers the four catalog queries by looking at what they select from."""
+
+    def __init__(self, tables, policies, funcs, views):
+        self.data = {"pg_policies": policies, "pg_proc": funcs, "relkind = 'v'": views, "relkind in": tables}
+
+    def execute(self, sql):
+        for key in ("pg_policies", "pg_proc", "relkind = 'v'", "relkind in"):
+            if key in sql:
+                return FakeCursor(self.data[key])
+        raise AssertionError(sql)
+
+
+def test_live_schema_feeds_the_same_contract_aware_checks():
+    from proofgate.models import Contract, OwnedResource
+
+    conn = CatalogConn(
+        tables=[("notes", True), ("open_table", False)],
+        policies=[("notes", "authed", "ALL", "PERMISSIVE", ["public"], "(auth.role() = 'authenticated'::text)", None)],
+        funcs=[("run_sql", True, True)], views=[("v_notes", None)])
+    sch = db.live_schema(conn)
+    assert sch.tables["notes"].rls and not sch.tables["open_table"].rls and sch.tables["notes"].policies["authed"].cmd == "all"
+    assert sch.funcs["public.run_sql"].definer and not sch.funcs["public.run_sql"].revoked and not sch.views["v_notes"].invoker
+    from proofgate.layers.l5_database import check_schema
+
+    contract = Contract(owned_resources=[OwnedResource(name="notes", owner_field="user_id", actions=["read", "write"])], profile_editable_fields=[],
+                        admin_only_routes=[], public_routes=[], rules=[], confirmed_by_user=True, source="fallback")
+    rules = {f.rule.split("sql-")[1] for f in check_schema(sch, contract)}
+    assert {"rls-disabled", "policy-role-without-uid", "function-security-definer", "view-bypasses-rls"} <= rules
+    assert all(f.location.file == "live-database" for f in check_schema(sch, contract))
