@@ -153,19 +153,47 @@ def cmd_prove(a) -> int:
     return _exit_for(report.findings, a.fail_on)
 
 
+def _load_finding(d: Path, finding_id: str) -> Finding:
+    p = d / ".proofgate" / "report.json"
+    if not p.is_file():
+        raise CliError(f"{p} not found; run `proofgate scan` or `proofgate prove` first")
+    report = Report.model_validate_json(p.read_text(encoding="utf-8"))
+    for f in report.findings:
+        if f.id == finding_id:
+            return f
+    raise CliError(f"no finding {finding_id!r} in {p}; known: {', '.join(f.id for f in report.findings[:8]) or 'none'}")
+
+
 def cmd_fix(a) -> int:
-    _project(a.dir)
-    print(_dump(FixResult.model_validate({**SAMPLE_FIX, "finding_id": a.finding})))
-    return 0
+    """Classify the finding, build Tier A/B candidates, run the tournament in a temp copy. Prints the FixResult; the
+    winning diff is NOT applied to your project: apply it yourself (or let your agent)."""
+    import asyncio
+
+    from .fix.pipeline import fix_finding
+    from .probe import load_contract
+
+    d = _project(a.dir)
+    finding = _load_finding(d, a.finding)
+    result = asyncio.run(fix_finding(d, finding, load_contract(d)))
+    print(_dump(result))
+    return 0 if result.accepted else 1
 
 
 def cmd_verify(a) -> int:
-    _project(a.dir)
-    if not Path(a.patch).is_file():
-        raise CliError(f"patch file not found: {a.patch}")
-    res = FixResult.model_validate({**SAMPLE_FIX, "finding_id": a.finding})
-    print(_dump(res))
-    return 0 if res.accepted else 1
+    """Run a patch somebody else wrote (an AI agent, a human) through the same gates."""
+    import asyncio
+
+    from .fix.pipeline import verify_patch
+    from .probe import load_contract
+
+    d = _project(a.dir)
+    finding = _load_finding(d, a.finding)
+    patch_file = Path(a.patch)
+    if not patch_file.is_file():
+        raise CliError(f"patch file not found: {patch_file}")
+    result = asyncio.run(verify_patch(d, finding, patch_file.read_text(encoding="utf-8"), load_contract(d)))
+    print(_dump(result))
+    return 0 if result.accepted else 1
 
 
 def _parse_expires(text: str) -> dt.date:

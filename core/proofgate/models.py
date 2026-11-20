@@ -145,6 +145,7 @@ class FixResult(_Versioned):
     accepted: bool
     applied_in: Literal["temp_copy"] = "temp_copy"
     pre_fix_commit: str | None = None
+    notes: list[str] = Field(default_factory=list)  # what a gate could not exercise (e.g. live Supabase replay pending)
 
 
 # ----------------------------------------------------------------- Report (5.2)

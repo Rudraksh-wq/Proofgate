@@ -120,13 +120,14 @@ def test_contract_confirm(capsys, app):
     assert code == 0 and c.confirmed_by_user
 
 
-def test_fix_and_verify_return_fixresult(capsys, app, tmp_path):
+def test_fix_and_verify_need_a_report_and_a_known_finding(capsys, app, tmp_path):
     patch = tmp_path / "p.diff"
-    patch.write_text("--- a\n+++ b\n", encoding="utf-8")
-    code, out, _ = run(capsys, "fix", str(app), "--finding", "f_9")
-    assert code == 0 and FixResult.model_validate_json(out).finding_id == "f_9"
-    code, out, _ = run(capsys, "verify", str(app), "--finding", "f_9", "--patch", str(patch))
-    assert code == 0 and FixResult.model_validate_json(out).accepted
+    patch.write_text("--- a/x\n+++ b/x\n", encoding="utf-8")
+    assert main(["fix", str(app), "--finding", "f_9"]) == 2  # no report yet
+    assert main(["verify", str(app), "--finding", "f_9", "--patch", str(patch)]) == 2
+    run(capsys, "scan", str(app))
+    assert main(["fix", str(app), "--finding", "f_9"]) == 2  # report exists, finding does not
+    assert main(["verify", str(app), "--finding", "f_9", "--patch", str(tmp_path / "missing.diff")]) == 2
 
 
 def test_prove_attacks_the_app_and_reports_a_proven_finding(capsys, tmp_path):

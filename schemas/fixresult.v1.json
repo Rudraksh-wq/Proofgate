@@ -115,6 +115,13 @@
       "default": null,
       "title": "Learned Rule"
     },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
     "pre_fix_commit": {
       "anyOf": [
         {
