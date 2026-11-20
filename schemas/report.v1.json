@@ -1,0 +1,734 @@
+{
+  "$defs": {
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actor"
+        },
+        "repro_test": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repro Test"
+        },
+        "request": {
+          "title": "Request",
+          "type": "string"
+        },
+        "response_excerpt": {
+          "title": "Response Excerpt",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "integer"
+        },
+        "victim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Victim"
+        }
+      },
+      "required": [
+        "request",
+        "status",
+        "response_excerpt"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "secrets",
+            "injection",
+            "access",
+            "deps",
+            "supply-chain",
+            "database",
+            "config",
+            "web",
+            "bundle"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "enum": [
+                "proven",
+                "high",
+                "medium",
+                "low"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confidence"
+        },
+        "confirmed_by": {
+          "default": 1,
+          "title": "Confirmed By",
+          "type": "integer"
+        },
+        "contract_confirmed": {
+          "default": false,
+          "title": "Contract Confirmed",
+          "type": "boolean"
+        },
+        "contract_rule": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Contract Rule"
+        },
+        "cwe": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cwe"
+        },
+        "evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Evidence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "fingerprint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fingerprint"
+        },
+        "first_seen_commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "First Seen Commit"
+        },
+        "fix_tier": {
+          "anyOf": [
+            {
+              "enum": [
+                "A",
+                "B",
+                "C"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fix Tier"
+        },
+        "fixed_in": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fixed In"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "interrupt_human": {
+          "default": false,
+          "title": "Interrupt Human",
+          "type": "boolean"
+        },
+        "layer": {
+          "maximum": 9,
+          "minimum": 1,
+          "title": "Layer",
+          "type": "integer"
+        },
+        "location": {
+          "$ref": "#/$defs/Location"
+        },
+        "plain_words": {
+          "title": "Plain Words",
+          "type": "string"
+        },
+        "proven": {
+          "default": false,
+          "title": "Proven",
+          "type": "boolean"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "schema": {
+          "const": "proofgate.finding/v1",
+          "default": "proofgate.finding/v1",
+          "title": "Schema",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "status": {
+          "default": "open",
+          "enum": [
+            "open",
+            "fixing",
+            "fixed",
+            "fix-rejected",
+            "needs-human",
+            "accepted-risk",
+            "untested",
+            "inconclusive"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "layer",
+        "category",
+        "rule",
+        "severity",
+        "title",
+        "plain_words",
+        "location",
+        "sources"
+      ],
+      "title": "Finding",
+      "type": "object"
+    },
+    "FixResult": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted": {
+          "title": "Accepted",
+          "type": "boolean"
+        },
+        "applied_in": {
+          "const": "temp_copy",
+          "default": "temp_copy",
+          "title": "Applied In",
+          "type": "string"
+        },
+        "candidates": {
+          "title": "Candidates",
+          "type": "integer"
+        },
+        "finding_id": {
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "gates": {
+          "$ref": "#/$defs/Gates"
+        },
+        "learned_rule": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Learned Rule"
+        },
+        "pre_fix_commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pre Fix Commit"
+        },
+        "regression_test": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regression Test"
+        },
+        "rejected": {
+          "items": {
+            "$ref": "#/$defs/Rejected"
+          },
+          "title": "Rejected",
+          "type": "array"
+        },
+        "schema": {
+          "const": "proofgate.fixresult/v1",
+          "default": "proofgate.fixresult/v1",
+          "title": "Schema",
+          "type": "string"
+        },
+        "tier": {
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "winner": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Winner"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "finding_id",
+        "tier",
+        "candidates",
+        "gates",
+        "rejected",
+        "accepted"
+      ],
+      "title": "FixResult",
+      "type": "object"
+    },
+    "Gates": {
+      "additionalProperties": false,
+      "properties": {
+        "diff_is_small": {
+          "title": "Diff Is Small",
+          "type": "boolean"
+        },
+        "exploit_blocked": {
+          "title": "Exploit Blocked",
+          "type": "boolean"
+        },
+        "feature_works": {
+          "title": "Feature Works",
+          "type": "boolean"
+        },
+        "migrations_replayed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Migrations Replayed"
+        },
+        "no_new_findings": {
+          "title": "No New Findings",
+          "type": "boolean"
+        },
+        "tests_pass": {
+          "title": "Tests Pass",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "exploit_blocked",
+        "feature_works",
+        "tests_pass",
+        "no_new_findings",
+        "diff_is_small"
+      ],
+      "title": "Gates",
+      "type": "object"
+    },
+    "Location": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "function": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Function"
+        },
+        "line": {
+          "title": "Line",
+          "type": "integer"
+        },
+        "route": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Route"
+        }
+      },
+      "required": [
+        "file",
+        "line"
+      ],
+      "title": "Location",
+      "type": "object"
+    },
+    "Receipt": {
+      "additionalProperties": false,
+      "description": "Wording rule: 'N rules attacked, N held, commit X'. Never 'secure'.",
+      "properties": {
+        "commit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Commit"
+        },
+        "report_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Report Hash"
+        },
+        "rules_attacked": {
+          "title": "Rules Attacked",
+          "type": "integer"
+        },
+        "rules_held": {
+          "title": "Rules Held",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "rules_attacked",
+        "rules_held"
+      ],
+      "title": "Receipt",
+      "type": "object"
+    },
+    "Rejected": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "Rejected",
+      "type": "object"
+    },
+    "Tested": {
+      "additionalProperties": false,
+      "properties": {
+        "routes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Routes",
+          "type": "array"
+        },
+        "tables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tables",
+          "type": "array"
+        }
+      },
+      "title": "Tested",
+      "type": "object"
+    },
+    "ToolRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "skipped",
+            "mismatch",
+            "error"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "name",
+        "status"
+      ],
+      "title": "ToolRecord",
+      "type": "object"
+    },
+    "Winner": {
+      "additionalProperties": false,
+      "properties": {
+        "diff_lines": {
+          "title": "Diff Lines",
+          "type": "integer"
+        },
+        "patch": {
+          "title": "Patch",
+          "type": "string"
+        }
+      },
+      "required": [
+        "patch",
+        "diff_lines"
+      ],
+      "title": "Winner",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "fail_open_count": {
+      "default": 0,
+      "title": "Fail Open Count",
+      "type": "integer"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/Finding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "fixes": {
+      "items": {
+        "$ref": "#/$defs/FixResult"
+      },
+      "title": "Fixes",
+      "type": "array"
+    },
+    "layers_run": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Layers Run",
+      "type": "array"
+    },
+    "limits_statement": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Limits Statement"
+    },
+    "project": {
+      "title": "Project",
+      "type": "string"
+    },
+    "proven_count": {
+      "title": "Proven Count",
+      "type": "integer"
+    },
+    "raw_warning_count": {
+      "title": "Raw Warning Count",
+      "type": "integer"
+    },
+    "receipt": {
+      "$ref": "#/$defs/Receipt"
+    },
+    "scanned_at": {
+      "title": "Scanned At",
+      "type": "string"
+    },
+    "schema": {
+      "const": "proofgate.report/v1",
+      "default": "proofgate.report/v1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "target_overrides": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Target Overrides",
+      "type": "array"
+    },
+    "tested": {
+      "$ref": "#/$defs/Tested"
+    },
+    "tools": {
+      "items": {
+        "$ref": "#/$defs/ToolRecord"
+      },
+      "title": "Tools",
+      "type": "array"
+    },
+    "unique_count": {
+      "title": "Unique Count",
+      "type": "integer"
+    },
+    "untested": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Untested",
+      "type": "array"
+    }
+  },
+  "required": [
+    "project",
+    "scanned_at",
+    "layers_run",
+    "raw_warning_count",
+    "unique_count",
+    "proven_count",
+    "findings",
+    "fixes",
+    "receipt"
+  ],
+  "title": "Report",
+  "type": "object"
+}

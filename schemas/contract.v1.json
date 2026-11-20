@@ -1,0 +1,112 @@
+{
+  "$defs": {
+    "OwnedResource": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "owner_field": {
+          "title": "Owner Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "owner_field",
+        "actions"
+      ],
+      "title": "OwnedResource",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "admin_only_routes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Admin Only Routes",
+      "type": "array"
+    },
+    "confirmed_by_user": {
+      "title": "Confirmed By User",
+      "type": "boolean"
+    },
+    "needs_confirmation": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Needs Confirmation",
+      "type": "array"
+    },
+    "owned_resources": {
+      "items": {
+        "$ref": "#/$defs/OwnedResource"
+      },
+      "title": "Owned Resources",
+      "type": "array"
+    },
+    "profile_editable_fields": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Profile Editable Fields",
+      "type": "array"
+    },
+    "public_reads_confirmed": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Public Reads Confirmed",
+      "type": "array"
+    },
+    "public_routes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Public Routes",
+      "type": "array"
+    },
+    "rules": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Rules",
+      "type": "array"
+    },
+    "schema": {
+      "const": "proofgate.contract/v1",
+      "default": "proofgate.contract/v1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "gemini",
+        "fallback"
+      ],
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "owned_resources",
+    "profile_editable_fields",
+    "admin_only_routes",
+    "public_routes",
+    "rules",
+    "confirmed_by_user",
+    "source"
+  ],
+  "title": "Contract",
+  "type": "object"
+}
