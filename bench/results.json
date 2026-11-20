@@ -725,6 +725,22 @@
  },
  "proofgate_version": "0.0.1",
  "schema": "proofgate.bench/v1",
+ "fix_breaker_benchmark": {
+   "entry": "fb01_method/fb02_control",
+   "status": "partially measured",
+   "without_fix_breaker": {
+     "narrow_accepted": true,
+     "proper_accepted": true,
+     "false_break_on_control": false
+   },
+   "with_fix_breaker": {
+     "narrow_accepted": "not measured",
+     "proper_accepted": "not measured",
+     "false_break_on_control": "not measured",
+     "milliseconds_added": "not measured",
+     "reason": "the opt-in Fix Breaker tournament engine is not implemented in this workspace"
+   }
+ },
  "tables": {
   "bandit": {
    "available": true,
