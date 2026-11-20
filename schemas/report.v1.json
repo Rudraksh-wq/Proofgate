@@ -666,6 +666,13 @@
       "default": null,
       "title": "Limits Statement"
     },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    },
     "project": {
       "title": "Project",
       "type": "string"
