@@ -77,6 +77,7 @@ rules forbid running it: only a person decides. `// proofgate-ignore` comments s
 
 Exit codes: `0` nothing at or above `--fail-on`, `1` findings, `2` a tool or layer failed (never treated as clean).
 A GitHub Actions workflow with SARIF upload is in `.github/workflows/proofgate.yml` (every action pinned by commit SHA).
+`.github/workflows/live-stack.yml` verifies, on a Linux runner and without secrets, what a Windows laptop cannot: a real `supabase start` with RLS variants A/B/C, `semgrep --test`, the Docker ZAP baseline and `make smoke`.
 
 ## Limits
 
