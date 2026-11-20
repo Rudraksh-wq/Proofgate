@@ -371,6 +371,18 @@
           "title": "Tier",
           "type": "string"
         },
+        "vaccine_patch": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vaccine Patch"
+        },
         "winner": {
           "anyOf": [
             {

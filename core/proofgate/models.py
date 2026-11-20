@@ -146,6 +146,7 @@ class FixResult(_Versioned):
     applied_in: Literal["temp_copy"] = "temp_copy"
     pre_fix_commit: str | None = None
     notes: list[str] = Field(default_factory=list)  # what a gate could not exercise (e.g. live Supabase replay pending)
+    vaccine_patch: str | None = None  # second diff: the regression test + the learned rule in the agent files
 
 
 # ----------------------------------------------------------------- Report (5.2)

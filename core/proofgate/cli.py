@@ -165,16 +165,32 @@ def _load_finding(d: Path, finding_id: str) -> Finding:
 
 
 def cmd_fix(a) -> int:
-    """Classify the finding, build Tier A/B candidates, run the tournament in a temp copy. Prints the FixResult; the
-    winning diff is NOT applied to your project: apply it yourself (or let your agent)."""
+    """Classify the finding, build Tier A/B candidates, run the tournament in a temp copy, then vaccinate (a regression
+    test that fails before and passes after, plus the learned rule). Prints the FixResult; nothing is applied to your
+    project: apply `winner.patch` and `vaccine_patch` yourself (or let your agent). The result is recorded in report.json."""
     import asyncio
 
     from .fix.pipeline import fix_finding
+    from .fix.record import record_fix
+    from .fix.vaccinate import build_vaccine
     from .probe import load_contract
 
     d = _project(a.dir)
     finding = _load_finding(d, a.finding)
-    result = asyncio.run(fix_finding(d, finding, load_contract(d)))
+    contract = load_contract(d)
+
+    async def go():
+        result = await fix_finding(d, finding, contract)
+        if result.accepted and not a.no_vaccine:
+            vac = await build_vaccine(d, finding, result, contract)
+            result = result.model_copy(update={
+                "vaccine_patch": vac.patch or None,
+                "regression_test": vac.test_id if vac.verified is not False else None,
+                "notes": sorted({*result.notes, *vac.notes})})
+        return result
+
+    result = asyncio.run(go())
+    record_fix(d, result)
     print(_dump(result))
     return 0 if result.accepted else 1
 
@@ -244,8 +260,15 @@ def cmd_report(a) -> int:
 
 
 def cmd_rollback(a) -> int:
-    commit = SAMPLE_FIX["pre_fix_commit"]
-    print(f"[stub] to undo {a.finding_id}, run:\n  git revert {commit}")
+    """Print (never run) the command that undoes the recorded fix for a finding."""
+    from .fix.record import rollback_commands
+
+    try:
+        cmds = rollback_commands(_project(a.dir), a.finding_id)
+    except LookupError as e:
+        raise CliError(str(e))
+    print(chr(10).join(cmds))
+    print("(ProofGate only prints this command; it never runs it.)", file=sys.stderr)
     return 0
 
 
@@ -314,6 +337,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--i-own-this", action="store_true")
     s = add("fix", cmd_fix, help="run the fix pipeline for one finding")
     s.add_argument("--finding", required=True)
+    s.add_argument("--no-vaccine", action="store_true", help="skip the regression test and the learned rule")
     s = add("verify", cmd_verify, help="run the tournament gates on a patch")
     s.add_argument("--finding", required=True)
     s.add_argument("--patch", required=True)
@@ -328,6 +352,7 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--open", action="store_true")
     s = add("rollback", cmd_rollback, dir_=False, help="print the git command to undo a fix")
     s.add_argument("finding_id")
+    s.add_argument("--dir", default=".")
     s = add("doctor", cmd_doctor, dir_=False, help="check external tools and checksums")
     s.add_argument("--pin", metavar="TOOL", help="record the SHA-256 + version of the installed tool")
     s.add_argument("--strict", action="store_true", help="fail on missing or unpinned tools too")
