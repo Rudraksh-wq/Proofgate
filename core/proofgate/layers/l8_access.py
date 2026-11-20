@@ -15,10 +15,10 @@ LAYER = 8
 
 
 async def run(project_dir: str | Path, *, contract: Contract | None = None, target: str | None = None,
-              i_own_this: bool = False, **_ignored) -> LayerResult:
+              i_own_this: bool = False, backend: str | None = None, **_ignored) -> LayerResult:
     from ..probe import run_probe
 
-    out = await run_probe(project_dir, contract, target=target, i_own_this=i_own_this)
+    out = await run_probe(project_dir, contract, target=target, i_own_this=i_own_this, backend=backend)
     res = LayerResult(layer=LAYER)
     if out.error:
         res.tools.append(ToolRecord(name="proofgate-probe", status="error"))

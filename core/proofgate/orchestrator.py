@@ -61,7 +61,7 @@ async def _call(layer: int, project: Path, runner: Runner, kw: dict[str, Any]) -
         return await l9_bundle.run(project, full=bool(kw.get("full")))
     if layer == 8:
         return await l8_access.run(project, contract=kw.get("contract"), target=kw.get("target"),
-                                   i_own_this=bool(kw.get("i_own_this")))
+                                   i_own_this=bool(kw.get("i_own_this")), backend=kw.get("backend"))
     raise NotImplementedError(layer)
 
 
