@@ -54,7 +54,7 @@ def test_scan_layers_option(capsys, vuln_app):
 
 
 def test_scan_only_unbuilt_layers_is_a_tool_error_not_clean(capsys, vuln_app):
-    code, _, err = run(capsys, "scan", str(vuln_app), "--layers", "6,7")
+    code, _, err = run(capsys, "scan", str(vuln_app), "--layers", "7")
     assert code == 2 and "NOT a clean bill of health" in err
 
 
@@ -65,7 +65,7 @@ def test_scan_fail_on_threshold(capsys, vuln_app):
 
 def test_scan_fast_runs_the_fast_layers(capsys, vuln_app):
     code, out, _ = run(capsys, "scan", str(vuln_app), "--fast")
-    assert code == 1 and json.loads(out)["layers_run"] == [1, 2, 3, 4, 5]
+    assert code == 1 and json.loads(out)["layers_run"] == [1, 2, 3, 4, 5, 6, 9]
 
 
 @pytest.mark.parametrize("fmt", ["sarif", "agent", "html"])

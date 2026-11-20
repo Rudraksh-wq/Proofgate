@@ -42,7 +42,7 @@ async def scan_corpus(**kw) -> ScanOutcome:
 async def test_whole_corpus_prints_the_three_counts():
     out = await scan_corpus()
     r = out.report
-    assert r.layers_run == [1, 2, 3, 4, 5]
+    assert r.layers_run == [1, 2, 3, 4, 5, 6, 9]
     assert r.raw_warning_count >= r.unique_count >= r.proven_count == 0
     print(f"corpus: {r.raw_warning_count} raw -> {r.unique_count} unique -> {r.proven_count} proven")
     files = {(f.location.file) for f in r.findings}
@@ -101,8 +101,8 @@ async def test_fast_mode_times_out_a_slow_layer_and_says_so(monkeypatch):
 
 
 async def test_nothing_ran_is_an_error_not_clean():
-    out = await run_scan(CORPUS / "c01_clean", layers=[6, 7], runner=runner_with(), offline=True)
-    assert out.tool_error and out.report.layers_run == [] and len(out.report.notes) == 2
+    out = await run_scan(CORPUS / "c01_clean", layers=[7], runner=runner_with(), offline=True)
+    assert out.tool_error and out.report.layers_run == [] and len(out.report.notes) == 1
 
 
 async def test_skipped_tools_are_not_errors_but_mismatches_are():
@@ -118,9 +118,8 @@ async def test_skipped_tools_are_not_errors_but_mismatches_are():
 
 async def test_fast_layers_are_one_to_four_six_nine_where_built():
     out = await run_scan(CORPUS / "c01_clean", fast=True, runner=runner_with(), offline=True)
-    assert out.report.layers_run == [1, 2, 3, 4, 5]
-    assert any("layer 6" in n for n in out.report.notes) and any("layer 9" in n for n in out.report.notes)
-    assert not any("layer 5" in n or "layer 8" in n for n in out.report.notes)
+    assert out.report.layers_run == [1, 2, 3, 4, 5, 6, 9]
+    assert not any("not built yet" in n for n in out.report.notes)  # nothing in the fast set is unbuilt any more
 
 
 # ----------------------------------------------------------------------------- write_outputs / html / sarif
