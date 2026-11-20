@@ -11,3 +11,5 @@ secret-shaped text at run time.
 | File | Tool / schema | Used by |
 |---|---|---|
 | `gitleaks_report_sample.json` | Gitleaks >= 8.19 `--report-format json` (Betterleaks is a drop-in) | `test_layer1_secrets.py` |
+| `semgrep_sample.json` | Semgrep `--json` schema (hand-written; Semgrep could not be installed on this Windows/Python 3.15 box) | `test_layer2_sast.py` |
+| `bandit_corpus.json` | **Real** `bandit -r demo-apps/flask-corpus -f json` output (Bandit 1.9.4). Edited only to drop the `code` field and mask one generated key in `issue_text`; the project path is `{{PROJECT}}` | `test_layer2_sast.py` |
