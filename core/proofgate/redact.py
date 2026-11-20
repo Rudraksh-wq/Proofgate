@@ -44,8 +44,8 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     (
         "env-secret",
         re.compile(
-            r"""(?P<k>["']?[A-Za-z0-9_.-]*(?:secret|token|passw(?:or)?d|api[_-]?key|private[_-]?key|service[_-]?role)"""
-            r"""[A-Za-z0-9_.-]*["']?\s*[:=]\s*["']?)(?P<v>[^\s"'#,}\)]{8,})""",
+            r"""(?P<k>["']?[A-Za-z0-9_.-]{0,40}(?:secret|token|passw(?:or)?d|api[_-]?key|private[_-]?key|service[_-]?role)"""
+            r"""[A-Za-z0-9_.-]{0,40}["']?\s*[:=]\s*["']?)(?P<v>[^\s"'#,}\)]{8,})""",
             re.IGNORECASE,
         ),
     ),
