@@ -1,0 +1,100 @@
+rules:
+  - id: proofgate.js-dangerously-set-inner-html
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: dangerouslySetInnerHTML is given a value that is not a constant string.
+    patterns:
+      - pattern: '<$E dangerouslySetInnerHTML={{__html: $X}} />'
+      - pattern-not: '<$E dangerouslySetInnerHTML={{__html: "..."}} />'
+    metadata:
+      cwe: ["CWE-79: Improper Neutralization of Input During Web Page Generation (XSS)"]
+      category: web
+      confidence: MEDIUM
+      plain_words: The page inserts raw HTML from a variable. If that text came from a user, they can run scripts in other people's browsers. Render it as text, or sanitise it first.
+
+  - id: proofgate.js-innerhtml-assignment
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: innerHTML is assigned a value that is not a constant string.
+    patterns:
+      - pattern: $EL.innerHTML = $X
+      - pattern-not: $EL.innerHTML = "..."
+    metadata:
+      cwe: ["CWE-79: Improper Neutralization of Input During Web Page Generation (XSS)"]
+      category: web
+      confidence: MEDIUM
+      plain_words: The page writes a variable straight into the HTML. If it holds user text, someone can inject a script. Use textContent instead.
+
+  - id: proofgate.js-eval
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: eval / new Function runs text as code.
+    patterns:
+      - pattern-either:
+          - pattern: eval($X)
+          - pattern: new Function(..., $X)
+      - pattern-not: eval("...")
+    metadata:
+      cwe: ["CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"]
+      category: injection
+      confidence: HIGH
+      plain_words: The code runs text as a program. If any of that text comes from a user, they control your server or their victim's browser.
+
+  - id: proofgate.js-child-process-exec
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: A shell command is built from a template string or concatenation.
+    patterns:
+      - pattern-either:
+          - pattern: $CP.exec(`...${$X}...`, ...)
+          - pattern: $CP.execSync(`...${$X}...`, ...)
+          - pattern: $CP.exec($A + $B, ...)
+          - pattern: $CP.execSync($A + $B, ...)
+    metadata:
+      cwe: ["CWE-78: Improper Neutralization of Special Elements used in an OS Command"]
+      category: injection
+      confidence: HIGH
+      fix_tier: A
+      plain_words: The server builds a shell command from a variable. If it holds user text, they can run their own commands. Use execFile with an argument list.
+
+  - id: proofgate.js-supabase-rpc-string-sql
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: A Supabase rpc call is given SQL assembled from a template string.
+    pattern-either:
+      - pattern: '$SB.rpc($N, {$K: `...${$X}...`})'
+      - pattern: '$SB.rpc($N, {$K: $A + $B})'
+    metadata:
+      cwe: ["CWE-89: Improper Neutralization of Special Elements used in an SQL Command"]
+      category: injection
+      confidence: MEDIUM
+      plain_words: A database function is called with SQL text that is pasted together from variables. Pass values as parameters and keep the SQL fixed.
+
+  - id: proofgate.js-public-env-secret
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: A NEXT_PUBLIC_ variable holds a secret. NEXT_PUBLIC_ values are sent to every visitor's browser.
+    patterns:
+      - pattern: process.env.$NAME
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: ^NEXT_PUBLIC_.*(SERVICE|SECRET|PRIVATE).*$
+    metadata:
+      cwe: ["CWE-200: Exposure of Sensitive Information to an Unauthorized Actor"]
+      category: config
+      confidence: HIGH
+      fix_tier: A
+      plain_words: A secret key is stored in a variable that Next.js publishes to every visitor. Rename it without NEXT_PUBLIC_ and use it only on the server, then rotate the key.
+
+  - id: proofgate.js-cors-wildcard-credentials
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: CORS allows every origin together with credentials.
+    pattern-either:
+      - pattern: 'cors({..., origin: "*", ..., credentials: true, ...})'
+      - pattern: 'cors({..., credentials: true, ..., origin: "*", ...})'
+    metadata:
+      cwe: ["CWE-942: Permissive Cross-domain Policy with Untrusted Domains"]
+      category: config
+      confidence: MEDIUM
+      plain_words: Any website can make a signed-in visitor's browser call your API. Only list the sites you own.

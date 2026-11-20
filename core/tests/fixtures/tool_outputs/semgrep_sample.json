@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "results": [
+    {
+      "check_id": "home.user.proofgate.core.proofgate.rules.proofgate.py-sql-injection",
+      "path": "app.py",
+      "start": {"line": 3, "col": 5, "offset": 40},
+      "end": {"line": 3, "col": 60, "offset": 95},
+      "extra": {
+        "message": "User input reaches a SQL string that is built by hand instead of using placeholders.",
+        "severity": "ERROR",
+        "metadata": {
+          "cwe": ["CWE-89: Improper Neutralization of Special Elements used in an SQL Command"],
+          "category": "injection",
+          "confidence": "HIGH",
+          "fix_tier": "A",
+          "plain_words": "Text typed by a visitor is pasted into a database query. Use placeholders (?) instead."
+        },
+        "lines": "requires login"
+      }
+    },
+    {
+      "check_id": "some.third.party.pack.insecure-hash",
+      "path": "app.py",
+      "start": {"line": 5, "col": 1, "offset": 100},
+      "end": {"line": 5, "col": 30, "offset": 129},
+      "extra": {
+        "message": "md5 is a weak hash. Use sha256.",
+        "severity": "WARNING",
+        "metadata": {"cwe": "CWE-327: Use of a Broken or Risky Cryptographic Algorithm", "confidence": "MEDIUM"},
+        "lines": "requires login"
+      }
+    },
+    {
+      "check_id": "proofgate.py-sql-injection",
+      "path": "../outside/elsewhere.py",
+      "start": {"line": 1, "col": 1, "offset": 0},
+      "end": {"line": 1, "col": 2, "offset": 1},
+      "extra": {"message": "outside the project: must be ignored", "severity": "ERROR", "metadata": {}}
+    }
+  ],
+  "errors": [],
+  "paths": {"scanned": ["app.py"]}
+}
