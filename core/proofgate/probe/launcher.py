@@ -121,4 +121,8 @@ class AppProcess:
                 await asyncio.wait_for(self._proc.wait(), timeout=10)
             except (asyncio.TimeoutError, ProcessLookupError):
                 pass
-        shutil.rmtree(self.workdir, ignore_errors=True)  # delete the throwaway database
+        for _ in range(25):  # Windows keeps a file handle open for a moment after the process is killed: retry
+            shutil.rmtree(self.workdir, ignore_errors=True)  # delete the throwaway database
+            if not self.workdir.exists():
+                break
+            await asyncio.sleep(0.2)
