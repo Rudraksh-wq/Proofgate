@@ -201,9 +201,11 @@ async def _checkov(project: Path, runner: Runner, lock, timeout: float, result: 
         if res.returncode not in (0, 1):  # 1 = checks failed
             result.notes.append(f"checkov exited {res.returncode}: {redact(res.stderr[-300:])}")
             return []
-        sarif = Path(td) / "results.sarif"
-        text = sarif.read_text(encoding="utf-8") if sarif.exists() else res.stdout
+        written = sorted(Path(td).glob("*.sarif"))  # real Checkov 3.4.6 writes results_sarif.sarif; the name has changed between versions
+        text = written[0].read_text(encoding="utf-8") if written else ""
         if not text.strip():
+            if res.returncode == 1:  # 1 = checks failed, so a report should exist
+                result.notes.append("checkov: it reported failed checks but wrote no SARIF file; its findings were not read")
             return []
         try:
             return parse_checkov_sarif(text, project)

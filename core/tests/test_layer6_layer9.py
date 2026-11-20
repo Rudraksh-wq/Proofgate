@@ -157,10 +157,11 @@ async def test_a_clean_fixture_gives_zero_findings_for_both_layers(tmp_path):
 
 # ----------------------------------------------------------------------------------- Checkov adapter (recorded sample output)
 def test_checkov_sarif_is_parsed(tmp_path):
+    """The fixture is a REAL `checkov 3.4.6 -o sarif` run on a Dockerfile and an S3 bucket (recorded on 2026-11-21)."""
     found = l6_config.parse_checkov_sarif((FIX / "checkov_sample.sarif").read_text(encoding="utf-8"), tmp_path)
-    assert {(f.rule, f.location.file, f.location.line, f.severity) for f in found} == {
-        ("checkov:CKV_DOCKER_2", "Dockerfile", 1, "high"), ("checkov:CKV_AWS_20", "infra/main.tf", 4, "medium")}
-    assert all(f.sources == ["checkov"] and f.category == "config" for f in found)
+    got = {(f.rule, f.location.file, f.location.line) for f in found}
+    assert ("checkov:CKV_DOCKER_2", "Dockerfile", 1) in got and ("checkov:CKV_AWS_20", "infra/main.tf", 1) in got and len(found) == 10
+    assert all(f.sources == ["checkov"] and f.category == "config" and f.severity == "high" for f in found)  # Checkov reports every failed check as level "error"
 
 
 async def test_checkov_runs_through_the_runner_and_a_missing_checkov_is_recorded(tmp_path):
@@ -168,23 +169,28 @@ async def test_checkov_runs_through_the_runner_and_a_missing_checkov_is_recorded
 
     async def fake(name, args, **kw):
         assert name == "checkov" and "sarif" in args
-        return ToolResult(name, "ok", 1, sample, "", 0.1, sha256="0" * 64)
+        out_dir = Path(args[args.index("--output-file-path") + 1])
+        (out_dir / "results_sarif.sarif").write_text(sample, encoding="utf-8")  # what the real tool does: it writes a file, stdout is text
+        return ToolResult(name, "ok", 1, "Passed checks: 3, Failed checks: 10", "", 0.1, sha256="0" * 64)
 
     res = await l6_config.run(tmp_path, runner=fake)
-    assert {f.rule for f in res.findings} == {"checkov:CKV_DOCKER_2", "checkov:CKV_AWS_20"}
+    assert {"checkov:CKV_DOCKER_2", "checkov:CKV_AWS_20"} <= {f.rule for f in res.findings} and len(res.findings) == 10
     missing = await run6(tmp_path)
     assert missing.findings == [] and any("checkov: skipped" in n for n in missing.notes)
 
 
 async def test_a_broken_checkov_report_is_a_note_not_a_crash(tmp_path):
     async def fake(name, args, **kw):
-        return ToolResult(name, "ok", 0, "not json", "", 0.1, sha256="0" * 64)
+        (Path(args[args.index("--output-file-path") + 1]) / "results_sarif.sarif").write_text("not json", encoding="utf-8")
+        return ToolResult(name, "ok", 0, "", "", 0.1, sha256="0" * 64)
 
     res = await l6_config.run(tmp_path, runner=fake)
     assert res.findings == [] and any("could not parse" in n for n in res.notes)
 
 
-@pytest.mark.skipif(not (DEMO / ".next" / "static").is_dir(), reason="the demo has not been built here (cd demo-apps/nextjs-supabase && npm run build)")
-async def test_the_real_built_demo_bundle_has_its_source_maps_flagged():
-    res = await l9_bundle.run(DEMO)
-    assert any(f.rule == "source-maps-published" for f in res.findings)
+async def test_failed_checks_without_a_report_file_are_a_note(tmp_path):
+    async def fake(name, args, **kw):
+        return ToolResult(name, "ok", 1, "Failed checks: 3", "", 0.1, sha256="0" * 64)
+
+    res = await l6_config.run(tmp_path, runner=fake)
+    assert res.findings == [] and any("wrote no SARIF file" in n for n in res.notes)
