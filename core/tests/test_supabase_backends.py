@@ -187,7 +187,7 @@ def test_doctor_prints_hosted_not_configured_with_an_empty_env_and_no_docker(cap
     out = capsys.readouterr().out
     assert "hosted   not configured" in out and "local    unavailable" in out and "Docker is optional" in out
     assert main(["doctor", "--json", "--dir", str(tmp_path)]) == 0
-    assert {r["backend"]: r["status"] for r in json.loads(capsys.readouterr().out)["supabase"]}["hosted"] == "not configured"
+    assert {r["name"]: r["status"] for r in json.loads(capsys.readouterr().out)}["supabase:hosted"] == "not configured"
 
 
 # ------------------------------------------------------------------------------------------- migrations over psycopg (fake connection)

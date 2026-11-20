@@ -378,7 +378,8 @@ def cmd_doctor(a) -> int:
     checks = asyncio.run(check_all(lock))
     backends = _backend_rows(a.dir)
     if a.json:
-        print(json.dumps({"tools": [c.__dict__ for c in checks], "supabase": [dict(zip(("backend", "status", "detail"), r)) for r in backends]}, indent=2))
+        # the tool list keeps its shape; Supabase backends follow as entries named "supabase:<backend>"
+        print(json.dumps([c.__dict__ for c in checks] + [{"name": f"supabase:{n}", "status": st, "version": None, "detail": d} for n, st, d in backends], indent=2))
     else:
         for c in checks:
             print(f"{c.status:9} {c.name:12} {c.version or '-'}" + (f"  ({c.detail})" if c.detail else ""))
