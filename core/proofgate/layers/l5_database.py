@@ -18,7 +18,8 @@ nobody enabled RLS on is reported as exactly that.
 
 LIVE part (Splinter lint SQL over a psycopg connection, with `--full`): runs against the configured Supabase backend (your own hosted test
 project, or a local stack where Docker exists), only after the target guard passes. Not configured, refused or no splinter.sql: a recorded
-skip, never a crash. Pending real-tool verification until it has run against a real project.
+skip, never a crash. Verified on 2026-11-21 against a real hosted Supabase test project (variants A, B and C): Splinter flags A, and the
+contract-aware checks on the live catalogs flag B's role-only policy, which Splinter does not.
 """
 from __future__ import annotations
 

@@ -7,7 +7,8 @@ Own checks (no tool needed):
   next-production-source-maps    `productionBrowserSourceMaps: true` in next.config.*
 
 Checkov (Terraform, Dockerfile, Kubernetes, GitHub Actions...) runs when installed and is skipped and recorded when it is not.
-Its adapter is tested against recorded sample output: pending real-tool verification.
+Its adapter is tested against a real Checkov 3.4.6 recording (verified 2026-11-21 on Windows). Checkov's Windows launcher is a `.cmd` wrapper that the
+hash-pinning runner cannot execute, so on Windows Checkov is skipped and recorded; it runs on Linux (CI).
 """
 from __future__ import annotations
 
