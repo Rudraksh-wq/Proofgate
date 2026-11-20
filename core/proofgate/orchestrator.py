@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
-from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l5_database, l6_config, l8_access, l9_bundle
+from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l5_database, l6_config, l7_web, l8_access, l9_bundle
 from .layers.base import LayerResult, Runner, run_tool
 from .models import LIMITS_STATEMENT, Receipt, Report, Tested, ToolRecord
 from . import accepted as accepted_mod
@@ -55,6 +55,8 @@ async def _call(layer: int, project: Path, runner: Runner, kw: dict[str, Any]) -
                                      i_own_this=bool(kw.get("i_own_this")))
     if layer == 6:
         return await l6_config.run(project, **common)
+    if layer == 7:
+        return await l7_web.run(project, target=kw.get("target"))
     if layer == 9:
         return await l9_bundle.run(project, full=bool(kw.get("full")))
     if layer == 8:
@@ -63,7 +65,7 @@ async def _call(layer: int, project: Path, runner: Runner, kw: dict[str, Any]) -
     raise NotImplementedError(layer)
 
 
-IMPLEMENTED = {1, 2, 3, 4, 5, 6, 8, 9}
+IMPLEMENTED = {1, 2, 3, 4, 5, 6, 7, 8, 9}
 
 
 def _git_commit(project: Path) -> str | None:
