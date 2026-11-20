@@ -1,0 +1,114 @@
+{
+  "project": "demo",
+  "scanned_at": "2026-11-20T10:00:00+00:00",
+  "layers_run": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "raw_warning_count": 312,
+  "unique_count": 41,
+  "proven_count": 9,
+  "findings": [
+    {
+      "schema": "proofgate.finding/v1",
+      "id": "f_7c1a",
+      "fingerprint": "sha256:cross-user-read|app/api/notes/[id]/route.ts|GET|notes|read|B>A",
+      "layer": 8,
+      "category": "access",
+      "rule": "cross-user-read",
+      "cwe": "CWE-639",
+      "severity": "critical",
+      "confidence": "proven",
+      "title": "User B can read User A's notes",
+      "plain_words": "Your app checks that someone is logged in, but not that the note is theirs.",
+      "location": {
+        "file": "app/api/notes/[id]/route.ts",
+        "line": 9,
+        "function": "GET",
+        "route": "GET /api/notes/[id]"
+      },
+      "sources": [
+        "proofgate-probe",
+        "proofgate-rule:service-role-in-route"
+      ],
+      "confirmed_by": 2,
+      "proven": true,
+      "evidence": {
+        "actor": "B",
+        "victim": "A",
+        "request": "GET /api/notes/«A_note_id» as B",
+        "status": 200,
+        "response_excerpt": "…PGCANARY_A_«masked»…",
+        "repro_test": "tests/proofgate/test_f_7c1a.spec.ts"
+      },
+      "contract_rule": "User B must never read or change User A's notes.",
+      "contract_confirmed": true,
+      "fix_tier": "B",
+      "interrupt_human": true,
+      "status": "open",
+      "first_seen_commit": "a1b2c3d"
+    }
+  ],
+  "fixes": [
+    {
+      "finding_id": "f_7c1a",
+      "tier": "B",
+      "candidates": 3,
+      "winner": {
+        "patch": "--- a/app.py\n+++ b/app.py\n...",
+        "diff_lines": 3
+      },
+      "gates": {
+        "exploit_blocked": true,
+        "feature_works": true,
+        "tests_pass": true,
+        "no_new_findings": true,
+        "diff_is_small": true,
+        "migrations_replayed": true
+      },
+      "rejected": [
+        {
+          "reason": "feature_works=false: owner can no longer read own note"
+        }
+      ],
+      "regression_test": "tests/test_proofgate_regressions.py::test_f_7c1a",
+      "learned_rule": "Every query on notes must filter by owner_id = current user.",
+      "accepted": true,
+      "applied_in": "temp_copy",
+      "pre_fix_commit": "a1b2c3d"
+    }
+  ],
+  "receipt": {
+    "rules_attacked": 3,
+    "rules_held": 2,
+    "commit": "a1b2c3d",
+    "report_hash": "sha256:abc"
+  },
+  "tested": {
+    "tables": [
+      "notes"
+    ],
+    "routes": [
+      "GET /api/notes/[id]"
+    ]
+  },
+  "untested": [
+    "storage buckets"
+  ],
+  "tools": [
+    {
+      "name": "betterleaks",
+      "version": "1.0.0",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "status": "ok"
+    }
+  ],
+  "limits_statement": "Passing ProofGate means our attacks failed on the routes and tables we tested. It doesn't mean your app is secure."
+}

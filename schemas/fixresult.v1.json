@@ -1,0 +1,186 @@
+{
+  "$defs": {
+    "Gates": {
+      "additionalProperties": false,
+      "properties": {
+        "diff_is_small": {
+          "title": "Diff Is Small",
+          "type": "boolean"
+        },
+        "exploit_blocked": {
+          "title": "Exploit Blocked",
+          "type": "boolean"
+        },
+        "feature_works": {
+          "title": "Feature Works",
+          "type": "boolean"
+        },
+        "migrations_replayed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Migrations Replayed"
+        },
+        "no_new_findings": {
+          "title": "No New Findings",
+          "type": "boolean"
+        },
+        "tests_pass": {
+          "title": "Tests Pass",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "exploit_blocked",
+        "feature_works",
+        "tests_pass",
+        "no_new_findings",
+        "diff_is_small"
+      ],
+      "title": "Gates",
+      "type": "object"
+    },
+    "Rejected": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "Rejected",
+      "type": "object"
+    },
+    "Winner": {
+      "additionalProperties": false,
+      "properties": {
+        "diff_lines": {
+          "title": "Diff Lines",
+          "type": "integer"
+        },
+        "patch": {
+          "title": "Patch",
+          "type": "string"
+        }
+      },
+      "required": [
+        "patch",
+        "diff_lines"
+      ],
+      "title": "Winner",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "accepted": {
+      "title": "Accepted",
+      "type": "boolean"
+    },
+    "applied_in": {
+      "const": "temp_copy",
+      "default": "temp_copy",
+      "title": "Applied In",
+      "type": "string"
+    },
+    "candidates": {
+      "title": "Candidates",
+      "type": "integer"
+    },
+    "finding_id": {
+      "title": "Finding Id",
+      "type": "string"
+    },
+    "gates": {
+      "$ref": "#/$defs/Gates"
+    },
+    "learned_rule": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Learned Rule"
+    },
+    "pre_fix_commit": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pre Fix Commit"
+    },
+    "regression_test": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Regression Test"
+    },
+    "rejected": {
+      "items": {
+        "$ref": "#/$defs/Rejected"
+      },
+      "title": "Rejected",
+      "type": "array"
+    },
+    "schema": {
+      "const": "proofgate.fixresult/v1",
+      "default": "proofgate.fixresult/v1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "tier": {
+      "enum": [
+        "A",
+        "B",
+        "C"
+      ],
+      "title": "Tier",
+      "type": "string"
+    },
+    "winner": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Winner"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "finding_id",
+    "tier",
+    "candidates",
+    "gates",
+    "rejected",
+    "accepted"
+  ],
+  "title": "FixResult",
+  "type": "object"
+}

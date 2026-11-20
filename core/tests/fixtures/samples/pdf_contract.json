@@ -1,0 +1,28 @@
+{
+  "owned_resources": [
+    {
+      "name": "notes",
+      "owner_field": "owner_id",
+      "actions": [
+        "read",
+        "update",
+        "delete"
+      ]
+    }
+  ],
+  "profile_editable_fields": [
+    "display_name"
+  ],
+  "admin_only_routes": [
+    "/admin/*"
+  ],
+  "public_routes": [
+    "/signup",
+    "/login"
+  ],
+  "rules": [
+    "User B must never read or change User A's notes."
+  ],
+  "confirmed_by_user": false,
+  "source": "gemini"
+}

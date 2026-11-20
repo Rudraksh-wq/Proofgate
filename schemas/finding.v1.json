@@ -1,0 +1,327 @@
+{
+  "$defs": {
+    "Evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "actor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actor"
+        },
+        "repro_test": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Repro Test"
+        },
+        "request": {
+          "title": "Request",
+          "type": "string"
+        },
+        "response_excerpt": {
+          "title": "Response Excerpt",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "integer"
+        },
+        "victim": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Victim"
+        }
+      },
+      "required": [
+        "request",
+        "status",
+        "response_excerpt"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "Location": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "function": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Function"
+        },
+        "line": {
+          "title": "Line",
+          "type": "integer"
+        },
+        "route": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Route"
+        }
+      },
+      "required": [
+        "file",
+        "line"
+      ],
+      "title": "Location",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "enum": [
+        "secrets",
+        "injection",
+        "access",
+        "deps",
+        "supply-chain",
+        "database",
+        "config",
+        "web",
+        "bundle"
+      ],
+      "title": "Category",
+      "type": "string"
+    },
+    "confidence": {
+      "anyOf": [
+        {
+          "enum": [
+            "proven",
+            "high",
+            "medium",
+            "low"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confidence"
+    },
+    "confirmed_by": {
+      "default": 1,
+      "title": "Confirmed By",
+      "type": "integer"
+    },
+    "contract_confirmed": {
+      "default": false,
+      "title": "Contract Confirmed",
+      "type": "boolean"
+    },
+    "contract_rule": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Contract Rule"
+    },
+    "cwe": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cwe"
+    },
+    "evidence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Evidence"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "fingerprint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fingerprint"
+    },
+    "first_seen_commit": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "First Seen Commit"
+    },
+    "fix_tier": {
+      "anyOf": [
+        {
+          "enum": [
+            "A",
+            "B",
+            "C"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fix Tier"
+    },
+    "fixed_in": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Fixed In"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "interrupt_human": {
+      "default": false,
+      "title": "Interrupt Human",
+      "type": "boolean"
+    },
+    "layer": {
+      "maximum": 9,
+      "minimum": 1,
+      "title": "Layer",
+      "type": "integer"
+    },
+    "location": {
+      "$ref": "#/$defs/Location"
+    },
+    "plain_words": {
+      "title": "Plain Words",
+      "type": "string"
+    },
+    "proven": {
+      "default": false,
+      "title": "Proven",
+      "type": "boolean"
+    },
+    "rule": {
+      "title": "Rule",
+      "type": "string"
+    },
+    "schema": {
+      "const": "proofgate.finding/v1",
+      "default": "proofgate.finding/v1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "status": {
+      "default": "open",
+      "enum": [
+        "open",
+        "fixing",
+        "fixed",
+        "fix-rejected",
+        "needs-human",
+        "accepted-risk",
+        "untested",
+        "inconclusive"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "layer",
+    "category",
+    "rule",
+    "severity",
+    "title",
+    "plain_words",
+    "location",
+    "sources"
+  ],
+  "title": "Finding",
+  "type": "object"
+}

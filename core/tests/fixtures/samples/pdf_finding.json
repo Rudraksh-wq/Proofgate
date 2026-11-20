@@ -1,0 +1,29 @@
+{
+  "id": "f_7c1a",
+  "layer": 8,
+  "category": "access",
+  "rule": "cross-user-read",
+  "cwe": "CWE-639",
+  "severity": "critical",
+  "title": "User B can read User A's notes",
+  "plain_words": "Your app checks that someone is logged in, but not that the note is theirs.",
+  "location": {
+    "file": "app.py",
+    "line": 88,
+    "function": "get_note",
+    "route": "GET /notes/<id>"
+  },
+  "sources": [
+    "proofgate-probe",
+    "semgrep"
+  ],
+  "proven": true,
+  "evidence": {
+    "request": "GET /notes/12 as user B",
+    "response_excerpt": "...PGCANARY_A_7f3c...",
+    "status": 200
+  },
+  "contract_rule": "User B must never read or change User A's notes.",
+  "fix_tier": "B",
+  "status": "open"
+}

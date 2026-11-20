@@ -15,7 +15,7 @@ def _exit_for(findings: list[Finding], fail_on: str) -> int:
 
 
 def _dump(model) -> str:
-    return model.model_dump_json(indent=2)
+    return model.model_dump_json(indent=2, by_alias=True)
 
 
 def cmd_contract(a) -> int:
