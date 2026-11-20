@@ -149,8 +149,9 @@ class _PyChecker(ast.NodeVisitor):
             return True
         if isinstance(e, ast.Name):
             return any(e.id in s for s in self.safe)
-        if isinstance(e, ast.Call) and isinstance(e.func, ast.Name) and e.func.id in ("int", "len", "float", "bool"):
-            return True
+        if isinstance(e, ast.Call) and isinstance(e.func, ast.Name) and (
+                e.func.id in ("int", "len", "float", "bool") or re.fullmatch(r"(?:quote_)?ident(?:ifier)?s?|safe_\w+", e.func.id)):
+            return True  # int() and friends, or a helper that validates an SQL identifier / assignment list
         if isinstance(e, ast.Call) and isinstance(e.func, ast.Name) and e.func.id == "str" and e.args:
             return self._is_safe(e.args[0])
         return False

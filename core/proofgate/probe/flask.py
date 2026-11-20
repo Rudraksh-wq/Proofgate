@@ -22,7 +22,7 @@ from ..models import Contract
 from ..redact import new_canary
 from .discover import Route, discover_routes, matches_any
 from .result import Check, ProbeResult
-from .session import Http, Identity, Resp, TempDb
+from .session import Http, Identity, Resp, TempDb, ident as sql_ident, safe_assignments
 
 ADMIN_FIELDS = ({"role": "admin"}, {"is_admin": 1}, {"is_admin": True}, {"admin": True}, {"is_superuser": True})
 ADMIN_COLUMNS = {"role": "admin", "is_admin": 1, "admin": 1, "is_superuser": 1}
@@ -127,8 +127,7 @@ class FlaskProbe:
             self.admin = None
             self.result.untested.append("admin: no role/is_admin column in the users table, so no admin user could be seeded")
             return
-        assign = ", ".join(f'"{c}" = ?' for c in sets)
-        self.db.execute(f"UPDATE users SET {assign} WHERE email = ?", (*sets.values(), ident.email))
+        self.db.execute(f"UPDATE users SET {safe_assignments(sets)} WHERE email = ?", (*sets.values(), ident.email))
 
     def _row_body(self, table: str, owner_field: str, canary: str) -> dict:
         body: dict = {}
@@ -154,7 +153,7 @@ class FlaskProbe:
         r = await self.http.request(who, "POST", create.path, json=self._row_body(resource.name, resource.owner_field, canary))
         if not r.ok:
             return None
-        row = self.db.one(f'SELECT id FROM "{resource.name}" WHERE "{resource.owner_field}" = ? ORDER BY id DESC LIMIT 1',
+        row = self.db.one(f'SELECT id FROM "{sql_ident(resource.name)}" WHERE "{sql_ident(resource.owner_field)}" = ? ORDER BY id DESC LIMIT 1',
                           (who.user_id,))
         data = r.json() if isinstance(r.json(), dict) else {}
         item_id = int(row["id"]) if row else (data.get("id") if isinstance(data.get("id"), int) else None)
@@ -362,7 +361,7 @@ class FlaskProbe:
             body = self._row_body(res.name, res.owner_field, self.canary_b)
             r = await self.http.request(self.B, route.method, route.fill(item["id"]), json=body)
             changed, seen = False, ""
-            row = self.db.one(f'SELECT * FROM "{res.name}" WHERE id = ?', (item["id"],))
+            row = self.db.one(f'SELECT * FROM "{sql_ident(res.name)}" WHERE id = ?', (item["id"],))
             if row is not None:
                 seen = " ".join(str(row[k]) for k in row.keys())
                 changed = self.canary_b in seen

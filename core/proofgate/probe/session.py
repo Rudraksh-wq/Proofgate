@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 import secrets
 import sqlite3
 from contextlib import closing
@@ -103,6 +104,21 @@ class Http:
         return ident
 
 
+_IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]{0,62}")
+
+
+def ident(name: str) -> str:
+    """An SQL identifier that is safe to put between double quotes; anything else is refused."""
+    if not isinstance(name, str) or not _IDENT.fullmatch(name):
+        raise ValueError(f"not a plain SQL identifier: {name!r}")
+    return name
+
+
+def safe_assignments(columns: dict) -> str:
+    """'"a" = ?, "b" = ?' for validated column names."""
+    return ", ".join(f'"{ident(c)}" = ?' for c in columns)
+
+
 class TempDb:
     """Read/write access to the throwaway SQLite database the app under test is using."""
 
@@ -129,7 +145,7 @@ class TempDb:
         if not self.available or table not in self.tables():
             return []
         with closing(self._conn()) as c:
-            return list(c.execute(f'PRAGMA table_info("{table}")'))
+            return list(c.execute(f'PRAGMA table_info("{ident(table)}")'))
 
     def one(self, sql: str, params: tuple = ()) -> sqlite3.Row | None:
         if not self.available:
