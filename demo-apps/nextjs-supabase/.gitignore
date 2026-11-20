@@ -1,0 +1,11 @@
+node_modules/
+.next/
+next-env.d.ts
+tsconfig.tsbuildinfo
+.env
+.env.local
+.env.*.local
+# installed by `npm run variant -- A|B|C`
+supabase/migrations/20240201000000_rls_variant.sql
+supabase/.temp/
+supabase/.branches/
