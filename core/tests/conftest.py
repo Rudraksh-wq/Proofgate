@@ -2,6 +2,9 @@
 literal key-shaped strings (our own secret scan must stay clean)."""
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 import pytest
 
 from proofgate.redact import find_leaks
@@ -35,3 +38,15 @@ def no_leaks():
             assert not leaked, f"leak detected: {leaked!r}"
 
     return check
+
+
+@pytest.fixture(scope="session", autouse=True)
+def corpus_rendered():
+    """Render the git-ignored, secret-bearing corpus files (v09, v10, c03) from their *.tmpl once per
+    session, so tests, Layer 1, the hook and the benchmark all see real secret-shaped literals on disk."""
+    demo_apps = str(Path(__file__).resolve().parents[2] / "demo-apps")
+    if demo_apps not in sys.path:
+        sys.path.insert(0, demo_apps)
+    import generate_corpus
+
+    return generate_corpus.materialize()

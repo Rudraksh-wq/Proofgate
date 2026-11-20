@@ -8,3 +8,8 @@ node_modules/
 .next/
 dist/
 build/
+
+# generated from *.tmpl by demo-apps/generate_corpus.py (contain fake, secret-shaped values)
+demo-apps/flask-corpus/v09_hardcoded_keys/app.py
+demo-apps/flask-corpus/c03_bait/app.py
+demo-apps/flask-corpus/v10_service_role_in_bundle/static/bundle.js
