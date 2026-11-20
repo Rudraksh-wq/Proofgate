@@ -6,6 +6,7 @@
     "checkov": {"binary": "checkov", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
     "docker": {"binary": "docker", "sha256": {}, "verify": "presence", "version": null, "version_args": ["--version"]},
     "gitleaks": {"binary": "gitleaks", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["version"]},
+    "guarddog": {"binary": "guarddog", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
     "node": {"binary": "node", "sha256": {}, "verify": "presence", "version": null, "version_args": ["--version"]},
     "npm": {"binary": "npm", "sha256": {}, "verify": "presence", "version": null, "version_args": ["--version"]},
     "osv-scanner": {"binary": "osv-scanner", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},

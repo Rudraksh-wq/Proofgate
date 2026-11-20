@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import ast
 import datetime as dt
-import json
 import re
 import time
 from dataclasses import dataclass, field
@@ -22,10 +21,9 @@ from typing import Iterable
 
 from .layers.base import finding_id, short_hash
 from .layers.l1_secrets import scan_text
+from .layers.l4_supply_chain import NEW_PACKAGE_DAYS, dependency_lines, evaluate_record, top_packages
 from .models import Finding
 from .pkgcache import PackageCache
-
-NEW_PACKAGE_DAYS = 30
 
 # rule id -> (cwe, category, severity, confidence, title, plain words, fix_tier). Mirrors rules/*.yaml
 # (tests assert the two stay in sync).
@@ -253,75 +251,18 @@ def js_findings(src: str, rel: str) -> list[Finding]:
 
 
 # ------------------------------------------------------------------------------------ L4 (cache only)
-_REQ_LINE = re.compile(r"^\s*([A-Za-z0-9][A-Za-z0-9._-]*)\s*(?:\[[^\]]*\])?\s*(?:==|>=|<=|~=|!=|===|<|>|@|;|\s|$)")
-_PKG_JSON_DEP = re.compile(r"""^\s*"((?:@[\w.-]+/)?[\w.-]+)"\s*:\s*"([^"]*)"\s*,?\s*$""")
-_NON_REGISTRY = ("file:", "link:", "workspace:", "git", "http:", "https:", "npm:", "github:")
-
-
-def dependency_lines(src: str, basename: str) -> list[tuple[str, str, int]]:
-    """[(ecosystem, name, line)] for the registry packages named in a manifest."""
-    out: list[tuple[str, str, int]] = []
-    if re.fullmatch(r"requirements.*\.txt", basename):
-        for n, line in enumerate(src.splitlines(), start=1):
-            s = line.strip()
-            if not s or s.startswith(("#", "-", "git+")) or "://" in s.split(";")[0].split("@")[0]:
-                continue
-            m = _REQ_LINE.match(line)
-            if m:
-                out.append(("pypi", m.group(1), n))
-    elif basename == "package.json":
-        try:
-            data = json.loads(src)
-            names = {k for sec in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies")
-                     for k, v in (data.get(sec) or {}).items() if isinstance(v, str) and not v.startswith(_NON_REGISTRY)}
-            for n, line in enumerate(src.splitlines(), start=1):
-                m = _PKG_JSON_DEP.match(line)
-                if m and m.group(1) in names:
-                    out.append(("npm", m.group(1), n))
-        except (ValueError, AttributeError):
-            for n, line in enumerate(src.splitlines(), start=1):  # fragment of a manifest
-                m = _PKG_JSON_DEP.match(line)
-                if m and not m.group(2).startswith(_NON_REGISTRY) and m.group(1) not in ("name", "version", "main", "type"):
-                    out.append(("npm", m.group(1), n))
-    return out
-
-
 def _l4_findings(src: str, rel: str, cache: PackageCache, now: dt.datetime) -> tuple[list[Finding], list[tuple[str, str]]]:
+    """Judge each dependency from the on-disk cache only; a miss is returned for a background lookup."""
     findings: list[Finding] = []
     missing: list[tuple[str, str]] = []
-    lines = src.splitlines()
+    tops = top_packages()
     for eco, name, n in dependency_lines(src, Path(rel).name):
         rec = cache.get(eco, name)
         if rec is None:
             missing.append((eco, name))
-            continue
-        text = lines[n - 1] if n <= len(lines) else name
-        if rec.get("exists") is False:
-            findings.append(_l4(rel, n, text, name, eco, "package-does-not-exist", "critical", "high",
-                f"Package '{name}' does not exist on {eco}",
-                f"'{name}' is not a real package. AI tools sometimes invent names, and an attacker can register that name and "
-                "ship malware. Remove it or use the real package."))
-            continue
-        fr = rec.get("first_release")
-        try:
-            young = fr and (now - dt.datetime.fromisoformat(fr).replace(tzinfo=dt.timezone.utc)).days < NEW_PACKAGE_DAYS
-        except ValueError:
-            young = False
-        if young:
-            findings.append(_l4(rel, n, text, name, eco, "package-very-new", "high", "medium",
-                f"Package '{name}' was first published less than {NEW_PACKAGE_DAYS} days ago",
-                f"'{name}' is brand new. New packages are a common way to deliver malware; check it is the one you meant."))
+        else:
+            findings += evaluate_record(eco, name, rec, rel, n, now, tops, source="proofgate-inline")
     return findings, missing
-
-
-def _l4(rel, line, text, name, eco, rule, severity, confidence, title, plain) -> Finding:
-    fp = f"sha256:{rule}|{rel}|{short_hash(eco + ':' + name)}"
-    return Finding(
-        id=finding_id(fp), fingerprint=fp, layer=4, category="supply-chain", rule=rule, cwe="CWE-829",
-        severity=severity, confidence=confidence, title=f"{title} ({rel}:{line})", plain_words=plain,
-        location={"file": rel, "line": line}, sources=["proofgate-inline"], fix_tier=None,
-        interrupt_human=severity == "critical",
-    )
 
 
 # ------------------------------------------------------------------------------------ entry point

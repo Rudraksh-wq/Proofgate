@@ -20,5 +20,5 @@ proofgate = "proofgate.cli:main"
 include = ["proofgate*"]
 
 [tool.setuptools.package-data]
-proofgate = ["tools.lock.json", "rules/*.yaml"]
+proofgate = ["tools.lock.json", "rules/*.yaml", "data/*.json"]
 
