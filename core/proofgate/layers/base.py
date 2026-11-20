@@ -26,6 +26,12 @@ class LayerResult:
     findings: list[Finding] = field(default_factory=list)
     tools: list[ToolRecord] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)  # e.g. "betterleaks skipped: not installed"
+    # filled by the probe layer (L8) only
+    tested_tables: list[str] = field(default_factory=list)
+    tested_routes: list[str] = field(default_factory=list)
+    untested: list[str] = field(default_factory=list)
+    receipt_counts: tuple[int, int] | None = None  # (contract rules attacked, rules held)
+    target_overrides: list[str] = field(default_factory=list)
 
     @property
     def count(self) -> int:

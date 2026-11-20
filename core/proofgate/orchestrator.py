@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Awaitable, Callable
 
-from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain
+from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l8_access
 from .layers.base import LayerResult, Runner, run_tool
 from .models import LIMITS_STATEMENT, Receipt, Report, Tested, ToolRecord
 from .normalize import normalize
@@ -22,8 +22,9 @@ from .redact import redact
 from .sarif import to_sarif
 from .report_html import to_html
 
-ALL_LAYERS = list(range(1, 10))
+ALL_LAYERS = list(range(1, 10))  # --full: everything, including the probe (L8) which starts the app
 FAST_LAYERS = [1, 2, 3, 4, 6, 9]  # plan 2 tiering: fast = L1-L4, L6, L9 on the changed files
+DEFAULT_LAYERS = FAST_LAYERS  # a plain `scan` never launches the app; use --full or `prove`
 FAST_TIMEOUT_S = 10.0
 _STATUS_BADNESS = ["ok", "skipped", "unpinned", "timeout", "mismatch", "error"]
 _TOOL_ERRORS = {"error", "mismatch"}  # skipped/unpinned are recorded, not errors: the user can see and fix them
@@ -47,10 +48,13 @@ async def _call(layer: int, project: Path, runner: Runner, kw: dict[str, Any]) -
     if layer == 4:
         return await l4_supply_chain.run(project, cache=kw.get("cache"), client=kw.get("client"), offline=kw.get("offline"),
                                          tools_dir=kw.get("tools_dir"), **common)
+    if layer == 8:
+        return await l8_access.run(project, contract=kw.get("contract"), target=kw.get("target"),
+                                   i_own_this=bool(kw.get("i_own_this")))
     raise NotImplementedError(layer)
 
 
-IMPLEMENTED = {1, 2, 3, 4}
+IMPLEMENTED = {1, 2, 3, 4, 8}
 
 
 def _git_commit(project: Path) -> str | None:
@@ -79,11 +83,11 @@ def _worst_tools(results: list[LayerResult]) -> list[ToolRecord]:
     return sorted(best.values(), key=lambda t: t.name)
 
 
-async def run_scan(project_dir: str | Path, *, layers: list[int] | None = None, fast: bool = False,
+async def run_scan(project_dir: str | Path, *, layers: list[int] | None = None, fast: bool = False, full: bool = False,
                    runner: Runner = run_tool, fast_timeout: float = FAST_TIMEOUT_S, **layer_kwargs: Any) -> ScanOutcome:
-    """layer_kwargs: lock, tools_dir, offline, cache, client (passed to the layers that use them)."""
+    """layer_kwargs: lock, tools_dir, offline, cache, client (layers 1-4); contract, target, i_own_this (layer 8)."""
     project = Path(project_dir).resolve()
-    requested = sorted(set(layers if layers else (FAST_LAYERS if fast else ALL_LAYERS)))
+    requested = sorted(set(layers if layers else (FAST_LAYERS if fast else ALL_LAYERS if full else DEFAULT_LAYERS)))
     runnable = [n for n in requested if n in IMPLEMENTED]
     notes = [f"layer {n}: not built yet in this version: not run" for n in requested if n not in IMPLEMENTED]
     tool_error = False
@@ -115,12 +119,16 @@ async def run_scan(project_dir: str | Path, *, layers: list[int] | None = None, 
     raw = [f for res in results for f in res.findings]
     norm = normalize(raw)
 
+    probe = next((r for r in results if r.layer == 8), None)
+    attacked, held = (probe.receipt_counts or (0, 0)) if probe else (0, 0)
     report = Report(
         project=project.name, scanned_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         layers_run=sorted(layers_run), raw_warning_count=norm.raw_warning_count, unique_count=norm.unique_count,
         proven_count=norm.proven_count, findings=norm.findings, fixes=[],
-        receipt=Receipt(rules_attacked=0, rules_held=0, commit=_git_commit(project)),
-        tested=Tested(), untested=[], tools=tools, limits_statement=LIMITS_STATEMENT, notes=notes,
+        receipt=Receipt(rules_attacked=attacked, rules_held=held, commit=_git_commit(project)),
+        tested=Tested(tables=probe.tested_tables if probe else [], routes=probe.tested_routes if probe else []),
+        untested=probe.untested if probe else [], tools=tools, limits_statement=LIMITS_STATEMENT, notes=notes,
+        target_overrides=probe.target_overrides if probe else [],
     )
     report = report.model_copy(update={"receipt": report.receipt.model_copy(update={"report_hash": report_hash(report)})})
     return ScanOutcome(report, results, tool_error)

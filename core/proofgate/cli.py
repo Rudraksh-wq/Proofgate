@@ -14,7 +14,7 @@ from pathlib import Path
 
 from .models import AcceptedRisk, Contract, Finding, FixResult, Report
 from .redact import redact, redact_obj
-from .sample import SAMPLE_CONTRACT, SAMPLE_FINDING, SAMPLE_FIX
+from .sample import SAMPLE_FIX
 
 SEV = ["low", "medium", "high", "critical"]
 FORMATS = ["json", "sarif", "html", "agent"]
@@ -54,11 +54,20 @@ def cmd_init(a) -> int:
 
 
 def cmd_contract(a) -> int:
-    _project(a.dir)
-    data = dict(SAMPLE_CONTRACT)
+    """Show the Intent Contract (a deterministic draft until the Gemini contract lands). --confirm records that a
+    human accepted it; unconfirmed results are labelled "against draft contract"."""
+    from .probe import load_contract
+
+    d = _project(a.dir)
+    contract = load_contract(d)
     if a.confirm:
-        data["confirmed_by_user"] = True
-    print(_dump(Contract.model_validate(data)))
+        contract = contract.model_copy(update={"confirmed_by_user": True})
+    out = d / ".proofgate"
+    out.mkdir(exist_ok=True)
+    (out / "contract.json").write_text(_dump(contract), encoding="utf-8", newline="\n")
+    print(_dump(contract))
+    if not contract.confirmed_by_user:
+        print("note: draft contract. Check the rules, then run `proofgate contract <dir> --confirm`.", file=sys.stderr)
     return 0
 
 
@@ -88,7 +97,7 @@ def cmd_scan(a) -> int:
             raise CliError(f"--layers must be comma-separated integers 1-9, got {a.layers!r}")
         if any(not 1 <= x <= 9 for x in layers):
             raise CliError("--layers values must be between 1 and 9")
-    outcome = asyncio.run(run_scan(d, layers=layers, fast=a.fast))
+    outcome = asyncio.run(run_scan(d, layers=layers, fast=a.fast, full=a.full))
     report = outcome.report
     paths = write_outputs(d, report, sarif=a.format == "sarif")
     if a.format == "json":
@@ -107,11 +116,21 @@ def cmd_scan(a) -> int:
 
 
 def cmd_prove(a) -> int:
-    _project(a.dir)
-    _check_target(a)
-    f = Finding.model_validate(SAMPLE_FINDING)
-    print(_dump(f))
-    return _exit_for([f], a.fail_on)
+    """Run layer 8 only: attack the app as a second user on a throwaway database. Writes .proofgate/report.json."""
+    import asyncio
+
+    from .orchestrator import run_scan, write_outputs
+
+    d = _project(a.dir)
+    outcome = asyncio.run(run_scan(d, layers=[8], target=a.target, i_own_this=a.i_own_this))
+    report = outcome.report
+    write_outputs(d, report)
+    print(_dump(report))
+    if outcome.tool_error:
+        print("error: the probe could not run; this result is NOT a clean bill of health (see notes in the report)",
+              file=sys.stderr)
+        return 2
+    return _exit_for(report.findings, a.fail_on)
 
 
 def cmd_fix(a) -> int:

@@ -38,7 +38,7 @@ def test_scan_vulnerable_app_writes_a_real_report_and_exits_1(capsys, vuln_app):
     assert report.layers_run == [1, 2, 3, 4]
     assert {f.rule for f in report.findings} >= {"stripe-live-secret-key", "supabase-service-role-key"}
     assert report.limits_statement and "doesn't mean your app is secure" in report.limits_statement
-    assert any("layer 5: not built yet" in n for n in report.notes)  # unbuilt layers are said out loud
+    assert any("layer 6: not built yet" in n for n in report.notes)  # unbuilt layers are said out loud
     assert (vuln_app / ".proofgate" / "report.html").is_file()
     assert json.loads(out)["schema"] == "proofgate.report/v1"
 
@@ -109,9 +109,9 @@ def test_tool_errors_exit_2(capsys, app, tmp_path, argv):
     assert main(argv) == 2
 
 
-def test_prove_with_i_own_this_allows_remote_target(capsys, app):
-    code, _, _ = run(capsys, "prove", str(app), "--target", "http://example.com", "--i-own-this")
-    assert code == 1
+def test_prove_with_i_own_this_allows_the_target_and_logs_it(capsys, vuln_app):
+    code, out, _ = run(capsys, "prove", str(vuln_app), "--target", "http://proofgate-test.invalid", "--i-own-this")
+    assert json.loads(out)["target_overrides"] == ["http://proofgate-test.invalid (--i-own-this)"]
 
 
 def test_contract_confirm(capsys, app):
@@ -129,9 +129,32 @@ def test_fix_and_verify_return_fixresult(capsys, app, tmp_path):
     assert code == 0 and FixResult.model_validate_json(out).accepted
 
 
-def test_prove_returns_finding(capsys, app):
-    code, out, _ = run(capsys, "prove", str(app))
-    assert code == 1 and Finding.model_validate_json(out).proven
+def test_prove_attacks_the_app_and_reports_a_proven_finding(capsys, tmp_path):
+    dst = tmp_path / "v01"
+    shutil.copytree(CORPUS / "v01_idor_read", dst)
+    code, out, _ = run(capsys, "prove", str(dst))
+    report = Report.model_validate_json(out)
+    assert code == 1 and report.layers_run == [8] and report.proven_count == 1
+    assert report.findings[0].rule == "cross-user-read" and report.findings[0].proven
+
+
+def test_prove_on_a_clean_app_exits_0(capsys, tmp_path):
+    dst = tmp_path / "c01"
+    shutil.copytree(CORPUS / "c01_clean", dst)
+    code, out, _ = run(capsys, "prove", str(dst))
+    assert code == 0 and json.loads(out)["proven_count"] == 0
+
+
+def test_contract_is_saved_as_a_draft_and_can_be_confirmed(capsys, tmp_path):
+    dst = tmp_path / "c01"
+    shutil.copytree(CORPUS / "c01_clean", dst)
+    code, out, err = run(capsys, "contract", str(dst))
+    c = Contract.model_validate_json(out)
+    assert code == 0 and not c.confirmed_by_user and c.owned_resources[0].name == "notes" and "draft contract" in err
+    assert (dst / ".proofgate" / "contract.json").is_file()
+    code, out, _ = run(capsys, "contract", str(dst), "--confirm")
+    assert Contract.model_validate_json(out).confirmed_by_user
+    assert Contract.model_validate_json((dst / ".proofgate" / "contract.json").read_text(encoding="utf-8")).confirmed_by_user
 
 
 def test_accept_parses_relative_expiry(capsys):

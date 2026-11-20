@@ -71,7 +71,7 @@ async def test_report_has_limits_tools_notes_and_a_verifiable_hash():
     r = (await scan_corpus()).report
     assert r.limits_statement == LIMITS_STATEMENT
     assert {t.name: t.status for t in r.tools}["semgrep"] == "skipped"
-    assert any("layer 5: not built yet" in n for n in r.notes) and any("semgrep" in n and "skipped" in n for n in r.notes)
+    assert any("layer 6: not built yet" in n for n in r.notes) and any("semgrep" in n and "skipped" in n for n in r.notes)
     assert r.receipt.report_hash == report_hash(r) and r.receipt.report_hash.startswith("sha256:")
     changed = r.model_copy(update={"unique_count": r.unique_count + 1})
     assert report_hash(changed) != r.receipt.report_hash
@@ -101,7 +101,7 @@ async def test_fast_mode_times_out_a_slow_layer_and_says_so(monkeypatch):
 
 
 async def test_nothing_ran_is_an_error_not_clean():
-    out = await run_scan(CORPUS / "c01_clean", layers=[5, 8], runner=runner_with(), offline=True)
+    out = await run_scan(CORPUS / "c01_clean", layers=[5, 7], runner=runner_with(), offline=True)
     assert out.tool_error and out.report.layers_run == [] and len(out.report.notes) == 2
 
 
