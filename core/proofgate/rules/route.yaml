@@ -1,0 +1,43 @@
+rules:
+  - id: proofgate.next-route-service-role-client
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: A route handler uses the Supabase service_role key. That key skips every row-level-security policy.
+    paths:
+      include: ["**/route.ts", "**/route.js", "**/route.tsx"]
+    pattern-either:
+      - pattern: process.env.SUPABASE_SERVICE_ROLE_KEY
+      - pattern: process.env.SERVICE_ROLE_KEY
+    metadata:
+      cwe: ["CWE-863: Incorrect Authorization"]
+      category: access
+      confidence: HIGH
+      fix_tier: B
+      plain_words: This route talks to the database with an all-powerful key, so the database's own protection no longer applies. Use the signed-in user's client, or check ownership yourself.
+
+  - id: proofgate.next-route-no-auth-check
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: A route handler never checks who is calling it. Auth done only in middleware.ts can be bypassed (CVE-2025-29927).
+    paths:
+      include: ["**/route.ts", "**/route.js", "**/route.tsx"]
+    patterns:
+      - pattern: |
+          export async function $M($REQ, ...) { ... }
+      - pattern-not: |
+          export async function $M($REQ, ...) { ... $X.auth.getUser(...) ... }
+      - pattern-not: |
+          export async function $M($REQ, ...) { ... $X.auth.getSession(...) ... }
+      - pattern-not: |
+          export async function $M($REQ, ...) { ... auth() ... }
+      - pattern-not: |
+          export async function $M($REQ, ...) { ... getServerSession(...) ... }
+      - metavariable-regex:
+          metavariable: $M
+          regex: ^(GET|POST|PUT|PATCH|DELETE)$
+    metadata:
+      cwe: ["CWE-306: Missing Authentication for Critical Function"]
+      category: access
+      confidence: LOW
+      fix_tier: B
+      plain_words: This route does not check who is calling. If your only login check lives in middleware.ts, a crafted request can skip it. Check the user inside the route too.

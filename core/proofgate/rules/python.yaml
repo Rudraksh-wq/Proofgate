@@ -1,0 +1,204 @@
+rules:
+  - id: proofgate.py-sql-injection
+    languages: [python]
+    mode: taint
+    severity: ERROR
+    message: User input reaches a SQL string that is built by hand instead of using placeholders.
+    metadata:
+      cwe: ["CWE-89: Improper Neutralization of Special Elements used in an SQL Command"]
+      category: injection
+      confidence: HIGH
+      fix_tier: A
+      plain_words: Text typed by a visitor is pasted into a database query, so a visitor can change what the query does. Use placeholders (?) instead.
+    pattern-sources:
+      - pattern-either:
+          - pattern: request.args
+          - pattern: request.form
+          - pattern: request.values
+          - pattern: request.json
+          - pattern: request.get_json(...)
+          - pattern: request.headers
+          - pattern: request.cookies
+    pattern-sanitizers:
+      # allow-list idiom: ALLOWED_COLUMNS.get(user_value, "default") returns only trusted constants
+      - patterns:
+          - pattern: $D.get(...)
+          - metavariable-regex:
+              metavariable: $D
+              regex: ^[A-Z][A-Z0-9_]*$
+    pattern-sinks:
+      - patterns:
+          - pattern: $C.execute($Q, ...)
+          - focus-metavariable: $Q
+
+  - id: proofgate.py-shell-true
+    languages: [python]
+    severity: ERROR
+    message: A command is run through a shell (shell=True). If any part comes from a user, they can run their own commands.
+    pattern: subprocess.$F(..., shell=True, ...)
+    metadata:
+      cwe: ["CWE-78: Improper Neutralization of Special Elements used in an OS Command"]
+      category: injection
+      confidence: HIGH
+      fix_tier: A
+      plain_words: The app starts a program through a shell. If any piece of that command comes from a visitor, they can run commands on your server. Pass the arguments as a list and drop shell=True.
+
+  - id: proofgate.py-os-system
+    languages: [python]
+    severity: ERROR
+    message: os.system / os.popen run a shell command built from a non-constant string.
+    patterns:
+      - pattern-either:
+          - pattern: os.system($X)
+          - pattern: os.popen($X)
+      - pattern-not: os.system("...")
+      - pattern-not: os.popen("...")
+    metadata:
+      cwe: ["CWE-78: Improper Neutralization of Special Elements used in an OS Command"]
+      category: injection
+      confidence: MEDIUM
+      fix_tier: A
+      plain_words: The app runs a shell command that is not a fixed string. Use subprocess with an argument list instead.
+
+  - id: proofgate.py-flask-debug-true
+    languages: [python]
+    severity: WARNING
+    message: Flask is started with debug=True, which exposes an interactive debugger.
+    pattern: $APP.run(..., debug=True, ...)
+    metadata:
+      cwe: ["CWE-489: Active Debug Code"]
+      category: config
+      confidence: HIGH
+      fix_tier: A
+      plain_words: Debug mode is switched on. If this runs on a public server, anyone can run code through the debugger page. Read the flag from an environment variable and default it to off.
+
+  - id: proofgate.py-requests-verify-false
+    languages: [python]
+    severity: WARNING
+    message: TLS certificate checking is turned off.
+    pattern-either:
+      - pattern: requests.$F(..., verify=False, ...)
+      - pattern: ssl._create_unverified_context(...)
+    metadata:
+      cwe: ["CWE-295: Improper Certificate Validation"]
+      category: web
+      confidence: HIGH
+      fix_tier: A
+      plain_words: The app talks to another server without checking who it is, so someone on the network can pretend to be that server. Remove verify=False.
+
+  - id: proofgate.py-jwt-no-verify
+    languages: [python]
+    severity: ERROR
+    message: A JWT is decoded without checking its signature.
+    pattern-either:
+      - pattern: jwt.decode(..., verify=False, ...)
+      - pattern: 'jwt.decode(..., options={..., "verify_signature": False, ...}, ...)'
+    metadata:
+      cwe: ["CWE-347: Improper Verification of Cryptographic Signature"]
+      category: access
+      confidence: HIGH
+      plain_words: The app reads a login token without checking it was really issued by you, so anyone can forge one.
+
+  - id: proofgate.py-flask-hardcoded-secret-key
+    languages: [python]
+    severity: WARNING
+    message: The Flask SECRET_KEY is a string written in the code.
+    patterns:
+      - pattern-either:
+          - pattern: $APP.secret_key = "..."
+          - pattern: $APP.config["SECRET_KEY"] = "..."
+      - pattern-not: $APP.secret_key = ""
+    metadata:
+      cwe: ["CWE-798: Use of Hard-coded Credentials"]
+      category: secrets
+      confidence: MEDIUM
+      fix_tier: A
+      plain_words: The key that signs login cookies is written in the code. Anyone who can read the code can forge sessions. Load it from an environment variable.
+
+  - id: proofgate.py-unsafe-deserialization
+    languages: [python]
+    severity: ERROR
+    message: Untrusted data may be deserialised with pickle or an unsafe YAML loader.
+    patterns:
+      - pattern-either:
+          - pattern: pickle.loads(...)
+          - pattern: pickle.load(...)
+          - pattern: yaml.load($X)
+          - pattern: yaml.load($X, Loader=yaml.Loader)
+          - pattern: yaml.load($X, Loader=yaml.UnsafeLoader)
+    metadata:
+      cwe: ["CWE-502: Deserialization of Untrusted Data"]
+      category: injection
+      confidence: MEDIUM
+      plain_words: Loading data with pickle or the unsafe YAML loader can run code chosen by whoever made the data. Use json or yaml.safe_load.
+
+  - id: proofgate.py-flask-ssti
+    languages: [python]
+    severity: ERROR
+    message: render_template_string is called with a template that is not a constant string.
+    patterns:
+      - pattern: render_template_string($T, ...)
+      - pattern-not: render_template_string("...", ...)
+    metadata:
+      cwe: ["CWE-1336: Improper Neutralization of Special Elements Used in a Template Engine"]
+      category: injection
+      confidence: MEDIUM
+      plain_words: A page template is built from text that may come from a visitor, which lets them run code inside your template engine. Use a template file and pass the data as variables.
+
+  - id: proofgate.py-path-traversal
+    languages: [python]
+    mode: taint
+    severity: ERROR
+    message: User input is used as a file path.
+    metadata:
+      cwe: ["CWE-22: Improper Limitation of a Pathname to a Restricted Directory"]
+      category: injection
+      confidence: HIGH
+      plain_words: A visitor can choose which file the server opens, for example "../../etc/passwd". Check the name against a fixed folder before opening it.
+    pattern-sources:
+      - pattern-either:
+          - pattern: request.args
+          - pattern: request.form
+          - pattern: request.values
+          - pattern: request.view_args
+    pattern-sanitizers:
+      - pattern: secure_filename(...)
+    pattern-sinks:
+      - pattern-either:
+          - pattern: open($P, ...)
+          - pattern: send_file($P, ...)
+          - pattern: send_from_directory($D, $P, ...)
+
+  - id: proofgate.py-ssrf
+    languages: [python]
+    mode: taint
+    severity: WARNING
+    message: User input decides which URL the server fetches.
+    metadata:
+      cwe: ["CWE-918: Server-Side Request Forgery (SSRF)"]
+      category: injection
+      confidence: MEDIUM
+      plain_words: A visitor can make your server fetch any web address, including internal ones. Only allow addresses from a fixed list.
+    pattern-sources:
+      - pattern-either:
+          - pattern: request.args
+          - pattern: request.form
+          - pattern: request.values
+          - pattern: request.json
+    pattern-sinks:
+      - patterns:
+          - pattern: requests.$F($URL, ...)
+          - focus-metavariable: $URL
+
+  - id: proofgate.py-cors-wildcard-credentials
+    languages: [python]
+    severity: WARNING
+    message: CORS allows every origin together with credentials.
+    pattern-either:
+      - pattern: CORS($APP, ..., supports_credentials=True, ..., origins="*", ...)
+      - pattern: CORS($APP, ..., origins="*", ..., supports_credentials=True, ...)
+    metadata:
+      cwe: ["CWE-942: Permissive Cross-domain Policy with Untrusted Domains"]
+      category: config
+      confidence: MEDIUM
+      plain_words: Any website can make a signed-in visitor's browser call your API. Only list the sites you own.
