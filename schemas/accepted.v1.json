@@ -1,6 +1,19 @@
 {
   "additionalProperties": false,
   "properties": {
+    "created": {
+      "anyOf": [
+        {
+          "format": "date",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created"
+    },
     "expires": {
       "format": "date",
       "title": "Expires",
@@ -9,6 +22,11 @@
     "fingerprint": {
       "title": "Fingerprint",
       "type": "string"
+    },
+    "forced": {
+      "default": false,
+      "title": "Forced",
+      "type": "boolean"
     },
     "owner": {
       "title": "Owner",

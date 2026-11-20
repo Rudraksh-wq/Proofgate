@@ -169,11 +169,15 @@ def stop(payload: dict[str, Any], *, project_dir: str | None = None) -> HookOutc
         r = Report.model_validate_json(report.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return out
+    from .accepted import forced_lines
+
     proven = [f for f in r.findings if f.proven and f.status in ("open", "fixing")]
-    if not proven:
+    forced = forced_lines(r.accepted_risks)
+    if not proven and not forced:
         return out
-    lines = [f"ProofGate: {len(proven)} proven problem(s) are still open in this project:"]
+    lines = [f"ProofGate: {len(proven)} proven problem(s) are still open in this project:"] if proven else []
     lines += [f"- {f.title.split(' (')[0]} ({f.location.file}:{f.location.line})" for f in proven[:5]]
+    lines += forced[:3]
     lines.append("Ask ProofGate to fix them: /proofgate-fix <id>. " + (r.limits_statement or ""))
     out.stdout = json.dumps({"systemMessage": redact("\n".join(lines[:MAX_MESSAGE_LINES]))})
     return out

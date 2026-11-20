@@ -181,6 +181,19 @@ class ToolRecord(_Strict):
     status: Literal["ok", "skipped", "mismatch", "unpinned", "timeout", "error"]
 
 
+class AcceptedSummary(_Strict):
+    """One accepted risk as listed in a report (the finding itself stays in `findings` with status accepted-risk)."""
+    fingerprint: str
+    finding_id: str
+    title: str
+    severity: Severity
+    proven: bool = False
+    reason: str
+    owner: str
+    expires: dt.date
+    forced: bool = False
+
+
 class Report(_Versioned):
     schema_id: Literal["proofgate.report/v1"] = Field(REPORT_SCHEMA, alias="schema")
     project: str
@@ -198,6 +211,7 @@ class Report(_Versioned):
     limits_statement: str | None = None
     fail_open_count: int = 0  # hook fail-open events (plan 6.3)
     target_overrides: list[str] = Field(default_factory=list)  # --i-own-this targets (plan 3.2)
+    accepted_risks: list[AcceptedSummary] = Field(default_factory=list)  # findings a person accepted (proofgate accept)
     notes: list[str] = Field(default_factory=list)  # skipped tools, offline lookups, layers not run (never silent)
 
 
@@ -208,6 +222,8 @@ class AcceptedRisk(_Versioned):
     reason: str
     owner: str
     expires: dt.date
+    forced: bool = False  # written with --force: required to accept a finding that is proven and critical
+    created: dt.date | None = None
 
     def is_expired(self, today: dt.date | None = None) -> bool:
         return (today or dt.date.today()) > self.expires

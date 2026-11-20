@@ -1,5 +1,67 @@
 {
   "$defs": {
+    "AcceptedSummary": {
+      "additionalProperties": false,
+      "description": "One accepted risk as listed in a report (the finding itself stays in `findings` with status accepted-risk).",
+      "properties": {
+        "expires": {
+          "format": "date",
+          "title": "Expires",
+          "type": "string"
+        },
+        "finding_id": {
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "fingerprint": {
+          "title": "Fingerprint",
+          "type": "string"
+        },
+        "forced": {
+          "default": false,
+          "title": "Forced",
+          "type": "boolean"
+        },
+        "owner": {
+          "title": "Owner",
+          "type": "string"
+        },
+        "proven": {
+          "default": false,
+          "title": "Proven",
+          "type": "boolean"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fingerprint",
+        "finding_id",
+        "title",
+        "severity",
+        "reason",
+        "owner",
+        "expires"
+      ],
+      "title": "AcceptedSummary",
+      "type": "object"
+    },
     "Evidence": {
       "additionalProperties": false,
       "properties": {
@@ -647,6 +709,13 @@
   },
   "additionalProperties": false,
   "properties": {
+    "accepted_risks": {
+      "items": {
+        "$ref": "#/$defs/AcceptedSummary"
+      },
+      "title": "Accepted Risks",
+      "type": "array"
+    },
     "fail_open_count": {
       "default": 0,
       "title": "Fail Open Count",
