@@ -81,7 +81,7 @@ def test_builtin_rules(kind, rule, sev, no_leaks):
 
 
 def test_private_key_block_is_critical():
-    (f,) = l1.scan_text("-----BEGIN RSA PRIVATE KEY-----\nabc\n", "k.pem")
+    (f,) = l1.scan_text("-----BEGIN RSA PRIV" + "ATE KEY-----\nabc\n", "k.pem")  # built at run time
     assert f.severity == "critical"
 
 

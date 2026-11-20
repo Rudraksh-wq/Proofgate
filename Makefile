@@ -12,3 +12,7 @@ test: corpus
 .PHONY: bench
 bench:
 	$(PYTHON) bench/run_bench.py
+
+.PHONY: smoke
+smoke:
+	$(PYTHON) scripts/smoke.py
