@@ -100,7 +100,8 @@ async def test_fast_mode_times_out_a_slow_layer_and_says_so(monkeypatch):
     assert any("timed out" in n and "layer 2" in n for n in out.report.notes)
 
 
-async def test_nothing_ran_is_an_error_not_clean():
+async def test_nothing_ran_is_an_error_not_clean(monkeypatch):
+    monkeypatch.setattr("proofgate.orchestrator.IMPLEMENTED", {1})  # every layer is built now: pretend 7 is not
     out = await run_scan(CORPUS / "c01_clean", layers=[7], runner=runner_with(), offline=True)
     assert out.tool_error and out.report.layers_run == [] and len(out.report.notes) == 1
 

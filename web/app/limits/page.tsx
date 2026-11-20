@@ -32,7 +32,7 @@ export default function Limits() {
       <ul>
         <li><b>&ldquo;Proven&rdquo; means proven against your contract.</b> A canary crossing a boundary is strong evidence, but a wrong contract or a wrong seed can still mislead. Results against an unconfirmed contract are labelled as a draft.</li>
         <li><b>Untested is not safe.</b> A table that could not be seeded, or a route that could not be reached, is listed as untested.</li>
-        <li><b>Layer 7 is not built yet.</b> Reports say which layers ran.</li>
+        <li><b>Layer 7 is a passive check, and without ZAP it is a basic one.</b> With ZAP installed ProofGate runs a passive ZAP scan of the running app on localhost (not yet verified against a real install). Without it, it runs <code>dast-lite</code>: security headers, cookie flags, CORS, exposed source maps and directory listings. <code>dast-lite</code> is not equal to ZAP, and its findings are labelled so. Layer 7 never scans anything but localhost.</li>
         <li><b>The live Supabase checks need a test project.</b> Without one, ProofGate checks your migrations statically and says so. No Docker is required.</li>
         <li><b>Hosted mode sends test traffic to your own Supabase project.</b> It signs up throwaway users, plants canary rows, attacks the project as a second user and deletes them again. <b>No source code is sent.</b> It only runs against a project whose ref you put on an allow-list, and only when you confirm with <code>--i-own-this</code>; each hosted run is logged in the report.</li>
         <li><b>The benchmark is small and synthetic.</b> See <a href="/benchmark/">the benchmark page</a> for exactly what was measured and what was not.</li>

@@ -37,7 +37,7 @@ def finding(fp="sha256:one", *, severity="high", proven=False, title="Something 
 @pytest.fixture
 def app(tmp_path):
     dst = tmp_path / "app"
-    shutil.copytree(CORPUS / "v09_hardcoded_keys", dst)
+    shutil.copytree(CORPUS / "v09_hardcoded_keys", dst, ignore=shutil.ignore_patterns(".proofgate"))
     return dst
 
 
@@ -91,7 +91,7 @@ def test_cli_expires_accepts_a_date_and_rejects_nonsense(capsys, tmp_path):
 
 def test_a_hand_edited_unreadable_file_is_a_note_and_every_finding_stays_open(app):
     p = app / ".proofgate"
-    p.mkdir()
+    p.mkdir(exist_ok=True)
     (p / "accepted.yml").write_text("accepted:\n  - this is not the format\n", encoding="utf-8")
     import asyncio
 
