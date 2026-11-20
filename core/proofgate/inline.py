@@ -227,9 +227,13 @@ _JS_RULES: list[tuple[str, re.Pattern[str]]] = [
     ("proofgate.js-innerhtml-assignment", re.compile(r"""\.innerHTML\s*=(?!=)(?!\s*["'][^"']*["']\s*;?\s*$)\s*\S""")),
     ("proofgate.js-child-process-exec",
      re.compile(r"""\b(?:exec|execSync)\(\s*(?:`[^`]*\$\{|[^)`]*["']\s*\+|\w+\s*\+)""")),
-    ("proofgate.js-supabase-rpc-string-sql", re.compile(r"""\.rpc\(\s*[^,]+,\s*\{[^}]*:\s*(?:`[^`]*\$\{|[^}]*["']\s*\+)""")),
     ("proofgate.js-public-env-secret",
      re.compile(r"""process\.env\.NEXT_PUBLIC_\w*(?:SERVICE|SECRET|PRIVATE)\w*""")),
+]
+# calls that are usually formatted over several lines are matched against the whole file, not line by line
+_JS_MULTILINE_RULES: list[tuple[str, re.Pattern[str]]] = [
+    ("proofgate.js-supabase-rpc-string-sql",
+     re.compile(r"""\.rpc\(\s*[^,()]+,\s*\{[^}]*?:\s*(?:`[^`]*\$\{|[^},]*["']\s*\+)""", re.DOTALL)),
 ]
 _ROUTE_SERVICE_ROLE = re.compile(r"""process\.env\.(?:SUPABASE_)?SERVICE_ROLE_KEY""")
 _JS_EXT = {".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"}
@@ -247,6 +251,12 @@ def js_findings(src: str, rel: str) -> list[Finding]:
                 out.append(_mk(rule, rel, n, line))
         if is_route and _ROUTE_SERVICE_ROLE.search(line):
             out.append(_mk("proofgate.next-route-service-role-client", rel, n, line))
+    lines = src.splitlines()
+    uncommented = "\n".join("" if ln.lstrip().startswith(("//", "*", "/*")) else ln for ln in lines)
+    for rule, rx in _JS_MULTILINE_RULES:
+        for m in rx.finditer(uncommented):
+            n = uncommented.count("\n", 0, m.start()) + 1
+            out.append(_mk(rule, rel, n, lines[n - 1] if n <= len(lines) else ""))
     return out
 
 

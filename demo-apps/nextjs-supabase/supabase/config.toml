@@ -1,0 +1,16 @@
+# Local Supabase stack for the ProofGate demo (`supabase start`). Nothing here points at a hosted project.
+project_id = "proofgate-demo"
+
+[api]
+port = 54321
+
+[db]
+port = 54322
+major_version = 15
+
+[auth]
+site_url = "http://localhost:3000"
+enable_signup = true
+
+[auth.email]
+enable_confirmations = false
