@@ -13,7 +13,7 @@ from ..layers.base import iter_files, read_text
 from ..models import Contract, OwnedResource
 
 OWNER_COLUMNS = ("owner_id", "user_id", "author_id", "created_by")
-_CREATE = re.compile(r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[\"`]?(\w+)[\"`]?\s*\((.*?)\)\s*;", re.IGNORECASE | re.DOTALL)
+_CREATE = re.compile(r"CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?[\"`]?(\w+)[\"`]?\s*\((.*?)\)\s*;", re.IGNORECASE | re.DOTALL)
 _USER_TABLES = {"users", "user", "profiles", "accounts", "auth_users"}
 
 
