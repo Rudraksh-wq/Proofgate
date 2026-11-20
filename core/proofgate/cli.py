@@ -1,4 +1,4 @@
-"""ProofGate CLI (plan 6.1). Stubs: every command returns correctly shaped SAMPLE data.
+"""ProofGate CLI (plan 6.1). `scan` and `report` are real; the other commands are still stubs that return SAMPLE data.
 
 Exit codes: 0 = clean at --fail-on, 1 = findings, 2 = tool error (never "clean").
 `hook` is the exception: it must never break the agent, so errors are logged and exit 0.
@@ -13,8 +13,8 @@ import sys
 from pathlib import Path
 
 from .models import AcceptedRisk, Contract, Finding, FixResult, Report
-from .redact import redact_obj
-from .sample import SAMPLE_CONTRACT, SAMPLE_FINDING, SAMPLE_FIX, sample_report
+from .redact import redact, redact_obj
+from .sample import SAMPLE_CONTRACT, SAMPLE_FINDING, SAMPLE_FIX
 
 SEV = ["low", "medium", "high", "critical"]
 FORMATS = ["json", "sarif", "html", "agent"]
@@ -62,36 +62,23 @@ def cmd_contract(a) -> int:
     return 0
 
 
-def _sarif_stub(report: Report) -> str:
-    results = [
-        {
-            "ruleId": f.rule,
-            "level": "error" if f.severity in ("critical", "high") else "warning",
-            "message": {"text": f.title},
-            "locations": [{"physicalLocation": {
-                "artifactLocation": {"uri": f.location.file},
-                "region": {"startLine": f.location.line},
-            }}],
-        }
-        for f in report.findings
-    ]
-    doc = {
-        "version": "2.1.0",
-        "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
-        "runs": [{"tool": {"driver": {"name": "ProofGate"}}, "results": results}],
-    }
-    return json.dumps(doc, indent=2)
-
-
 def _agent_text(report: Report) -> str:
-    lines = [f"ProofGate: {report.unique_count} unique, {report.proven_count} proven."]
-    for f in report.findings[:10]:
-        lines.append(f"- [{f.severity}] {f.title} ({f.location.file}:{f.location.line})")
+    """Short plain text for an AI agent: counts, the top findings, the limits sentence. At most 20 lines."""
+    lines = [f"ProofGate: {report.raw_warning_count} raw -> {report.unique_count} unique -> {report.proven_count} proven."]
+    for f in report.findings[:14]:
+        lines.append(f"- [{f.severity}{', proven' if f.proven else ''}] {f.title.split(' (')[0]} ({f.location.file}:{f.location.line})")
+    if len(report.findings) > 14:
+        lines.append(f"... and {len(report.findings) - 14} more in .proofgate/report.json")
+    lines.extend(f"note: {n}" for n in report.notes[:2])
     lines.append(report.limits_statement or "")
-    return "\n".join(lines)
+    return "\n".join(lines[:20])
 
 
 def cmd_scan(a) -> int:
+    import asyncio
+
+    from .orchestrator import run_scan, write_outputs
+
     d = _project(a.dir)
     layers = None
     if a.layers:
@@ -101,22 +88,21 @@ def cmd_scan(a) -> int:
             raise CliError(f"--layers must be comma-separated integers 1-9, got {a.layers!r}")
         if any(not 1 <= x <= 9 for x in layers):
             raise CliError("--layers values must be between 1 and 9")
-    report = Report.model_validate(sample_report(d.name, layers))
-    out = d / ".proofgate"
-    out.mkdir(exist_ok=True)
-    (out / "report.json").write_text(_dump(report), encoding="utf-8", newline="\n")
+    outcome = asyncio.run(run_scan(d, layers=layers, fast=a.fast))
+    report = outcome.report
+    paths = write_outputs(d, report, sarif=a.format == "sarif")
     if a.format == "json":
         print(_dump(report))
     elif a.format == "sarif":
-        print(_sarif_stub(report))
+        print(paths["sarif"].read_text(encoding="utf-8"))
     elif a.format == "agent":
-        print(_agent_text(report))
+        print(redact(_agent_text(report)))
     else:
-        (out / "report.html").write_text(
-            "<!doctype html><title>ProofGate (stub)</title><p>Sample report, not a scan result.</p>",
-            encoding="utf-8",
-        )
-        print(f"wrote {out / 'report.html'}")
+        print(f"wrote {paths['html']}")
+    if outcome.tool_error:
+        print("error: a layer or tool failed; this result is NOT a clean bill of health (see notes in the report)",
+              file=sys.stderr)
+        return 2
     return _exit_for(report.findings, a.fail_on)
 
 
@@ -177,8 +163,16 @@ def cmd_report(a) -> int:
     p = d / ".proofgate" / "report.json"
     if not p.is_file():
         raise CliError(f"{p} not found; run `proofgate scan` first")
-    Report.model_validate_json(p.read_text(encoding="utf-8"))
-    print(f"report: {p} (local only; nothing is uploaded)")
+    from .report_html import to_html
+
+    report = Report.model_validate_json(p.read_text(encoding="utf-8"))
+    html_path = p.with_name("report.html")
+    html_path.write_text(to_html(report), encoding="utf-8", newline="\n")
+    print(f"report: {p}\nhtml:   {html_path}\n(local files only; nothing is uploaded)")
+    if a.open:
+        import webbrowser
+
+        webbrowser.open(html_path.resolve().as_uri())
     return 0
 
 

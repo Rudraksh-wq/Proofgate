@@ -196,6 +196,7 @@ class Report(_Versioned):
     limits_statement: str | None = None
     fail_open_count: int = 0  # hook fail-open events (plan 6.3)
     target_overrides: list[str] = Field(default_factory=list)  # --i-own-this targets (plan 3.2)
+    notes: list[str] = Field(default_factory=list)  # skipped tools, offline lookups, layers not run (never silent)
 
 
 # ------------------------------------------------------------ AcceptedRisk (5.3)

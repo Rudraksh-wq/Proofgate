@@ -1,10 +1,13 @@
 import io
 import json
+import shutil
 
 import pytest
 
 from proofgate.cli import main
 from proofgate.models import AcceptedRisk, Contract, Finding, FixResult, Report
+
+from corpus_harness import CORPUS
 
 
 def run(capsys, *argv):
@@ -20,30 +23,70 @@ def app(tmp_path):
     return d
 
 
-def test_scan_writes_valid_report_and_exits_1(capsys, app):
-    code, out, _ = run(capsys, "scan", str(app))
-    assert code == 1  # sample has a critical finding, default --fail-on high
-    report = Report.model_validate_json((app / ".proofgate" / "report.json").read_text(encoding="utf-8"))
-    assert report.layers_run == list(range(1, 10))
+@pytest.fixture
+def vuln_app(tmp_path):
+    """A copy of the v09 corpus app (a live-format Stripe key and a service_role key in app.py)."""
+    dst = tmp_path / "v09"
+    shutil.copytree(CORPUS / "v09_hardcoded_keys", dst)
+    return dst
+
+
+def test_scan_vulnerable_app_writes_a_real_report_and_exits_1(capsys, vuln_app):
+    code, out, _ = run(capsys, "scan", str(vuln_app))
+    assert code == 1
+    report = Report.model_validate_json((vuln_app / ".proofgate" / "report.json").read_text(encoding="utf-8"))
+    assert report.layers_run == [1, 2, 3, 4]
+    assert {f.rule for f in report.findings} >= {"stripe-live-secret-key", "supabase-service-role-key"}
     assert report.limits_statement and "doesn't mean your app is secure" in report.limits_statement
+    assert any("layer 5: not built yet" in n for n in report.notes)  # unbuilt layers are said out loud
+    assert (vuln_app / ".proofgate" / "report.html").is_file()
     assert json.loads(out)["schema"] == "proofgate.report/v1"
 
 
-def test_scan_layers_option(capsys, app):
-    code, out, _ = run(capsys, "scan", str(app), "--layers", "1,2,3")
-    assert json.loads(out)["layers_run"] == [1, 2, 3]
+def test_scan_clean_dir_exits_0(capsys, app):
+    code, out, _ = run(capsys, "scan", str(app))
+    assert code == 0 and json.loads(out)["unique_count"] == 0
 
 
-def test_scan_fail_on_critical_still_trips_on_critical_sample(capsys, app):
-    assert run(capsys, "scan", str(app), "--fail-on", "critical")[0] == 1
+def test_scan_layers_option(capsys, vuln_app):
+    code, out, _ = run(capsys, "scan", str(vuln_app), "--layers", "1")
+    assert json.loads(out)["layers_run"] == [1] and code == 1
+
+
+def test_scan_only_unbuilt_layers_is_a_tool_error_not_clean(capsys, vuln_app):
+    code, _, err = run(capsys, "scan", str(vuln_app), "--layers", "5,6")
+    assert code == 2 and "NOT a clean bill of health" in err
+
+
+def test_scan_fail_on_threshold(capsys, vuln_app):
+    assert run(capsys, "scan", str(vuln_app), "--fail-on", "critical")[0] == 1
+    assert run(capsys, "scan", str(vuln_app), "--layers", "3", "--fail-on", "low")[0] == 0  # nothing from L3 here
+
+
+def test_scan_fast_runs_the_fast_layers(capsys, vuln_app):
+    code, out, _ = run(capsys, "scan", str(vuln_app), "--fast")
+    assert code == 1 and json.loads(out)["layers_run"] == [1, 2, 3, 4]
 
 
 @pytest.mark.parametrize("fmt", ["sarif", "agent", "html"])
-def test_scan_formats(capsys, app, fmt):
-    code, out, _ = run(capsys, "scan", str(app), "--format", fmt)
+def test_scan_formats(capsys, vuln_app, fmt):
+    code, out, _ = run(capsys, "scan", str(vuln_app), "--format", fmt)
     assert code == 1 and out.strip()
     if fmt == "sarif":
-        assert json.loads(out)["version"] == "2.1.0"
+        doc = json.loads(out)
+        assert doc["version"] == "2.1.0" and doc["runs"][0]["results"]
+        assert (vuln_app / ".proofgate" / "report.sarif").is_file()
+    if fmt == "agent":
+        assert len(out.strip().splitlines()) <= 20 and "raw ->" in out
+
+
+def test_scan_output_never_contains_the_planted_secret(capsys, vuln_app, no_leaks):
+    src = (vuln_app / "app.py").read_text(encoding="utf-8")
+    raw = [t for t in src.replace('"', " ").split() if t.startswith(("sk_", "eyJ"))]
+    assert raw
+    _, out, _ = run(capsys, "scan", str(vuln_app))
+    no_leaks(out, (vuln_app / ".proofgate" / "report.json").read_text(encoding="utf-8"),
+             (vuln_app / ".proofgate" / "report.html").read_text(encoding="utf-8"), secrets=raw)
 
 
 @pytest.mark.parametrize(
@@ -55,6 +98,7 @@ def test_scan_formats(capsys, app, fmt):
         ["bogus"],
         ["fix", "{app}"],
         ["scan", "{app}", "--fast", "--full"],
+        ["scan", "{app}", "--format", "xml"],
         ["verify", "{app}", "--finding", "f_1", "--patch", "{missing}"],
         ["report", "{app}"],  # no report yet
         ["prove", "{app}", "--target", "http://example.com"],
