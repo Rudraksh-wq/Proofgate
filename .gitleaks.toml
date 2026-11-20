@@ -1,0 +1,16 @@
+# Secret-scanner config for THIS repository (read by Betterleaks and Gitleaks; they share the format).
+#
+# The only allow-listed files are the three the corpus generator renders at run time, so that the benchmark apps contain real-format FAKE keys on
+# disk. They are git-ignored and never committed; the committed *.tmpl templates contain no secret-shaped text. Nothing else is allow-listed.
+title = "ProofGate"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "generated, git-ignored corpus files that hold random fake keys"
+paths = [
+  '''demo-apps/flask-corpus/c03_bait/app\.py''',
+  '''demo-apps/flask-corpus/v09_hardcoded_keys/app\.py''',
+  '''demo-apps/flask-corpus/v10_service_role_in_bundle/static/bundle\.js''',
+]

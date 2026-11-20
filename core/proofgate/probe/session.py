@@ -10,7 +10,15 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+import logging
+
 import httpx
+
+from ..redact import install_logging_filter
+
+# httpx logs every request URL at INFO, and the probe puts canaries in URLs: mask them (and any secret) before they reach a log
+for _name in ("httpx", "httpcore"):
+    install_logging_filter(logging.getLogger(_name))
 
 TOKEN_KEYS = ("token", "access_token", "jwt", "api_key", "auth_token", "key")
 ID_KEYS = ("id", "user_id", "uid")
