@@ -162,21 +162,21 @@ def test_sql_injection_uses_a_comment_free_payload_first(outcomes):
 # ----------------------------------------------------------------------------- report integration
 async def test_scan_full_adds_the_probe_to_the_report(tmp_path):
     dst = tmp_path / "v01"
-    shutil.copytree(CORPUS / "v01_idor_read", dst)
+    shutil.copytree(CORPUS / "v01_idor_read", dst, ignore=shutil.ignore_patterns(".proofgate"))
     before = {p.name for p in dst.iterdir()}
-    out = await run_scan(dst, full=True, offline=True)
+    out = await run_scan(dst, full=True, offline=True)  # includes layer 7 (dast-lite) now
     r = out.report
-    assert 8 in r.layers_run and r.proven_count == 1 and r.unique_count == 1
+    assert 8 in r.layers_run and r.proven_count == 1 and len([f for f in r.findings if f.layer != 7]) == 1
     assert r.tested.tables == ["notes"] and "GET /notes/<int:note_id>" in r.tested.routes
     assert (r.receipt.rules_attacked, r.receipt.rules_held) == (2, 1)  # notes rule broken, admin rule held
     assert any("DRAFT contract" in n for n in r.notes)
-    assert {p.name for p in dst.iterdir()} == before  # the app wrote to a temp database, not into the project
+    assert {p.name for p in dst.iterdir()} - {".proofgate"} == before  # the app wrote to a temp database, not into the project
     assert not out.tool_error or all(t.status != "error" for t in r.tools if t.name == "proofgate-probe")
 
 
 async def test_a_plain_scan_never_launches_the_app(tmp_path):
     dst = tmp_path / "v01"
-    shutil.copytree(CORPUS / "v01_idor_read", dst)
+    shutil.copytree(CORPUS / "v01_idor_read", dst, ignore=shutil.ignore_patterns(".proofgate"))
     out = await run_scan(dst, offline=True)
     assert 8 not in out.report.layers_run and out.report.proven_count == 0
 

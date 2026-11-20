@@ -46,6 +46,9 @@ export default function HowItWorks() {
       <h2>What stays on your machine</h2>
       <p>Your code, your database, your keys and the throwaway users all stay local. ProofGate reads keys from environment variables only and redacts every log line, hook message, tool reply and model prompt.</p>
 
+      <h2>The running-app scan (layer 7)</h2>
+      <p>With <code>--full</code> ProofGate starts your app on a random localhost port and checks it passively. It uses <b>ZAP</b> (a native install, no Docker needed) when it finds one. Otherwise it runs <b>dast-lite</b>, a few built-in checks of security headers, cookie flags, CORS, exposed source maps and directory listings. dast-lite is a basic check and <b>not equal to ZAP</b>; every finding says which one produced it. Only localhost is ever scanned.</p>
+
       <h2>Where the Supabase checks run</h2>
       <p>Without Docker: either your own <b>hosted Supabase test project</b> (the default on a laptop) or, where Docker already exists such as a CI runner, a local <code>supabase start</code>. In hosted mode ProofGate sends <b>test traffic</b> to that project: it creates two throwaway users, plants canary rows, attacks as the second user, then deletes them. <b>No source code is sent.</b> A hosted project is used only if its ref is on <code>PROOFGATE_ALLOWED_PROJECT_REFS</code> and you pass <code>--i-own-this</code>; anything else is refused, and the run is recorded in the report. Use a project made for testing.</p>
 

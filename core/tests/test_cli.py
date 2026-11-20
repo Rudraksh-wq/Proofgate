@@ -53,7 +53,8 @@ def test_scan_layers_option(capsys, vuln_app):
     assert json.loads(out)["layers_run"] == [1] and code == 1
 
 
-def test_scan_only_unbuilt_layers_is_a_tool_error_not_clean(capsys, vuln_app):
+def test_scan_only_unbuilt_layers_is_a_tool_error_not_clean(capsys, vuln_app, monkeypatch):
+    monkeypatch.setattr("proofgate.orchestrator.IMPLEMENTED", {1})  # every layer is built now: pretend 7 is not
     code, _, err = run(capsys, "scan", str(vuln_app), "--layers", "7")
     assert code == 2 and "NOT a clean bill of health" in err
 

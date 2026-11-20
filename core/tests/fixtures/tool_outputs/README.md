@@ -18,3 +18,4 @@ secret-shaped text at run time.
 | `osv_scanner_sample.json` | OSV-Scanner v2 `--format json` schema, hand-written (osv-scanner not installed): pending real-tool verification | `test_layer3_deps.py` |
 | `guarddog_sample.json` | GuardDog `<eco> verify --output-format json`, hand-written, tolerant parser: pending real-tool verification | `test_layer4_packages.py` |
 | `checkov_sample.sarif` | Checkov `-o sarif` (SARIF 2.1.0), hand-written (checkov not installed): pending real-tool verification | `test_layer6_layer9.py` |
+| `zap_report_sample.json` | ZAP `traditional-json` report (Automation Framework `report` job), hand-written (ZAP not installed): pending real-tool verification | `test_layer7_dast.py` |
