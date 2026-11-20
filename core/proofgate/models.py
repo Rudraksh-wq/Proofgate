@@ -126,10 +126,24 @@ class Gates(_Strict):
     no_new_findings: bool
     diff_is_small: bool
     migrations_replayed: bool | None = None  # only meaningful for Supabase fixes
+    fix_breaker: FixBreaker | None = None
 
 
 class Rejected(_Strict):
     reason: str
+
+
+class FixBreakerBreak(_Strict):
+    label: str
+    status: str
+
+
+class FixBreaker(_Strict):
+    ran: bool
+    generated: int
+    routable: int
+    survived: int
+    broken: list[FixBreakerBreak] = Field(default_factory=list)
 
 
 class FixResult(_Versioned):
