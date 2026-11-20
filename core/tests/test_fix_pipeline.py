@@ -531,3 +531,4 @@ def test_cli_fix_and_verify_end_to_end(capsys, tmp_path):
     good.write_text(make_diff("app.py", (proj / "app.py").read_text(encoding="utf-8"), (FIXES / "v01_correct" / "app.py").read_text(encoding="utf-8")), encoding="utf-8")
     code, out, _ = run_cli(capsys, "verify", str(proj), "--finding", fid, "--patch", str(good))
     assert code == 0 and FixResult.model_validate_json(out).accepted
+

@@ -38,21 +38,47 @@ def variant_file(project: Path, variant: str) -> Path:
     return p
 
 
-def reset_demo_schema(conn: Any, project: Path, variant: str, *, target: SupabaseTarget) -> list[str]:
-    """Drop and recreate the demo objects, then apply the base migrations and the RLS variant in ONE transaction. Returns the files applied."""
+INSTALLED_VARIANT_NAME = "20240201000000_rls_variant.sql"  # the slot `npm run variant` uses: a later migration (a fix) must be applied AFTER the variant
+
+
+def replay_files(project: Path, variant: str | None) -> list[tuple[str, Path]]:
+    """Every migration in order. With a `variant`, the chosen RLS variant takes the slot of the installed variant copy (which is then ignored)."""
+    d = Path(project) / "supabase" / "migrations"
+    items = {p.name: p for p in sorted(d.glob("*.sql"))} if d.is_dir() else {}
+    if variant:
+        for name in [n for n in items if _VARIANT_COPY.search(n)]:
+            del items[name]
+        items[INSTALLED_VARIANT_NAME] = variant_file(project, variant)
+    return sorted(items.items())
+
+
+def replay_project(conn: Any, project: Path, variant: str | None, *, target: SupabaseTarget) -> list[str]:
+    """Drop and recreate the demo objects, then replay ALL migrations (and the chosen RLS variant at its slot) in ONE transaction.
+    Used by `reset-demo` and by the fix tournament's live Guard B. Returns the file names applied."""
     if target.backend == "hosted" and not target.ref:
         raise SupabaseTargetRefused("refusing to reset a hosted database whose project ref is unknown")
     project = Path(project)
     if not (project / "supabase" / "variants").is_dir():
         raise SupabaseTargetRefused(f"{project} is not the ProofGate demo (no supabase/variants): reset-demo only touches the demo's own objects")
-    files = migration_files(project) + [variant_file(project, variant)]
+    files = replay_files(project, variant)
     applied: list[str] = []
     with conn.transaction():
         conn.execute(DEMO_DROP_SQL)
-        for f in files:
+        for _name, f in files:
             conn.execute(f.read_text(encoding="utf-8"))
             applied.append(f.name)
+    try:  # PostgREST caches the schema: after DDL ask it to reload, or a recreated function (rpc) can answer "not found" for a few seconds
+        conn.execute("notify pgrst, 'reload schema'")
+    except Exception:  # noqa: BLE001 - a local Postgres without PostgREST has no such listener; that is fine
+        pass
     return applied
+
+
+def reset_demo_schema(conn: Any, project: Path, variant: str, *, target: SupabaseTarget) -> list[str]:
+    """Drop and recreate the demo objects, then apply the base migrations and the RLS variant. Returns the files applied."""
+    if (Path(project) / "supabase" / "variants").is_dir():
+        variant_file(project, variant)  # unknown variant / missing file: fail before touching anything
+    return replay_project(conn, project, variant, target=target)
 
 
 def select_one(conn: Any) -> bool:

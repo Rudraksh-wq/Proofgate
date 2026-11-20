@@ -108,7 +108,7 @@ class NextDev:
     """`next dev` on a random localhost port with a minimal environment. Use: `async with NextDev(project, env) as dev: dev.url`."""
 
     def __init__(self, project: Path, supabase_env: dict[str, str]):
-        self.project, self.supabase_env = project, supabase_env
+        self.project, self.supabase_env = Path(project).resolve(), supabase_env
         self.port = _free_port()
         self.url = f"http://127.0.0.1:{self.port}"
         self._proc: asyncio.subprocess.Process | None = None
@@ -116,7 +116,9 @@ class NextDev:
         self._log = self._dir / "next.log"
 
     async def __aenter__(self) -> "NextDev":
-        nxt = self.project / "node_modules" / "next" / "dist" / "bin" / "next"
+        # node_modules may be in a parent folder (a fix-tournament copy lives inside the real project, so Node finds the real packages by walking up)
+        nxt = next((d / "node_modules" / "next" / "dist" / "bin" / "next" for d in (self.project, *self.project.parents)
+                    if (d / "node_modules" / "next" / "dist" / "bin" / "next").is_file()), self.project / "node_modules" / "next" / "dist" / "bin" / "next")
         node = shutil.which("node")
         if not nxt.is_file() or not node:
             shutil.rmtree(self._dir, ignore_errors=True)
@@ -267,6 +269,8 @@ class NextReplay:
                 owner_ok[route.label] = mine is not None and mine.status_code < 300
                 result.oracles[oracle_key] = owner_ok[route.label]
                 theirs = await call(route, b, body)
+                if mine is not None and mine.status_code >= 500:
+                    result.notes.append(f"{route.label}: the app answered HTTP {mine.status_code} to its owner. dev server log: {dev.log_tail(400)}")
                 if theirs is None:
                     result.untested.append(f"{route.label}: no answer when replayed as user B")
                     continue

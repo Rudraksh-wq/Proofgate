@@ -216,11 +216,15 @@ def cmd_fix(a) -> int:
     from .fix.vaccinate import build_vaccine
     from .probe import load_contract
 
+    from .fix.live import current_live
+
     d = _project(a.dir)
     finding = _load_finding(d, a.finding)
     contract = load_contract(d)
+    live = _live_ctx(a)
 
     async def go():
+        current_live.set(live)  # a live Supabase backend (hosted test project): every candidate is replayed on the real database
         result = await fix_finding(d, finding, contract)
         if result.accepted and not a.no_vaccine:
             vac = await build_vaccine(d, finding, result, contract)
@@ -236,6 +240,15 @@ def cmd_fix(a) -> int:
     return 0 if result.accepted else 1
 
 
+def _live_ctx(a):
+    """`--backend` / `--i-own-this` / `--variant` on fix and verify: verify against a real Supabase project instead of the static replay."""
+    from .fix.live import LiveCtx
+
+    if not (getattr(a, "backend", None) or getattr(a, "i_own_this", False)):
+        return None
+    return LiveCtx(a.backend, bool(a.i_own_this), a.variant.upper() if getattr(a, "variant", None) else None, Path(a.dir).resolve())
+
+
 def cmd_verify(a) -> int:
     """Run a patch somebody else wrote (an AI agent, a human) through the same gates."""
     import asyncio
@@ -248,7 +261,15 @@ def cmd_verify(a) -> int:
     patch_file = Path(a.patch)
     if not patch_file.is_file():
         raise CliError(f"patch file not found: {patch_file}")
-    result = asyncio.run(verify_patch(d, finding, patch_file.read_text(encoding="utf-8"), load_contract(d)))
+    from .fix.live import current_live
+
+    live = _live_ctx(a)
+
+    async def go():
+        current_live.set(live)
+        return await verify_patch(d, finding, patch_file.read_text(encoding="utf-8"), load_contract(d))
+
+    result = asyncio.run(go())
     print(_dump(result))
     return 0 if result.accepted else 1
 
@@ -440,9 +461,15 @@ def build_parser() -> argparse.ArgumentParser:
     s = add("fix", cmd_fix, help="run the fix pipeline for one finding")
     s.add_argument("--finding", required=True)
     s.add_argument("--no-vaccine", action="store_true", help="skip the regression test and the learned rule")
+    s.add_argument("--backend", choices=["hosted", "local", "auto"], default=None, help="verify on a live Supabase backend (replays every candidate's migrations there)")
+    s.add_argument("--i-own-this", action="store_true", help="confirm the hosted Supabase project is your own test project")
+    s.add_argument("--variant", choices=["A", "B", "C", "a", "b", "c"], default=None, help="the demo's RLS variant installed in the database being fixed")
     s = add("verify", cmd_verify, help="run the tournament gates on a patch")
     s.add_argument("--finding", required=True)
     s.add_argument("--patch", required=True)
+    s.add_argument("--backend", choices=["hosted", "local", "auto"], default=None, help="verify on a live Supabase backend (replays every candidate's migrations there)")
+    s.add_argument("--i-own-this", action="store_true", help="confirm the hosted Supabase project is your own test project")
+    s.add_argument("--variant", choices=["A", "B", "C", "a", "b", "c"], default=None, help="the demo's RLS variant installed in the database being fixed")
     s = add("accept", cmd_accept, dir_=False, help="record an accepted risk (a person, never an agent)")
     s.add_argument("fingerprint", nargs="?", help="finding fingerprint (or finding id from the last report)")
     s.add_argument("--reason")

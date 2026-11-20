@@ -43,14 +43,15 @@ def is_supabase_project(project: Path) -> bool:
         return False
 
 
-async def run_supabase_probe(project: Path, contract: Contract, *, backend: str | None, i_own_this: bool) -> ProbeOutcome:
+async def run_supabase_probe(project: Path, contract: Contract, *, backend: str | None, i_own_this: bool, config_dir: Path | None = None) -> ProbeOutcome:
     """Attack the project's Supabase tables through the API of the configured backend (hosted test project, or a local stack)."""
     from ..supabase_target import BackendUnavailable, SupabaseTargetRefused, load_config, resolve_target
     from .supabase import PsycopgDb, SupabaseProbe
 
+    project = Path(project).resolve()
     result = ProbeResult(launched=False)
     try:
-        tgt = resolve_target(load_config(project), backend=backend, i_own_this=i_own_this)
+        tgt = resolve_target(load_config(config_dir or project), backend=backend, i_own_this=i_own_this)
     except BackendUnavailable as e:  # nothing to attack with: UNTESTED, never "safe"
         result.untested.append(f"Supabase tables not probed: {redact(str(e))}")
         return ProbeOutcome(result, contract)
