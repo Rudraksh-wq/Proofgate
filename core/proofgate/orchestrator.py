@@ -17,6 +17,7 @@ from typing import Any, Awaitable, Callable
 from .layers import l1_secrets, l2_sast, l3_deps, l4_supply_chain, l5_database, l8_access
 from .layers.base import LayerResult, Runner, run_tool
 from .models import LIMITS_STATEMENT, Receipt, Report, Tested, ToolRecord
+from .hook import read_fail_open_count
 from .normalize import normalize
 from .redact import redact
 from .sarif import to_sarif
@@ -131,6 +132,7 @@ async def run_scan(project_dir: str | Path, *, layers: list[int] | None = None, 
         tested=Tested(tables=probe.tested_tables if probe else [], routes=probe.tested_routes if probe else []),
         untested=probe.untested if probe else [], tools=tools, limits_statement=LIMITS_STATEMENT, notes=notes,
         target_overrides=probe.target_overrides if probe else [],
+        fail_open_count=read_fail_open_count(project),  # hook crashes/timeouts that let a write through (visible, not silent)
     )
     report = report.model_copy(update={"receipt": report.receipt.model_copy(update={"report_hash": report_hash(report)})})
     return ScanOutcome(report, results, tool_error)

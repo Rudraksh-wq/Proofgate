@@ -229,16 +229,21 @@ def cmd_accept(a) -> int:
 
 
 def cmd_hook(a) -> int:
-    """PreToolUse/PostToolUse entry point. Must never break the agent: log and allow."""
+    """Hook entry point for Claude Code / Cursor (JSON on stdin). PRE blocks a write that would add a critical secret or a
+    package that does not exist (exit 2, or a JSON deny with --mode json). Any crash or slow check is logged, counted and
+    ALLOWED: a hook must never break the agent."""
+    from .hook import run_hook
+
     try:
-        raw = sys.stdin.read()
-        payload = json.loads(raw) if raw.strip() else {}
-        if not isinstance(payload, dict):
-            raise ValueError("hook payload must be a JSON object")
-        print(json.dumps({"ok": True, "phase": a.phase, "decision": "allow"}))
-    except Exception as e:  # noqa: BLE001 - fail-safe by design (plan 6.3)
+        outcome = run_hook(a.phase, sys.stdin.read(), mode=a.mode)
+    except Exception as e:  # noqa: BLE001 - belt and braces: run_hook already never raises
         print(f"proofgate hook error (allowing): {e}", file=sys.stderr)
-    return 0
+        return 0
+    if outcome.stdout:
+        print(outcome.stdout)
+    if outcome.stderr:
+        print(outcome.stderr, file=sys.stderr)
+    return outcome.exit_code
 
 
 def cmd_report(a) -> int:
@@ -347,7 +352,9 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--owner", default="unknown")
     s.add_argument("--expires", default="90d")
     s = add("hook", cmd_hook, dir_=False, help="hook entry point (JSON on stdin)")
-    s.add_argument("phase", choices=["pre", "post"])
+    s.add_argument("phase", choices=["pre", "post", "stop"])
+    s.add_argument("--mode", choices=["exit2", "json"], default="exit2",
+                   help="how PRE blocks: exit code 2 + stderr (default) or a JSON permissionDecision deny")
     s = add("report", cmd_report, help="validate and locate the local report")
     s.add_argument("--open", action="store_true")
     s = add("rollback", cmd_rollback, dir_=False, help="print the git command to undo a fix")
