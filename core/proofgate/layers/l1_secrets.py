@@ -110,6 +110,10 @@ BUILTIN_RULES: tuple[Rule, ...] = (
     Rule("google-api-key", re.compile(r"\bAIza[A-Za-z0-9_-]{35}\b"), "medium", "medium",
          "Google API key in code",
          "A Google API key is written in your code. Some are meant to be public; check what it can do."),
+    Rule("supabase-secret-key", re.compile(r"\bsb_secret_[A-Za-z0-9_-]{16,}"), "critical", "high",
+         "Supabase secret key in code",
+         "A Supabase secret key (the new sb_secret_ format) bypasses all row-level security, like the old service_role key: whoever has it can read "
+         "and change every row." + _ROTATE),
     Rule("private-key-block", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"), "critical", "high",
          "Private key in code", "A private key is written in your code." + _ROTATE),
 )

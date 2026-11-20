@@ -17,6 +17,7 @@ def fake_secrets() -> dict[str, str]:
         "github": "ghp_" + "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8",
         "google": "AIza" + "Sy" + "A" * 33,
         "slack": "xoxb-" + "1234567890-abcdefghij",
+        "supabase_secret": "sb_" + "secret_" + "A1b2C3d4E5f6G7h8I9j0K1l2M3",
         "jwt": "eyJ" + "hbGciOiJIUzI1NiJ9" + "." + "eyJ" + "yb2xlIjoic2VydmljZV9yb2xlIn0" + "." + "c2lnbmF0dXJlMTIzNDU2",
     }
 

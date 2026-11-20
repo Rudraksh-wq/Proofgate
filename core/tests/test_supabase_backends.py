@@ -432,3 +432,71 @@ def test_no_hard_docker_requirement_remains_in_the_code():
     for p in (ROOT / "core" / "proofgate").rglob("*.py"):
         text = p.read_text(encoding="utf-8")
         assert not re.search(r"\bdocker\s+(run|compose|pull)\b", text), p  # Docker is only ever probed with `docker info`, never required
+
+
+# ------------------------------------------------------------------------------------------- new key format (sb_publishable_ / sb_secret_)
+NEW_SECRET = fake_secrets()["supabase_secret"]
+NEW_PUBLISHABLE = "sb_" + "publishable_" + "A1b2C3d4E5f6G7h8I9j0K1l2M3"
+
+
+def test_key_kinds_are_told_apart_by_shape():
+    assert st.key_kind(NEW_SECRET) == "secret" and st.key_kind(NEW_PUBLISHABLE) == "publishable" and st.key_kind(KEY) == "jwt"
+    assert st.key_kind("") == "empty" and st.key_kind(None) == "empty" and st.key_kind("whatever") == "unknown"
+
+
+def test_new_keys_go_in_apikey_only_and_legacy_jwts_keep_the_bearer_header():
+    assert st.api_headers(NEW_SECRET) == {"apikey": NEW_SECRET}  # an sb_ key is not a JWT: never a Bearer token
+    assert st.api_headers(NEW_PUBLISHABLE, "user.jwt.here") == {"apikey": NEW_PUBLISHABLE, "Authorization": "Bearer user.jwt.here"}
+    assert st.api_headers(KEY) == {"apikey": KEY, "Authorization": f"Bearer {KEY}"}
+
+
+def test_the_new_secret_key_is_a_critical_finding_and_the_publishable_key_is_not():
+    from proofgate.layers import l1_secrets as l1
+
+    found = l1.scan_text(f'const a = "{NEW_PUBLISHABLE}";\nconst b = "{NEW_SECRET}";\n', "app.ts")
+    assert [(f.rule, f.severity, f.location.line) for f in found] == [("supabase-secret-key", "critical", 2)]
+    assert NEW_SECRET not in found[0].model_dump_json()
+
+
+def test_the_new_secret_key_is_masked_everywhere_and_the_publishable_one_is_left_alone():
+    from proofgate.redact import redact
+
+    out = redact(f"apikey: {NEW_SECRET} / {NEW_PUBLISHABLE}")
+    assert NEW_SECRET not in out and "«SECRET:supabase-secret-key:" in out and NEW_PUBLISHABLE in out
+
+
+def test_the_inline_hook_blocks_a_new_secret_key_but_not_the_publishable_key(tmp_path):
+    import json as _json
+
+    from proofgate import hook
+
+    def run(content):
+        payload = _json.dumps({"cwd": str(tmp_path), "hook_event_name": "PreToolUse", "tool_name": "Write",
+                               "tool_input": {"file_path": str(tmp_path / "a.ts"), "content": content}})
+        return hook.run_hook("pre", payload, project_dir=str(tmp_path))
+
+    blocked = run(f'export const k = "{NEW_SECRET}";\n')
+    assert blocked.exit_code == 2 and NEW_SECRET not in blocked.stderr and "rotate" in blocked.stderr
+    assert run(f'export const k = "{NEW_PUBLISHABLE}";\n').exit_code == 0
+
+
+def test_the_secret_literal_guard_knows_the_new_shape():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("csl", ROOT / "scripts" / "check_secret_literals.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod.PATTERN.search(f'x = "{NEW_SECRET}"') and not mod.PATTERN.search(f'x = "{NEW_PUBLISHABLE}"')
+
+
+def test_doctor_rows_name_the_key_kinds_without_values():
+    c = cfg(anon_key=NEW_PUBLISHABLE, service_role_key=NEW_SECRET)
+    detail = {n: d for n, s, d in st.backend_status(c, local_ok=NO_LOCAL)}["hosted"]
+    assert "anon key: publishable" in detail and "service key: secret" in detail and NEW_SECRET not in detail
+
+
+def test_a_dotenv_that_is_a_folder_of_env_files_is_read(tmp_path):
+    (tmp_path / ".env").mkdir()
+    (tmp_path / ".env" / "SUPABASE.env").write_text(f"SUPABASE_URL={URL}\nSUPABASE_SERVICE_ROLE_KEY={NEW_SECRET}\n", encoding="utf-8")
+    c = st.load_config(tmp_path, environ={})
+    assert c.url == URL and st.key_kind(c.service_role_key) == "secret"
