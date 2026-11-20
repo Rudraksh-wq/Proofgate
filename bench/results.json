@@ -1,0 +1,1459 @@
+{
+ "corpus": {
+  "apps": 16,
+  "categories": [
+   "secrets",
+   "injection",
+   "access",
+   "deps",
+   "supply-chain",
+   "database",
+   "config",
+   "web",
+   "bundle"
+  ],
+  "clean_apps": 3,
+  "ground_truth_items": 15
+ },
+ "counts": {
+  "proofgate_fast": {
+   "per_app": {
+    "c01_clean": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 1.42,
+     "tool_error": false,
+     "unique": 0
+    },
+    "c02_clean_helper": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 1.44,
+     "tool_error": false,
+     "unique": 0
+    },
+    "c03_bait": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 1.33,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v01_idor_read": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 0.43,
+     "tool_error": false,
+     "unique": 0
+    },
+    "v02_idor_write": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 0.45,
+     "tool_error": false,
+     "unique": 0
+    },
+    "v03_idor_param": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 0.53,
+     "tool_error": false,
+     "unique": 0
+    },
+    "v04_missing_role": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 0.49,
+     "tool_error": false,
+     "unique": 0
+    },
+    "v05_unauth_admin": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 0.48,
+     "tool_error": false,
+     "unique": 0
+    },
+    "v06_mass_assign": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 2,
+     "seconds": 0.5,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v07_sqli": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 2,
+     "seconds": 0.53,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v08_cmdi": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 3,
+     "seconds": 0.51,
+     "tool_error": false,
+     "unique": 2
+    },
+    "v09_hardcoded_keys": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 3,
+     "seconds": 0.51,
+     "tool_error": false,
+     "unique": 2
+    },
+    "v10_service_role_in_bundle": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 0.55,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v11_hallucinated_dep": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 1.37,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v12_outdated_dep": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 1.17,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v13_debug_tls": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "proven": 0,
+     "raw": 4,
+     "seconds": 0.51,
+     "tool_error": false,
+     "unique": 3
+    }
+   },
+   "proven": 0,
+   "raw": 18,
+   "seconds_max_per_app": 1.44,
+   "seconds_median_per_app": 0.522,
+   "unique": 13
+  },
+  "proofgate_full": {
+   "per_app": {
+    "c01_clean": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 2.25,
+     "tool_error": false,
+     "unique": 0
+    },
+    "c02_clean_helper": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 1.77,
+     "tool_error": false,
+     "unique": 0
+    },
+    "c03_bait": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 2.22,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v01_idor_read": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 1,
+     "raw": 1,
+     "seconds": 1.8,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v02_idor_write": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 1,
+     "raw": 1,
+     "seconds": 2.26,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v03_idor_param": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 1,
+     "raw": 1,
+     "seconds": 1.89,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v04_missing_role": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 1,
+     "raw": 1,
+     "seconds": 1.72,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v05_unauth_admin": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 2,
+     "raw": 2,
+     "seconds": 1.73,
+     "tool_error": false,
+     "unique": 2
+    },
+    "v06_mass_assign": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 1,
+     "raw": 3,
+     "seconds": 1.87,
+     "tool_error": false,
+     "unique": 2
+    },
+    "v07_sqli": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 1,
+     "raw": 3,
+     "seconds": 1.7,
+     "tool_error": false,
+     "unique": 2
+    },
+    "v08_cmdi": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 1,
+     "raw": 4,
+     "seconds": 1.95,
+     "tool_error": false,
+     "unique": 2
+    },
+    "v09_hardcoded_keys": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 3,
+     "seconds": 2.06,
+     "tool_error": false,
+     "unique": 2
+    },
+    "v10_service_role_in_bundle": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 2.22,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v11_hallucinated_dep": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 2.07,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v12_outdated_dep": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 1,
+     "seconds": 2.02,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v13_debug_tls": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8
+     ],
+     "proven": 0,
+     "raw": 4,
+     "seconds": 1.5,
+     "tool_error": false,
+     "unique": 3
+    }
+   },
+   "proven": 9,
+   "raw": 27,
+   "seconds_max_per_app": 2.26,
+   "seconds_median_per_app": 1.919,
+   "unique": 21
+  }
+ },
+ "environment": {
+  "bench_seconds": 77.3,
+  "network": true,
+  "platform": "Windows-11-10.0.26300-SP0",
+  "python": "3.15.0",
+  "subset": null,
+  "tolerance_lines": 12
+ },
+ "fix_verification": {
+  "cases": 12,
+  "details": [
+   {
+    "fix": "v01_correct",
+    "kind": "correct",
+    "rescan_says_clean": true,
+    "should_accept": true,
+    "tournament_accepts": true,
+    "tournament_reason": null
+   },
+   {
+    "fix": "v01_lazy",
+    "kind": "lazy",
+    "rescan_says_clean": true,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v01_lazy: feature_works=false: owner can no longer read own notes"
+   },
+   {
+    "fix": "v01_partial",
+    "kind": "partial",
+    "rescan_says_clean": true,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v01_partial: exploit_blocked=false: the same attack still works on GET /notes/<int:note_id>"
+   },
+   {
+    "fix": "v05_correct",
+    "kind": "correct",
+    "rescan_says_clean": true,
+    "should_accept": true,
+    "tournament_accepts": true,
+    "tournament_reason": null
+   },
+   {
+    "fix": "v05_lazy",
+    "kind": "lazy",
+    "rescan_says_clean": true,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v05_lazy: feature_works=false: admin can no longer use the admin routes"
+   },
+   {
+    "fix": "v05_partial",
+    "kind": "partial",
+    "rescan_says_clean": true,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v05_partial: exploit_blocked=false: a related attack (admin-route-missing-role-check) still works on GET /admin/users"
+   },
+   {
+    "fix": "v06_correct",
+    "kind": "correct",
+    "rescan_says_clean": true,
+    "should_accept": true,
+    "tournament_accepts": true,
+    "tournament_reason": null
+   },
+   {
+    "fix": "v06_lazy",
+    "kind": "lazy",
+    "rescan_says_clean": true,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v06_lazy: feature_works=false: owner can no longer edit the allowed profile field"
+   },
+   {
+    "fix": "v06_partial",
+    "kind": "partial",
+    "rescan_says_clean": true,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v06_partial: exploit_blocked=false: the same attack still works on PUT /profile"
+   },
+   {
+    "fix": "v07_correct",
+    "kind": "correct",
+    "rescan_says_clean": true,
+    "should_accept": true,
+    "tournament_accepts": true,
+    "tournament_reason": null
+   },
+   {
+    "fix": "v07_lazy",
+    "kind": "lazy",
+    "rescan_says_clean": true,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v07_lazy: feature_works=false: owner can no longer search own notes"
+   },
+   {
+    "fix": "v07_partial",
+    "kind": "partial",
+    "rescan_says_clean": false,
+    "should_accept": false,
+    "tournament_accepts": false,
+    "tournament_reason": "v07_partial: exploit_blocked=false: the same attack still works on GET /search"
+   }
+  ],
+  "rescan_accuracy": 0.417,
+  "tournament_accuracy": 1.0,
+  "tournament_correct": "12/12"
+ },
+ "generated_at": "2026-11-20T15:33:03+00:00",
+ "heldout": {
+  "apps": 0,
+  "note": "the sealed held-out set (plan 14) was not provided: demo-apps/heldout/ is empty, so no held-out number exists"
+ },
+ "latency": {
+  "files": 16,
+  "hook_fail_open_count": 0,
+  "hook_pre_median_ms": 3.604,
+  "inline_check_median_ms_per_file": 3.176,
+  "inline_check_worst_median_ms": 3.525,
+  "runs_per_file": 50
+ },
+ "misses_and_false_positives": {
+  "bandit": {
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (bandit-B608) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)",
+    "v11_hallucinated_dep - no finding of category supply-chain within 12 lines of requirements.txt:2 (nonexistent-package-in-requirements)",
+    "v12_outdated_dep - no finding of category deps within 12 lines of requirements.txt:2 (requests-2.19.0-known-vulnerabilities)",
+    "v13_debug_tls - no finding of category config within 12 lines of app.py:217 (flask-debug-true)"
+   ]
+  },
+  "pip_audit": {
+   "false_positives": [],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v07_sqli - no finding of category injection within 12 lines of app.py:168 (sql-injection-search)",
+    "v08_cmdi - no finding of category injection within 12 lines of app.py:178 (shell-injection-export)",
+    "v09_hardcoded_keys - no finding of category secrets within 12 lines of app.py:11 (hardcoded-stripe-live-key)",
+    "v09_hardcoded_keys - no finding of category secrets within 12 lines of app.py:12 (hardcoded-service-role-key)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)",
+    "v11_hallucinated_dep - no finding of category supply-chain within 12 lines of requirements.txt:2 (nonexistent-package-in-requirements)",
+    "v13_debug_tls - no finding of category config within 12 lines of app.py:217 (flask-debug-true)",
+    "v13_debug_tls - no finding of category web within 12 lines of app.py:87 (tls-verification-disabled)"
+   ]
+  },
+  "proofgate_fast": {
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (proofgate.py-sql-injection) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported secrets at static/bundle.js:3 (supabase-service-role-key) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)"
+   ]
+  },
+  "proofgate_full": {
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (proofgate.py-sql-injection) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported secrets at static/bundle.js:3 (supabase-service-role-key) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)"
+   ]
+  },
+  "union": {
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (bandit-B608) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)",
+    "v11_hallucinated_dep - no finding of category supply-chain within 12 lines of requirements.txt:2 (nonexistent-package-in-requirements)",
+    "v13_debug_tls - no finding of category config within 12 lines of app.py:217 (flask-debug-true)"
+   ]
+  }
+ },
+ "notes": [
+  "Small synthetic corpus: 16 Flask apps with one planted flaw each. These numbers say how ProofGate does on THIS corpus, not on real apps.",
+  "The corpus and ProofGate's rules were written by the same team. Rules were not tuned after seeing results; any later tuning must be disclosed in bench/README.md.",
+  "Layers 6, 7 and 9 are not built yet, so 'bundle' and 'config' recall mostly reflect layer 1-5 only.",
+  "The 'union' column combines the baseline tools that were available on this machine, listed in tables.union.of."
+ ],
+ "proof_rate": {
+  "definition": "share of access + injection ground-truth items that ProofGate PROVED (a canary crossed a boundary)",
+  "false_positives": [],
+  "proven_findings": 9,
+  "proven_precision": 1.0,
+  "recall": 1.0
+ },
+ "proofgate_version": "0.0.1",
+ "schema": "proofgate.bench/v1",
+ "tables": {
+  "bandit": {
+   "available": true,
+   "by_category": {
+    "access": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 6,
+     "items_found": 0,
+     "items_missed": 6,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "bundle": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "config": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "database": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 0,
+     "items_found": 0,
+     "items_missed": 0,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": null
+    },
+    "deps": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "injection": {
+     "f1": 0.667,
+     "false_positives": 3,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 3,
+     "precision": 0.5,
+     "recall": 1.0
+    },
+    "secrets": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "supply-chain": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "web": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    }
+   },
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (bandit-B608) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)",
+    "v11_hallucinated_dep - no finding of category supply-chain within 12 lines of requirements.txt:2 (nonexistent-package-in-requirements)",
+    "v12_outdated_dep - no finding of category deps within 12 lines of requirements.txt:2 (requests-2.19.0-known-vulnerabilities)",
+    "v13_debug_tls - no finding of category config within 12 lines of app.py:217 (flask-debug-true)"
+   ],
+   "overall": {
+    "f1": 0.435,
+    "false_positives": 3,
+    "items": 15,
+    "items_found": 5,
+    "items_missed": 10,
+    "matching_findings": 5,
+    "precision": 0.625,
+    "recall": 0.333
+   }
+  },
+  "betterleaks": {
+   "available": false,
+   "reason": "betterleaks is not installed in this environment"
+  },
+  "osv_scanner": {
+   "available": false,
+   "reason": "osv-scanner is not installed in this environment"
+  },
+  "pip_audit": {
+   "available": true,
+   "by_category": {
+    "access": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 6,
+     "items_found": 0,
+     "items_missed": 6,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "bundle": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "config": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "database": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 0,
+     "items_found": 0,
+     "items_missed": 0,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": null
+    },
+    "deps": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "injection": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 2,
+     "items_found": 0,
+     "items_missed": 2,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "secrets": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 2,
+     "items_found": 0,
+     "items_missed": 2,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "supply-chain": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "web": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    }
+   },
+   "false_positives": [],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v07_sqli - no finding of category injection within 12 lines of app.py:168 (sql-injection-search)",
+    "v08_cmdi - no finding of category injection within 12 lines of app.py:178 (shell-injection-export)",
+    "v09_hardcoded_keys - no finding of category secrets within 12 lines of app.py:11 (hardcoded-stripe-live-key)",
+    "v09_hardcoded_keys - no finding of category secrets within 12 lines of app.py:12 (hardcoded-service-role-key)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)",
+    "v11_hallucinated_dep - no finding of category supply-chain within 12 lines of requirements.txt:2 (nonexistent-package-in-requirements)",
+    "v13_debug_tls - no finding of category config within 12 lines of app.py:217 (flask-debug-true)",
+    "v13_debug_tls - no finding of category web within 12 lines of app.py:87 (tls-verification-disabled)"
+   ],
+   "overall": {
+    "f1": 0.125,
+    "false_positives": 0,
+    "items": 15,
+    "items_found": 1,
+    "items_missed": 14,
+    "matching_findings": 1,
+    "precision": 1.0,
+    "recall": 0.067
+   }
+  },
+  "proofgate_fast": {
+   "available": true,
+   "by_category": {
+    "access": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 6,
+     "items_found": 0,
+     "items_missed": 6,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "bundle": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "config": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "database": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 0,
+     "items_found": 0,
+     "items_missed": 0,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": null
+    },
+    "deps": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "injection": {
+     "f1": 0.667,
+     "false_positives": 3,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 3,
+     "precision": 0.5,
+     "recall": 1.0
+    },
+    "secrets": {
+     "f1": 0.8,
+     "false_positives": 1,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 2,
+     "precision": 0.667,
+     "recall": 1.0
+    },
+    "supply-chain": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "web": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    }
+   },
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (proofgate.py-sql-injection) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported secrets at static/bundle.js:3 (supabase-service-role-key) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)"
+   ],
+   "overall": {
+    "f1": 0.603,
+    "false_positives": 4,
+    "items": 15,
+    "items_found": 8,
+    "items_missed": 7,
+    "matching_findings": 9,
+    "precision": 0.692,
+    "recall": 0.533
+   }
+  },
+  "proofgate_full": {
+   "available": true,
+   "by_category": {
+    "access": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 6,
+     "items_found": 6,
+     "items_missed": 0,
+     "matching_findings": 7,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "bundle": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "config": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "database": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 0,
+     "items_found": 0,
+     "items_missed": 0,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": null
+    },
+    "deps": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "injection": {
+     "f1": 0.727,
+     "false_positives": 3,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 4,
+     "precision": 0.571,
+     "recall": 1.0
+    },
+    "secrets": {
+     "f1": 0.8,
+     "false_positives": 1,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 2,
+     "precision": 0.667,
+     "recall": 1.0
+    },
+    "supply-chain": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "web": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    }
+   },
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (proofgate.py-sql-injection) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported secrets at static/bundle.js:3 (supabase-service-role-key) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)"
+   ],
+   "overall": {
+    "f1": 0.867,
+    "false_positives": 4,
+    "items": 15,
+    "items_found": 14,
+    "items_missed": 1,
+    "matching_findings": 17,
+    "precision": 0.81,
+    "recall": 0.933
+   }
+  },
+  "semgrep": {
+   "available": false,
+   "reason": "semgrep is not installed in this environment"
+  },
+  "splinter": {
+   "available": false,
+   "reason": "Splinter needs a live local Postgres (`supabase start`); the corpus is Flask, so it has no rows to lint either way"
+  },
+  "union": {
+   "available": true,
+   "by_category": {
+    "access": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 6,
+     "items_found": 0,
+     "items_missed": 6,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "bundle": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "config": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "database": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 0,
+     "items_found": 0,
+     "items_missed": 0,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": null
+    },
+    "deps": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "injection": {
+     "f1": 0.667,
+     "false_positives": 3,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 3,
+     "precision": 0.5,
+     "recall": 1.0
+    },
+    "secrets": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "supply-chain": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "web": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    }
+   },
+   "false_positives": [
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (bandit-B608) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v01_idor_read - no finding of category access within 12 lines of app.py:132 (cross-user-read)",
+    "v02_idor_write - no finding of category access within 12 lines of app.py:141 (cross-user-write)",
+    "v03_idor_param - no finding of category access within 12 lines of app.py:112 (list-by-user-id-param)",
+    "v04_missing_role - no finding of category access within 12 lines of app.py:201 (admin-route-missing-role-check)",
+    "v05_unauth_admin - no finding of category access within 12 lines of app.py:201 (admin-route-unauthenticated)",
+    "v06_mass_assign - no finding of category access within 12 lines of app.py:190 (mass-assignment-role)",
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)",
+    "v11_hallucinated_dep - no finding of category supply-chain within 12 lines of requirements.txt:2 (nonexistent-package-in-requirements)",
+    "v13_debug_tls - no finding of category config within 12 lines of app.py:217 (flask-debug-true)"
+   ],
+   "of": [
+    "bandit",
+    "pip_audit"
+   ],
+   "overall": {
+    "f1": 0.5,
+    "false_positives": 3,
+    "items": 15,
+    "items_found": 6,
+    "items_missed": 9,
+    "matching_findings": 6,
+    "precision": 0.667,
+    "recall": 0.4
+   }
+  }
+ },
+ "targets": {
+  "access_recall_corpus": {
+   "measured": 1.0,
+   "met": true,
+   "target": 0.85
+  },
+  "inline_median_ms": {
+   "measured": 3.176,
+   "met": true,
+   "target": 200
+  },
+  "plan_targets_not_results": {
+   "access_recall_corpus": 0.85,
+   "access_recall_heldout": 0.7,
+   "inline_median_ms": 200,
+   "proven_precision": 0.95,
+   "raw_secrets_in_outputs": 0,
+   "tournament_correct_decisions": "12/12"
+  },
+  "proven_precision": {
+   "measured": 1.0,
+   "met": true,
+   "target": 0.95
+  },
+  "raw_secrets_in_outputs": {
+   "measured": 0,
+   "met": true,
+   "target": 0
+  }
+ },
+ "tools": [
+  {
+   "name": "bandit",
+   "path_name": "bandit.EXE",
+   "sha256": "a904a413728eb2ffb5bf41202337bfcd42b0146e94e820b33442f1c7dc84a18a",
+   "status": "found"
+  },
+  {
+   "name": "betterleaks",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  },
+  {
+   "name": "checkov",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  },
+  {
+   "name": "docker",
+   "path_name": "docker.EXE",
+   "sha256": null,
+   "status": "found (presence only)"
+  },
+  {
+   "name": "gitleaks",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  },
+  {
+   "name": "guarddog",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  },
+  {
+   "name": "node",
+   "path_name": "node.EXE",
+   "sha256": null,
+   "status": "found (presence only)"
+  },
+  {
+   "name": "npm",
+   "path_name": "npm.CMD",
+   "sha256": null,
+   "status": "found (presence only)"
+  },
+  {
+   "name": "osv-scanner",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  },
+  {
+   "name": "pip-audit",
+   "path_name": "pip-audit.EXE",
+   "sha256": "7b7586467cae4b5efbbb6453a2c73d802032d36ca799087c114e4455a1940ca9",
+   "status": "found"
+  },
+  {
+   "name": "semgrep",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  },
+  {
+   "name": "supabase",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  },
+  {
+   "name": "trufflehog",
+   "path_name": null,
+   "sha256": null,
+   "status": "not installed"
+  }
+ ]
+}
