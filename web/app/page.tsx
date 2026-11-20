@@ -43,7 +43,7 @@ export default function Home() {
         ))}
       </div>
       <p className="muted" style={{ marginTop: 12 }}>
-        Layers 6, 7 and 9 are still being built. <a href="/benchmark/">The benchmark page</a> says exactly what has been measured.
+        Layer 7 is still being built. <a href="/benchmark/">The benchmark page</a> says exactly what has been measured.
       </p>
 
       <h2>Your code stays on your machine</h2>

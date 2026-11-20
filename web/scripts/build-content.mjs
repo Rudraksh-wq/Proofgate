@@ -50,7 +50,7 @@ writeFileSync(join(pub, "docs", "mcp-tools.md"), mcpTools);
 
 // --- limits
 const limitsMd = `# What ProofGate cannot prove\n\n${LIMITS}\n\n## Known blind spots\n\n${BLIND_SPOTS.map((b) => `- ${b}`).join("\n")}\n\n` +
-  `## Other limits\n\n- "Proven" means proven against your contract; a wrong contract or seed can still mislead.\n- Untested is not safe: anything that could not be set up is listed as untested.\n- Layers 6, 7 and 9 are not built yet.\n- The benchmark is small and synthetic.\n`;
+  `## Other limits\n\n- "Proven" means proven against your contract; a wrong contract or seed can still mislead.\n- Untested is not safe: anything that could not be set up is listed as untested.\n- Layer 7 is not built yet.\n- The benchmark is small and synthetic.\n`;
 writeFileSync(join(pub, "limits.md"), limitsMd);
 
 // --- benchmark (measured numbers only, from bench/results.json)
