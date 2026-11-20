@@ -175,6 +175,36 @@ def test_t5_prove_marks_v01_to_v08_proven_and_nothing_on_the_clean_apps(probed):
                                                                             (5, "_unauth_admin"), (6, "_mass_assign"), (7, "_sqli"), (8, "_cmdi")))
 
 
+
+# ----------------------------------------------------------------------------- the hosted Supabase backend (T6 and T9 live halves)
+def hosted_or_skip():
+    """The configured hosted test project, or a skip with the reason. Nothing here ever runs against a project that is not on the allow-list."""
+    from proofgate.supabase_target import BackendUnavailable, SupabaseTargetRefused, load_config, resolve_target
+
+    try:
+        cfg = load_config(ROOT)
+        target = resolve_target(cfg, backend="hosted", i_own_this=True)
+    except BackendUnavailable as e:
+        pytest.skip(f"no hosted Supabase test project configured ({e}); put the names from .env.example into .env to run this live")
+    except SupabaseTargetRefused as e:
+        pytest.skip(f"the hosted project is not allowed to be used ({e})")
+    if not target.db_url:
+        pytest.skip("SUPABASE_DB_URL is not set in .env")
+    return cfg
+
+
+def reset_variant(letter: str) -> None:
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("reset_demo", ROOT / "scripts" / "reset_demo.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod.main(["--variant", letter, "--backend", "hosted", "--i-own-this"]) == 0
+    import time
+
+    time.sleep(2)  # let PostgREST reload its schema cache
+
+
 # ============================================================================= T6 Supabase
 @pytest.mark.parametrize("letter,rule", [("A", "rls-disabled"), ("B", "policy-role-without-uid")])
 async def test_t6_variants_a_and_b_are_flagged_statically(tmp_path, letter, rule):
@@ -197,8 +227,34 @@ async def test_t6_variant_c_is_clean_and_select_using_true_on_an_owner_table_is_
     assert flagged and flagged[0].severity == "high"  # Splinter 0024 skips SELECT on purpose; the contract does not
 
 
-def test_t6_live_probe_of_variants_a_b_c():
-    pytest.skip("needs live stack (supabase start + Docker) - verified in chore/verify-live-tools; the static half above runs here")
+async def test_t6_live_probe_of_variants_a_b_c_on_the_hosted_project(tmp_path):
+    """A and B leak and are PROVEN, C holds, the owner oracles pass everywhere, and no probe user is left behind."""
+    hosted_or_skip()
+    from proofgate.probe import run_supabase_probe
+    from proofgate.supabase_target import load_config, resolve_target
+    from proofgate.probe.supabase import SupabaseApi
+
+    proj = tmp_path / "supabase-only"  # the API probe only: the Next.js routes are T9's business
+    shutil.copytree(DEMO / "supabase", proj / "supabase")
+    (proj / "package.json").write_text('{"dependencies": {"@supabase/ssr": "0"}}', encoding="utf-8")
+    contract = load_contract(DEMO)
+    proven = {}
+    for letter in "ABC":
+        reset_variant(letter)
+        out = await run_supabase_probe(proj, contract, backend="hosted", i_own_this=True, config_dir=ROOT)
+        assert out.error is None, out.error
+        r = out.result
+        assert r.untested == [] and all(r.oracles.values()), (letter, r.untested, r.oracles)
+        assert any("cleanup verified" in n for n in r.notes), (letter, r.notes)
+        proven[letter] = {(c.rule, c.actor, c.route_label.split(" ")[0]) for c in r.proven}
+    assert ("cross-user-list", "anon", "GET") in proven["A"] and ("cross-user-write", "B", "DELETE") in proven["A"] and len(proven["A"]) == 5
+    assert ("cross-user-list", "anon", "GET") not in proven["B"] and ("cross-user-read", "B", "GET") in proven["B"] and len(proven["B"]) == 4
+    assert proven["C"] == set()
+    api = SupabaseApi(resolve_target(load_config(ROOT), backend="hosted", i_own_this=True), delay=0)
+    try:
+        assert await api.leftover_probe_users() == []  # cleanup leaves no test users behind
+    finally:
+        await api.aclose()
 
 
 # ============================================================================= T7 tournament
@@ -288,8 +344,32 @@ async def test_t9_the_nextjs_app_gets_the_static_half_of_the_workflow(tmp_path):
         assert "BLOCKING" in blocked
 
 
-def test_t9_prove_and_verify_fix_on_the_nextjs_app():
-    pytest.skip("needs live stack (supabase start + Docker) - verified in chore/verify-live-tools; static scan above runs here")
+async def test_t9_prove_and_verify_fix_on_the_nextjs_app_against_the_hosted_project(monkeypatch):
+    """Through the MCP server: prove finds the leak in the live project, verify_fix accepts the RLS fix (A becomes C) and rejects a no-op."""
+    hosted_or_skip()
+    if not (DEMO / "node_modules" / "next").is_dir():
+        pytest.skip("the demo's node_modules is missing: run `npm install` in demo-apps/nextjs-supabase to replay its routes")
+    monkeypatch.setenv("PROOFGATE_I_OWN_THIS", "1")  # the person's opt-in, exactly as it would be in .env: there is no tool argument for it
+    monkeypatch.setenv("PROOFGATE_SUPABASE_BACKEND", "hosted")
+    monkeypatch.setenv("PROOFGATE_DEMO_VARIANT", "A")
+    reset_variant("A")
+    async with Session(DEMO) as s:
+        proven = data_of(await s.call("prove", project_dir=str(DEMO)))["proven"]
+        rules = {(p["rule"], p["location"]["file"]) for p in proven}
+        assert ("cross-user-read", "supabase:public.notes") in rules  # RLS is off: anyone can read
+        assert ("cross-user-read", "app/api/notes/[id]/route.ts") in rules and ("sql-injection", "app/api/search/route.ts") in rules  # and the planted routes leak
+        target = next(p for p in proven if p["rule"] == "cross-user-read" and p["location"]["file"] == "supabase:public.notes")
+        from proofgate.fix.pipeline import deterministic_candidates
+        from proofgate.models import Finding, Report
+
+        report = Report.model_validate_json((DEMO / ".proofgate" / "report.json").read_text(encoding="utf-8"))
+        finding = next(f for f in report.findings if f.id == target["id"])
+        patch = deterministic_candidates(DEMO, finding, load_contract(DEMO))[0][0].patch
+        verdict = await s.call("verify_fix", project_dir=str(DEMO), finding_id=finding.id, patch=patch)
+        assert "ACCEPTED" in verdict and data_of(verdict)["gates"]["exploit_blocked"] is True
+        noop = "--- /dev/null\n+++ b/supabase/migrations/20990101000000_noop.sql\n@@ -0,0 +1 @@\n+select 1;\n"
+        assert "REJECTED" in await s.call("verify_fix", project_dir=str(DEMO), finding_id=finding.id, patch=noop)
+    reset_variant("A")
 
 
 # ============================================================================= T10 no leaks anywhere

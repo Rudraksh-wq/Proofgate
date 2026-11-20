@@ -228,11 +228,14 @@ def tier_b_patch(project: Path, finding: Finding, contract: Contract) -> tuple[s
         changes = rls_migration(project, finding, contract)
         return (diff_texts(project, changes), "Every table must have RLS on, with policies that compare auth.uid() to the owner column.") \
             if changes else None
+    if finding.layer == 8 and rel.startswith("supabase:public."):  # proven through the Supabase API: the database policies are the cause
+        changes = rls_migration(project, finding, contract)
+        return (diff_texts(project, changes), "Every table must have RLS on, with policies that compare auth.uid() to the owner column.") if changes else None
     text = read_text(project / rel)
     if text is None:
         return None
     try:
-        if rel.endswith("route.ts") and "service-role" in rule:
+        if rel.endswith(("route.ts", "route.js")) and ("service-role" in rule or finding.layer == 8) and "SERVICE_ROLE" in text:
             new = next_ssr_switch(text, finding)
             learned = "Route handlers must use the request-scoped Supabase client and filter by the signed-in user, never the service_role key."
         elif rule == "cross-user-list":

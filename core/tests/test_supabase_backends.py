@@ -233,6 +233,8 @@ def test_reset_drops_only_demo_objects_and_replays_migrations_then_the_variant_i
     conn = FakeConn()
     applied = db.reset_demo_schema(conn, DEMO, "c", target=target())
     assert applied == ["20240101000000_notes.sql", "20240101000100_run_sql.sql", "c_owner_only.sql"]
+    assert conn.executed[-1][0] == "notify pgrst, 'reload schema'" and conn.executed[-1][1] is False  # after the transaction: PostgREST reloads its schema
+    conn.executed = conn.executed[:-1]
     assert conn.tx_count == 1 and all(in_tx for _, in_tx in conn.executed)
     assert conn.executed[0][0] == db.DEMO_DROP_SQL and "public.notes" in db.DEMO_DROP_SQL and "run_sql" in db.DEMO_DROP_SQL
     assert db.DEMO_DROP_SQL.count("drop ") == 2 and "schema" not in db.DEMO_DROP_SQL and "auth" not in db.DEMO_DROP_SQL
@@ -243,7 +245,7 @@ def test_reset_drops_only_demo_objects_and_replays_migrations_then_the_variant_i
 def test_each_variant_is_the_one_that_gets_applied(letter, needle):
     conn = FakeConn()
     db.reset_demo_schema(conn, DEMO, letter, target=target())
-    assert needle in conn.executed[-1][0]
+    assert needle in conn.executed[-2][0]  # the last statement is the PostgREST schema reload
 
 
 def test_the_installed_variant_copy_is_not_replayed_twice(tmp_path):

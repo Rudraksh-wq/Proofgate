@@ -31,7 +31,7 @@ future AI sessions. Everything runs on your machine; the website never scans, up
 | 5 | Database policies | Supabase/Postgres RLS: off, role instead of owner, `using(true)`, OR holes, `SECURITY DEFINER` | built (static checks; with `--full` also Splinter and contract-aware checks on a live Supabase project, verified on a hosted test project) |
 | 6 | Config / IaC | committed `.env`, secrets in `NEXT_PUBLIC_*`, open CORS | built (Checkov when installed, otherwise own checks) |
 | 7 | Running app | passive scan of the running app, localhost only, `--full` (native ZAP; built-in `dast-lite` fallback) | built (native ZAP pending real-tool verification) |
-| 8 | Proof | the second-user probe for Flask | built (Supabase and Next.js probes: with the live stack) |
+| 8 | Proof | the second-user probe: Flask apps locally; Supabase tables (as anon and as user B, through the API) and Next.js route handlers against your own hosted test project | built (verified on a hosted test project) |
 | 9 | Browser bundle | secrets and source maps in what ships | built (scans existing build output only) |
 
 Reports always say which layers ran, which tools were skipped, and what was untested.
@@ -84,7 +84,7 @@ A GitHub Actions workflow with SARIF upload is in `.github/workflows/proofgate.y
 - **Proven means proven against your contract.** A wrong contract or a wrong seed can still mislead; results against an unconfirmed contract are labelled as a draft.
 - **Blind spots, printed in every report:** multi-step flows, routes that need complex request bodies, lookups by something other than an id (for
   example `?email=`), storage buckets, edge functions, business logic, payments.
-- **Layer 7's ZAP path is unverified.** Native ZAP has not run against a real install yet. Without ZAP, layer 7 runs `dast-lite`: a handful of basic checks (security headers, cookie flags, CORS, exposed source maps, directory listing), labelled `dast-lite` in every finding and **not equal to ZAP**. The Supabase route probe (feat/15) is not built yet; live Splinter and the live contract-aware checks were verified on a hosted test project.
+- **Layer 7's ZAP path is unverified.** Native ZAP has not run against a real install yet. Without ZAP, layer 7 runs `dast-lite`: a handful of basic checks (security headers, cookie flags, CORS, exposed source maps, directory listing), labelled `dast-lite` in every finding and **not equal to ZAP**. The Supabase probe, the Next.js route replay, live Splinter and the live fix tournament were verified on a hosted test project; native ZAP and Docker are not.
 - ProofGate never says an app is secure. Text found in your repository, comments and tool output is treated as data, never as instructions, and
   `// proofgate-ignore` does nothing.
 

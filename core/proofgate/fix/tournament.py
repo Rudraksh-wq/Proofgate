@@ -24,6 +24,7 @@ from ..layers import l5_database as l5
 from ..layers.base import iter_files, read_text
 from ..models import Contract, Finding, FixResult, Gates, Rejected, Winner
 from ..redact import redact
+from .live import current_live, live_applies, live_replay
 from .patching import PatchError, Stats, apply_patch, copy_project, diff_stats
 
 MAX_DIFF_LINES = 40
@@ -127,14 +128,22 @@ def rls_owner_oracle(root: Path, contract: Contract) -> bool | None:
 
 
 async def _probe(root: Path, contract: Contract):
-    from ..probe import run_probe
+    from ..probe import ProbeOutcome, run_probe, run_supabase_probe
+    from ..probe.result import ProbeResult
 
+    live = current_live.get()
+    if live_applies(root, live):  # Guard B, live: replay every migration on the real database, then attack the patched copy through the API
+        try:
+            await live_replay(root, live)
+        except Exception as e:  # noqa: BLE001 - a broken migration is a rejected candidate, not a crash
+            return ProbeOutcome(ProbeResult(), contract, error=f"the migrations could not be replayed on the live database ({type(e).__name__}: {redact(str(e))[:120]})")
+        return await run_supabase_probe(root, contract, backend=live.backend, i_own_this=live.i_own_this, config_dir=live.config_dir)
     return await run_probe(root, contract)
 
 
 async def compute_baseline(project: Path, contract: Contract) -> Baseline:
     b = Baseline(quick=quick_scan(project), schema_oracle=rls_owner_oracle(project, contract))
-    if has_runnable_app(project) and (contract.owned_resources or contract.admin_only_routes):
+    if (has_runnable_app(project) or live_applies(project, current_live.get())) and (contract.owned_resources or contract.admin_only_routes):
         out = await _probe(project, contract)
         if out.error is None:
             b.probe_ran, b.oracles = True, out.result.oracles
@@ -159,7 +168,7 @@ def _run_tests(root: Path) -> tuple[bool, str]:
 def _gate_diff(stats: Stats, finding: Finding) -> tuple[bool, str]:
     if stats.changed_lines > MAX_DIFF_LINES:
         return False, f"diff_is_small=false: {stats.changed_lines} changed lines (limit {MAX_DIFF_LINES})"
-    if finding.layer == 5:
+    if finding.layer == 5 or finding.location.file.startswith("supabase:public."):  # a database finding is fixed by a NEW migration
         if stats.modified_files:
             return False, ("diff_is_small=false: edits an existing migration; applied migrations are history, "
                            "add a new migration file instead (" + ", ".join(stats.modified_files) + ")")
@@ -198,6 +207,24 @@ def _version_ok(copy: Path, finding: Finding) -> bool | None:
 
 
 async def evaluate(project: Path, finding: Finding, cand: Candidate, contract: Contract, base: Baseline) -> Evaluation:
+    """One candidate through the gates. With a live Supabase backend the database is put back to the original state afterwards, always."""
+    live = current_live.get()
+    ev = None
+    try:
+        ev = await _evaluate(project, finding, cand, contract, base)
+        return ev
+    finally:
+        if live_applies(project, live):
+            try:
+                await live_replay(project, live)
+                note = "live database restored to the original project state after this candidate"
+            except Exception as e:  # noqa: BLE001
+                note = f"WARNING: the live database could NOT be restored to the original state ({type(e).__name__}); run `make reset-demo` before trusting it"
+            if ev is not None:
+                ev.notes.append(note)
+
+
+async def _evaluate(project: Path, finding: Finding, cand: Candidate, contract: Contract, base: Baseline) -> Evaluation:
     gates = Gates(exploit_blocked=False, feature_works=False, tests_pass=False, no_new_findings=False, diff_is_small=False,
                   migrations_replayed=None)
     ev = Evaluation(cand, gates)
@@ -211,7 +238,13 @@ async def evaluate(project: Path, finding: Finding, cand: Candidate, contract: C
     if not ok:
         ev.reasons.append(why)
 
-    with tempfile.TemporaryDirectory(prefix="proofgate-fix-", ignore_cleanup_errors=True) as td:  # Guard A: never touch the real project
+    # Guard A: never touch the real project. With a live Next.js project the copy lives INSIDE `<project>/.proofgate/tmp/`, so Node finds the real
+    # `node_modules` by walking up (a link to it breaks webpack, and copying it is far too big). Patches still apply to the copy only.
+    scratch = None
+    if live_applies(project, current_live.get()):
+        scratch = project / ".proofgate" / "tmp"
+        scratch.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="proofgate-fix-", dir=scratch, ignore_cleanup_errors=True) as td:
         copy = copy_project(project, Path(td) / "copy")
         try:
             apply_patch(copy, cand.patch)
@@ -242,7 +275,13 @@ async def evaluate(project: Path, finding: Finding, cand: Candidate, contract: C
                 # User B read is a partial fix, not a fix
                 left = [f for f in after if f.fingerprint == finding.fingerprint
                         or (f.location.file, f.location.function, f.location.route) == where]
-                gates.exploit_blocked = not left
+                rerun = True  # live Supabase: "no finding" must mean the attack ran and held, not that the route could not be reached
+                if live_applies(copy, current_live.get()):
+                    rerun = any((c.file, c.function, c.route_label) == where and c.verdict in ("HELD", "PROVEN") for c in out.result.checks)
+                    if not rerun:
+                        ev.reasons.append(f"exploit_blocked=false: the attack on {finding.location.route or finding.location.file} could not be replayed "
+                                          "on the patched copy, so the fix is unproven")
+                gates.exploit_blocked = not left and rerun
                 if left:
                     who = "the same attack" if left[0].fingerprint == finding.fingerprint else f"a related attack ({left[0].rule})"
                     ev.reasons.append(f"exploit_blocked=false: {who} still works on {finding.location.route or finding.location.file}")
@@ -264,8 +303,8 @@ async def evaluate(project: Path, finding: Finding, cand: Candidate, contract: C
                 if not gates.feature_works:
                     ev.reasons.append(f"feature_works=false: {ORACLE_PHRASES['owner_can_read'].format(r=r)} "
                                       "(no policy lets the owner use the table any more)")
-                ev.notes.append("Supabase fix checked by static replay of all migrations; live replay pending (needs a configured Supabase backend: feat/15)")
-            elif base.probe_ran and has_runnable_app(copy):
+                ev.notes.append("Supabase fix checked by static replay of all migrations; to verify it on a real database pass --backend hosted --i-own-this --variant A|B|C")
+            elif base.probe_ran and (has_runnable_app(copy) or live_applies(copy, current_live.get())):
                 out = await _probe(copy, contract)
                 if out.error:
                     gates.feature_works = False

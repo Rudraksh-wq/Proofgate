@@ -15,10 +15,17 @@ everything else is tested only against recorded or hand-written samples and is l
 | Bandit, pip-audit, npm audit adapters (layers 2, 3) | real runs (earlier branches) | recorded outputs are real |
 | New Supabase key format | `sb_secret_` / `sb_publishable_` keys on the hosted project | detected, masked and sent as `apikey` only |
 
+| Supabase probe (layer 8) over HTTP on a hosted project | `proofgate prove demo-apps/nextjs-supabase --backend hosted --i-own-this` on each variant | A: anon and B read, list, change and delete A's row (5 proven). B: the same except anon (4 proven). C: held, owner oracles pass. Cleanup verified: no probe user left. |
+| Next.js route replay (`next dev` on a random port, pointed at the hosted project) | same command, variant C | RLS holds, but the planted service-role route is PROVEN: `GET /api/notes/[id]` (read), `PUT /api/notes/[id]` (write) and the SQL injection in `GET /api/search`. |
+| Live fix tournament, Tier B, on the hosted project | `proofgate fix ... --finding <id> --backend hosted --i-own-this --variant A` | RLS migration (14 lines) for the PostgREST finding: ACCEPTED, all gates pass, A becomes C. ssr-client switch (12 lines) for the route finding: ACCEPTED. The database is restored to the original state after each candidate. |
+
 ## Found by running against the real thing
 
 - A pasted database URL whose password contains `@` is parsed by libpq at the first `@`, so the connection failed with a host-name error. `.env` values are now percent-encoded before use.
 - `splinter.sql` is several statements (`SET`, a `DO` block, then the query). The rows are in the last result set, not the first.
+- **The probe's own cleanup deadlocked the Auth server.** A default psycopg connection keeps its first statement's transaction open, so `conn.transaction()` was only a SAVEPOINT and the row delete was never committed; the Auth server's cascading `delete user` then waited on that lock and failed. The probe's connection is now autocommit.
+- **A link to `node_modules` breaks webpack** ("Can't resolve ./D:/...") and a copy is far too large. A live Next.js fix is evaluated in a copy inside `<project>/.proofgate/tmp/`, so Node finds the real packages by walking up.
+- **PostgREST caches the schema.** After the replay the schema is reloaded (`notify pgrst, 'reload schema'`) before anything attacks it.
 - Checkov's output file name (above), and Checkov's Windows launcher is a `.cmd` wrapper the hash-pinning runner cannot run, so on Windows it is skipped and recorded.
 
 ## Still pending real-tool verification
@@ -30,8 +37,8 @@ everything else is tested only against recorded or hand-written samples and is l
 | Docker ZAP baseline | Docker is not used on this machine | `live-stack.yml` job `zap-baseline` |
 | Local `supabase start` (`--backend local`) | needs Docker | `live-stack.yml` job `supabase-live` |
 | Betterleaks / Gitleaks, OSV-Scanner, GuardDog | not installed (a download of unverified binaries was not approved) | install them yourself, then `proofgate doctor --pin <tool>` and re-run the adapter tests |
+| Live fix verification on a `local` (Docker) backend | needs Docker | `live-stack.yml` (no fix step yet) |
 | Gemini (contract, Tier C, explanations) | no paid-tier key used yet | not scheduled |
-| Next.js / Supabase route probe (HTTP through PostgREST) | not built (`feat/15`) | `feat/15-probe-supabase-nextjs` |
 
 ## Tool versions and hashes seen (not committed to the lock)
 

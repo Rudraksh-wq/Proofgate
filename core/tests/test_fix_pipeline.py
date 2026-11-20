@@ -431,7 +431,7 @@ def test_rls_migration_fix_is_accepted_by_static_replay(tmp_path, letter, rule):
     assert tree_hash(proj) == before
     assert res.accepted and res.tier == "B" and res.gates.migrations_replayed is True
     assert "enable row level security" in res.winner.patch and "auth.uid() = user_id" in res.winner.patch
-    assert any("live replay pending" in n for n in res.notes)
+    assert any("static replay" in n and "--backend hosted --i-own-this" in n for n in res.notes)  # says how to verify it on a real database
     assert "--- /dev/null" in res.winner.patch  # a NEW file, never an edit
     # applying it leaves the project with no RLS finding on notes
     apply_patch(proj, res.winner.patch)
@@ -531,3 +531,4 @@ def test_cli_fix_and_verify_end_to_end(capsys, tmp_path):
     good.write_text(make_diff("app.py", (proj / "app.py").read_text(encoding="utf-8"), (FIXES / "v01_correct" / "app.py").read_text(encoding="utf-8")), encoding="utf-8")
     code, out, _ = run_cli(capsys, "verify", str(proj), "--finding", fid, "--patch", str(good))
     assert code == 0 and FixResult.model_validate_json(out).accepted
+

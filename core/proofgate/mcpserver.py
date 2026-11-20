@@ -253,7 +253,13 @@ def build_server() -> FastMCP:
                 raise ToolRefused(f"unknown finding id {finding_id!r}")
         except (ToolRefused, ValueError) as e:
             return _refuse(e)
-        res = await verify_patch(root, finding, patch, load_contract(root))
+        from .fix.live import current_live, live_from_env
+
+        token = current_live.set(live_from_env(root))  # only if the person opted in through the environment; never through a tool argument
+        try:
+            res = await verify_patch(root, finding, patch, load_contract(root))
+        finally:
+            current_live.reset(token)
         head = ("ACCEPTED: every gate passed." if res.accepted else "REJECTED: read the reasons, fix the cause, try again (max 3 times), "
                 "then tell the user it needs a human.")
         return wrap(head, {"accepted": res.accepted, "gates": res.gates.model_dump(), "rejected": [r.reason for r in res.rejected],
