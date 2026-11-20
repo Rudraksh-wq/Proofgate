@@ -19,6 +19,7 @@ from corpus_harness import CORPUS
 
 FIXTURES = Path(__file__).parent / "fixtures" / "tool_outputs"
 RULES = l2.RULES_DIR
+RULE_TESTS = Path(__file__).resolve().parents[1] / "rule_tests"
 CATEGORIES = {"secrets", "injection", "access", "deps", "supply-chain", "database", "config", "web", "bundle"}
 RULE_FILES = {"python.yaml": "python.py", "javascript.yaml": "javascript.ts", "route.yaml": "route.ts"}
 
@@ -55,7 +56,7 @@ def test_rule_is_well_formed(rule):
 @pytest.mark.parametrize("rule_file,test_file", RULE_FILES.items())
 def test_every_rule_has_a_positive_and_a_negative_case(rule_file, test_file):
     ids = [r["id"] for r in yaml.safe_load((RULES / rule_file).read_text(encoding="utf-8"))["rules"]]
-    text = (RULES / test_file).read_text(encoding="utf-8")
+    text = (RULE_TESTS / test_file).read_text(encoding="utf-8")
     for rid in ids:
         assert re.search(rf"(?:#|//)\s*ruleid:\s*{re.escape(rid)}\b", text), f"no positive case for {rid}"
         assert re.search(rf"(?:#|//)\s*ok:\s*{re.escape(rid)}\b", text), f"no negative case for {rid}"
@@ -73,7 +74,7 @@ def _semgrep_binary():
 
 @pytest.mark.skipif(_semgrep_binary() is None, reason="semgrep not installed: pending real-tool verification")
 def test_semgrep_own_rule_tests_pass():
-    r = subprocess.run([_semgrep_binary(), "--test", "--metrics=off", str(RULES)], capture_output=True, text=True)
+    r = subprocess.run([_semgrep_binary(), "--test", "--metrics=off", "--config", str(RULES), str(RULE_TESTS)], capture_output=True, text=True)
     assert r.returncode == 0, r.stdout[-2000:] + r.stderr[-2000:]
 
 
@@ -177,7 +178,7 @@ def fake_runner(outputs: dict[str, tuple[str, int]]):
 async def test_run_records_skipped_semgrep_and_keeps_bandit_findings():
     res = await l2.run(CORPUS, runner=fake_runner({"bandit": (bandit_fixture(), 0)}))
     statuses = {t.name: t.status for t in res.tools}
-    assert statuses == {"semgrep": "skipped", "bandit": "ok"}
+    assert statuses == {"semgrep": "skipped", "bandit": "ok", "proofgate-inline": "ok"}
     assert any("semgrep" in n and "skipped" in n for n in res.notes)
     assert res.findings and all(isinstance(f, Finding) for f in res.findings)
 
@@ -199,7 +200,7 @@ async def test_garbage_tool_output_never_crashes(out, rc):
 
 async def test_run_with_no_tools_at_all(tmp_path):
     res = await l2.run(tmp_path, runner=fake_runner({}))
-    assert res.findings == [] and {t.status for t in res.tools} == {"skipped"}
+    assert res.findings == [] and {t.name: t.status for t in res.tools} == {"semgrep": "skipped", "bandit": "skipped", "proofgate-inline": "ok"}
 
 
 # ----------------------------------------------------------------------------- real Bandit (installed in the venv)
@@ -224,4 +225,22 @@ async def test_unpinned_real_bandit_is_refused_not_run():
     lock = ToolLock(tools={"bandit": ToolEntry(binary="bandit"), "semgrep": ToolEntry(binary="semgrep")})
     res = await l2.run(CORPUS / "v08_cmdi", lock=lock, tools_dir=BANDIT_EXE.parent)
     assert {t.name: t.status for t in res.tools}["bandit"] in ("unpinned", "skipped")
-    assert res.findings == []
+    assert all(f.sources == ["proofgate-inline"] for f in res.findings)  # only the built-in checks ran; Bandit was refused
+
+
+# ----------------------------------------------------------------------------- built-in AST/JS pass
+async def test_builtin_checks_find_the_planted_injections_without_any_external_tool():
+    res = await l2.run(CORPUS / "v08_cmdi", runner=fake_runner({}))
+    assert [(f.rule, f.sources) for f in res.findings] == [("proofgate.py-shell-true", ["proofgate-inline"])]
+    clean = await l2.run(CORPUS / "c03_bait", runner=fake_runner({}))
+    assert clean.findings == []
+
+
+async def test_builtin_and_bandit_agree_and_merge_in_the_report(tmp_path):
+    from proofgate.normalize import normalize
+
+    res = await l2.run(CORPUS, runner=fake_runner({"bandit": (bandit_fixture(), 0)}))
+    v08 = [f for f in res.findings if f.location.file == "v08_cmdi/app.py"]
+    assert {f.rule for f in v08} >= {"bandit-B602", "proofgate.py-shell-true"}
+    merged = [f for f in normalize(res.findings).findings if f.location.file == "v08_cmdi/app.py" and f.cwe == "CWE-78" and f.severity == "high"]
+    assert len(merged) == 1 and merged[0].confirmed_by == 2  # one issue, two tools

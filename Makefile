@@ -8,3 +8,7 @@ corpus:
 
 test: corpus
 	$(PYTHON) -m pytest -q
+
+.PHONY: bench
+bench:
+	$(PYTHON) bench/run_bench.py

@@ -172,6 +172,23 @@ async def _run_one(name, args, parser, project, result: LayerResult, runner: Run
         return []
 
 
+def builtin_findings(project: Path) -> list[Finding]:
+    """The same Python-AST and JS checks the inline hook runs (rules mirror rules/*.yaml), over the whole project."""
+    from ..inline import js_findings, python_findings
+    from .base import iter_files
+
+    out: list[Finding] = []
+    for p in iter_files(project):
+        rel = p.relative_to(project)
+        if "tests" in rel.parts[:-1] or "test" in rel.parts[:-1]:
+            continue
+        text = read_text(p) if p.suffix in (".py", ".js", ".jsx", ".ts", ".tsx", ".mjs") else None
+        if not text:
+            continue
+        out += python_findings(text, rel.as_posix()) if p.suffix == ".py" else js_findings(text, rel.as_posix())
+    return out
+
+
 async def run(project_dir: str | Path, *, lock=None, runner: Runner = run_tool, timeout: float = 300.0,
               tools_dir=None) -> LayerResult:
     project = Path(project_dir).resolve()
@@ -181,6 +198,8 @@ async def run(project_dir: str | Path, *, lock=None, runner: Runner = run_tool, 
                                project, result, runner, lock, timeout, tools_dir)
     findings += await _run_one("bandit", bandit_args(project), parse_bandit, project, result, runner, lock,
                                timeout, tools_dir)
+    findings += builtin_findings(project)  # ProofGate's own AST/JS checks: no external tool needed
+    result.tools.append(ToolRecord(name="proofgate-inline", status="ok"))
     seen: set[tuple[str, int, str]] = set()
     for f in sorted(findings, key=lambda f: (f.location.file, f.location.line, f.rule)):
         key = (f.location.file, f.location.line, f.rule)
