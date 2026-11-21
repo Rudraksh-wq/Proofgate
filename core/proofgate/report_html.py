@@ -77,6 +77,17 @@ def _fix_card(fx: FixResult) -> str:
         _gate("same exploit now fails", g.exploit_blocked), _gate("owner's feature still works", g.feature_works),
         _gate("existing tests pass", g.tests_pass), _gate("no new findings", g.no_new_findings),
         _gate("small, local diff", g.diff_is_small), _gate("migrations replayed from scratch", g.migrations_replayed)])
+    fix_breaker = ""
+    if g.fix_breaker is not None:
+        fb = g.fix_breaker
+        if fb.broken:
+            fix_breaker = f"<p>Rejected. {_e(fb.broken[0].label)} still leaks.</p>"
+        else:
+            fix_breaker = (
+                f"<p>Survived {fb.survived} of {fb.routable} routable variants tried "
+                f"({fb.generated} generated)</p>"
+                "<p>The attacks we tried failed; this does not mean the fix is unbreakable.</p>"
+            )
     verdict = "accepted" if fx.accepted else "not accepted"
     patch = f"<pre>{_e(fx.winner.patch)}</pre>" if fx.winner else ""
     rejected = "".join(f"<li>{_e(r.reason)}</li>" for r in fx.rejected)
@@ -84,7 +95,7 @@ def _fix_card(fx: FixResult) -> str:
         f"<p>Rule for future AI sessions: {_e(fx.learned_rule)}</p>" if fx.learned_rule else "")
     return (f'<article class="card"><div><span class="badge {"proven" if fx.accepted else "high"}">{verdict}</span>'
             f"<b>Fix for {_e(fx.finding_id)}</b> (tier {_e(fx.tier)}, {fx.candidates} candidate(s))</div>"
-            f'<ul style="list-style:none;padding-left:0">{gates}</ul>{patch}'
+            f'<ul style="list-style:none;padding-left:0">{gates}</ul>{fix_breaker}{patch}'
             + (f"<p>Rejected candidates:</p><ul>{rejected}</ul>" if rejected else "") + extra + "</article>")
 
 

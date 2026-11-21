@@ -102,3 +102,54 @@ def matches_any(path: str, patterns: list[str]) -> bool:
 
 def route_mentions(route: Route, word: str) -> bool:
     return word.lower() in route.path.lower()
+
+
+def _static_segments(path: str) -> tuple[str, ...]:
+    segments: list[str] = []
+    for segment in path.strip("/").split("/"):
+        if not segment or segment.startswith("<"):
+            break
+        segments.append(segment)
+    return tuple(segments)
+
+
+def _structural_path(path: str) -> str:
+    return re.sub(r"<(?:[a-z]+:)?[^>]+>", "<id>", path).rstrip("/")
+
+
+def sibling_routes(app_dir: str | Path, route: str) -> list[str]:
+    """Return discovered path templates that are sibling routes of `route`.
+
+    Failures, malformed source, and missing apps are deliberately treated as
+    "no siblings found" because discovery is a best-effort hint.
+    """
+    try:
+        base = str(route).strip()
+        base_parts = _static_segments(base)
+        if not base_parts:
+            return []
+
+        siblings: list[str] = []
+        seen: set[str] = set()
+        for candidate in discover_routes(app_dir):
+            if candidate.path == base:
+                continue
+            if _structural_path(candidate.path) == _structural_path(base):
+                continue
+            candidate_parts = _static_segments(candidate.path)
+            if not candidate_parts:
+                continue
+            common = 0
+            for left, right in zip(base_parts, candidate_parts):
+                if left != right:
+                    break
+                common += 1
+            if common == 0:
+                continue
+            # Preserve the leading static segment even for /api/v1 aliases.
+            if candidate.path not in seen:
+                seen.add(candidate.path)
+                siblings.append(candidate.path)
+        return sorted(siblings)
+    except Exception:
+        return []

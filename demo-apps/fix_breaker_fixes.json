@@ -1,0 +1,12 @@
+{
+  "fb01_narrow": {
+    "app": "fb01_method",
+    "kind": "narrow",
+    "should_accept": true
+  },
+  "fb01_proper": {
+    "app": "fb01_method",
+    "kind": "proper",
+    "should_accept": true
+  }
+}

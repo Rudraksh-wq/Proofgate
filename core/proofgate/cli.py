@@ -225,7 +225,7 @@ def cmd_fix(a) -> int:
 
     async def go():
         current_live.set(live)  # a live Supabase backend (hosted test project): every candidate is replayed on the real database
-        result = await fix_finding(d, finding, contract)
+        result = await fix_finding(d, finding, contract, break_fix=bool(a.break_fix))
         if result.accepted and not a.no_vaccine:
             vac = await build_vaccine(d, finding, result, contract)
             result = result.model_copy(update={
@@ -267,7 +267,8 @@ def cmd_verify(a) -> int:
 
     async def go():
         current_live.set(live)
-        return await verify_patch(d, finding, patch_file.read_text(encoding="utf-8"), load_contract(d))
+        return await verify_patch(d, finding, patch_file.read_text(encoding="utf-8"), load_contract(d),
+                                  break_fix=bool(a.break_fix))
 
     result = asyncio.run(go())
     print(_dump(result))
@@ -461,12 +462,14 @@ def build_parser() -> argparse.ArgumentParser:
     s = add("fix", cmd_fix, help="run the fix pipeline for one finding")
     s.add_argument("--finding", required=True)
     s.add_argument("--no-vaccine", action="store_true", help="skip the regression test and the learned rule")
+    s.add_argument("--break", dest="break_fix", action="store_true", help="enable the opt-in Fix Breaker sixth gate")
     s.add_argument("--backend", choices=["hosted", "local", "auto"], default=None, help="verify on a live Supabase backend (replays every candidate's migrations there)")
     s.add_argument("--i-own-this", action="store_true", help="confirm the hosted Supabase project is your own test project")
     s.add_argument("--variant", choices=["A", "B", "C", "a", "b", "c"], default=None, help="the demo's RLS variant installed in the database being fixed")
     s = add("verify", cmd_verify, help="run the tournament gates on a patch")
     s.add_argument("--finding", required=True)
     s.add_argument("--patch", required=True)
+    s.add_argument("--break", dest="break_fix", action="store_true", help="enable the opt-in Fix Breaker sixth gate")
     s.add_argument("--backend", choices=["hosted", "local", "auto"], default=None, help="verify on a live Supabase backend (replays every candidate's migrations there)")
     s.add_argument("--i-own-this", action="store_true", help="confirm the hosted Supabase project is your own test project")
     s.add_argument("--variant", choices=["A", "B", "C", "a", "b", "c"], default=None, help="the demo's RLS variant installed in the database being fixed")

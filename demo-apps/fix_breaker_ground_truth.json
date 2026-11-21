@@ -1,0 +1,12 @@
+{
+  "fb01_method": [
+    {
+      "category": "access",
+      "cwe": "CWE-639",
+      "label": "cross-user-read-or-sibling-export",
+      "file": "app.py",
+      "line": 63
+    }
+  ],
+  "fb02_control": []
+}
