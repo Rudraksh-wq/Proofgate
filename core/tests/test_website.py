@@ -78,7 +78,7 @@ def test_install_page_snippets_match_the_real_plugin_config():
     page = (WEB / "app" / "install" / "page.tsx").read_text(encoding="utf-8")
     plugin_mcp = json.loads((ROOT / "plugin" / ".mcp.json").read_text(encoding="utf-8"))["mcpServers"]["proofgate"]
     assert f'"command": "{plugin_mcp["command"]}"' in page and "/plugin marketplace add Rudraksh-wq/Proofgate" in page
-    assert "/plugin install proofgate@proofgate" in page and "pipx install proofgate" in page and "proofgate doctor" in page
+    assert "/plugin install proofgate@proofgate" in page and "pipx install proofgate-ai" in page and "proofgate doctor" in page
     for anchor in ("claude-code", "mcp", "cli", "troubleshooting"):
         assert f'id="{anchor}"' in page
     for name in TOOL_NAMES:
@@ -95,7 +95,7 @@ def test_llms_txt_follows_the_convention():
     assert [l for l in lines if l.startswith("## ")] == ["## Install", "## For AI agents", "## Limits", "## Optional"]
     links = re.findall(r"\]\((https://<site>/[^)]+)\)", LLMS)
     assert len(links) >= 8 and all(l.startswith("https://<site>/") for l in links)  # the placeholder is labelled, not invented
-    assert "pipx install proofgate" in LLMS and '"command":"proofgate-mcp"' in LLMS and "get_contract → scan_project → prove → verify_fix" in LLMS
+    assert "pipx install proofgate-ai" in LLMS and '"command":"proofgate-mcp"' in LLMS and "get_contract → scan_project → prove → verify_fix" in LLMS
 
 
 def test_llms_txt_never_tells_an_agent_to_weaken_the_gate_or_send_code_away():

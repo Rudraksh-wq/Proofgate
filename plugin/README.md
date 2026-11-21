@@ -1,6 +1,6 @@
 # ProofGate for Claude Code
 
-1. Install the engine: `pipx install proofgate` (it provides the `proofgate` and `proofgate-mcp` commands).
+1. Install the engine: `pipx install proofgate-ai` (it provides the `proofgate` and `proofgate-mcp` commands). To run only the MCP server: `claude mcp add proofgate --scope user -- proofgate-mcp`, or `uvx --from proofgate-ai proofgate-mcp`.
 2. In Claude Code: `/plugin marketplace add Rudraksh-wq/Proofgate`
 3. Then: `/plugin install proofgate@proofgate`
 4. Check the setup: `proofgate doctor`

@@ -140,7 +140,7 @@ def test_nothing_in_the_plugin_tells_an_agent_to_weaken_the_gate_or_send_code_aw
 
 def test_readme_is_five_lines_of_install():
     steps = [l for l in (PLUGIN / "README.md").read_text(encoding="utf-8").splitlines() if re.match(r"^\d\. ", l)]
-    assert len(steps) == 5 and "pipx install proofgate" in steps[0] and "/plugin install proofgate@proofgate" in steps[2]
+    assert len(steps) == 5 and "pipx install proofgate-ai" in steps[0] and "/plugin install proofgate@proofgate" in steps[2]
 
 
 # ============================================================================= templates

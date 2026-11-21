@@ -274,7 +274,7 @@ class SupabaseTarget:
         try:
             import psycopg
         except ImportError:
-            raise BackendUnavailable("the psycopg package is not installed (pip install 'proofgate[supabase]')") from None
+            raise BackendUnavailable("the psycopg package is not installed (pip install 'proofgate-ai[supabase]')") from None
         try:
             return psycopg.connect(self.db_url, connect_timeout=10)
         except Exception as e:  # noqa: BLE001 - the message can contain the URL: mask it
@@ -338,6 +338,6 @@ def backend_status(config: SupabaseConfig, *, local_ok: tuple[bool, str] | None 
 
         rows.append(("psycopg", "ok", "database driver for hosted migrations and Splinter"))
     except ImportError:
-        rows.append(("psycopg", "missing", "pip install 'proofgate[supabase]' to run migrations and Splinter"))
+        rows.append(("psycopg", "missing", "pip install 'proofgate-ai[supabase]' to run migrations and Splinter"))
     rows.append(("backend", "setting", config.backend))
     return rows

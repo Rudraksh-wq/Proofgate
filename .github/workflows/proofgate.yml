@@ -2,7 +2,7 @@
 # and show the results in GitHub's code-scanning tab (SARIF).
 #
 # Copy this file into your own repository. Change TARGET to "." (or your app folder) and, if you prefer, install the
-# released package (`pip install proofgate`) instead of `./core`.
+# released package (`pip install proofgate-ai`) instead of `./core`.
 #
 # Every action is pinned by its full commit SHA (a tag can be moved; a SHA cannot). Update the SHAs deliberately.
 name: ProofGate

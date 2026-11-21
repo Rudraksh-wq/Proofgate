@@ -26,7 +26,7 @@ export default function Install() {
         <h2>Claude Code plugin</h2>
         <p>This adds the hook that blocks live keys as they are written, the six-tool MCP server, three skills and three slash commands.</p>
         <ol className="steps">
-          <li>Install the engine: <code>pipx install proofgate</code></li>
+          <li>Install the engine: <code>pipx install proofgate-ai</code></li>
           <li>In Claude Code: <code>/plugin marketplace add Rudraksh-wq/Proofgate</code></li>
           <li>Then: <code>/plugin install proofgate@proofgate</code></li>
           <li>Check the setup: <code>proofgate doctor</code></li>
@@ -36,8 +36,12 @@ export default function Install() {
 
       <section className="panel" id="mcp">
         <h2>MCP server</h2>
-        <p>First install the engine (<code>pipx install proofgate</code>). The server speaks MCP over stdio and has exactly six tools: <code>get_contract</code>, <code>scan_file</code>, <code>scan_project</code>, <code>prove</code>, <code>verify_fix</code>, <code>explain_finding</code>. It has no shell tool, no network-send tool and no URL inputs.</p>
-        <h3>Claude Code, Cursor and Windsurf</h3>
+        <p>First install the engine (<code>pipx install proofgate-ai</code>). The server speaks MCP over stdio and has exactly six tools: <code>get_contract</code>, <code>scan_file</code>, <code>scan_project</code>, <code>prove</code>, <code>verify_fix</code>, <code>explain_finding</code>. It has no shell tool, no network-send tool and no URL inputs.</p>
+        <h3>Claude Code</h3>
+        <pre><code>{`pipx install proofgate-ai
+claude mcp add proofgate --scope user -- proofgate-mcp`}</code></pre>
+        <p>No install step? <code>uvx --from proofgate-ai proofgate-mcp</code> runs the server directly. The PyPI package is <code>proofgate-ai</code>; the commands are <code>proofgate</code> and <code>proofgate-mcp</code>.</p>
+        <h3>Claude desktop, Cursor and Windsurf</h3>
         <pre><code>{MCP_JSON}</code></pre>
         <ul>
           <li><b>Claude Code:</b> save as <code>.mcp.json</code> in your project, or use the plugin above.</li>
@@ -51,7 +55,7 @@ export default function Install() {
 
       <section className="panel" id="cli">
         <h2>Command line</h2>
-        <pre><code>{`pipx install proofgate
+        <pre><code>{`pipx install proofgate-ai
 proofgate init            # detect the stack, draft the contract, write agent files
 proofgate scan .          # fast layers; add --full to also attack the app locally
 proofgate prove .         # attack the app as a second user (local only)

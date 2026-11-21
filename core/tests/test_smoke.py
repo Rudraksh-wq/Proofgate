@@ -74,7 +74,7 @@ def test_t1_the_built_wheel_ships_its_data_files(tmp_path):
         pytest.skip("cannot build a wheel offline in this environment: " + (r.stderr or r.stdout)[-200:])
     import zipfile
 
-    names = zipfile.ZipFile(next(tmp_path.glob("proofgate-*.whl"))).namelist()
+    names = zipfile.ZipFile(next(tmp_path.glob("proofgate_ai-*.whl"))).namelist()
     for needle in ("proofgate/tools.lock.json", "proofgate/rules/python.yaml", "proofgate/rules/javascript.yaml", "proofgate/rules/route.yaml",
                    "proofgate/data/top_packages.json", "proofgate/cli.py", "proofgate/mcpserver.py"):
         assert needle in names, needle
@@ -488,7 +488,7 @@ def test_t12_static_build_has_no_api_routes_llms_txt_serves_and_snippets_work():
     assert mcp["mcpServers"]["proofgate"]["command"] == plugin_cfg["mcpServers"]["proofgate"]["command"] == "proofgate-mcp"
     assert any("[mcp_servers.proofgate]" in b and 'command = "proofgate-mcp"' in b for b in blocks)
     plain = htmllib.unescape(re.sub(r"<[^>]+>", "", html))
-    assert "/plugin install proofgate@proofgate" in plain and "pipx install proofgate" in plain
+    assert "/plugin install proofgate@proofgate" in plain and "pipx install proofgate-ai" in plain
     for tool in TOOL_NAMES:
         assert tool in plain
 
