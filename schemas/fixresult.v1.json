@@ -1,15 +1,31 @@
 {
   "$defs": {
+<<<<<<< HEAD
     "FixBreaker": {
+=======
+    "FixBreakerResult": {
+>>>>>>> 182481dfd16b7929cbb8273c2712117cb8cc2f4a
       "additionalProperties": false,
       "properties": {
         "broken": {
           "items": {
+<<<<<<< HEAD
             "$ref": "#/$defs/FixBreakerBreak"
+=======
+            "additionalProperties": true,
+            "type": "object"
+>>>>>>> 182481dfd16b7929cbb8273c2712117cb8cc2f4a
           },
           "title": "Broken",
           "type": "array"
         },
+<<<<<<< HEAD
+=======
+        "duration_ms": {
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+>>>>>>> 182481dfd16b7929cbb8273c2712117cb8cc2f4a
         "generated": {
           "title": "Generated",
           "type": "integer"
@@ -31,6 +47,7 @@
         "ran",
         "generated",
         "routable",
+<<<<<<< HEAD
         "survived"
       ],
       "title": "FixBreaker",
@@ -53,6 +70,13 @@
         "status"
       ],
       "title": "FixBreakerBreak",
+=======
+        "survived",
+        "broken",
+        "duration_ms"
+      ],
+      "title": "FixBreakerResult",
+>>>>>>> 182481dfd16b7929cbb8273c2712117cb8cc2f4a
       "type": "object"
     },
     "Gates": {
@@ -73,7 +97,11 @@
         "fix_breaker": {
           "anyOf": [
             {
+<<<<<<< HEAD
               "$ref": "#/$defs/FixBreaker"
+=======
+              "$ref": "#/$defs/FixBreakerResult"
+>>>>>>> 182481dfd16b7929cbb8273c2712117cb8cc2f4a
             },
             {
               "type": "null"

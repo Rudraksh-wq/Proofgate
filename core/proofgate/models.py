@@ -119,6 +119,15 @@ class Winner(_Strict):
     diff_lines: int
 
 
+class FixBreakerResult(_Strict):
+    ran: bool
+    generated: int
+    routable: int
+    survived: int
+    broken: list[dict[str, Any]]
+    duration_ms: int
+
+
 class Gates(_Strict):
     exploit_blocked: bool
     feature_works: bool
@@ -126,7 +135,27 @@ class Gates(_Strict):
     no_new_findings: bool
     diff_is_small: bool
     migrations_replayed: bool | None = None  # only meaningful for Supabase fixes
+<<<<<<< HEAD
     fix_breaker: FixBreaker | None = None
+=======
+    fix_breaker: FixBreakerResult | None = Field(
+        default=None,
+        exclude_if=lambda value: value is None,
+    )  # opt-in sixth gate; absent keeps existing serialisation unchanged
+
+    def model_dump(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        data = super().model_dump(*args, **kwargs)
+        if self.fix_breaker is None:
+            data.pop("fix_breaker", None)
+        return data
+
+    def model_dump_json(self, *args: Any, **kwargs: Any) -> str:
+        if self.fix_breaker is None:
+            excluded = set(kwargs.pop("exclude", ()) or ())
+            excluded.add("fix_breaker")
+            kwargs["exclude"] = excluded
+        return super().model_dump_json(*args, **kwargs)
+>>>>>>> 182481dfd16b7929cbb8273c2712117cb8cc2f4a
 
 
 class Rejected(_Strict):
