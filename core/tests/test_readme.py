@@ -21,7 +21,7 @@ def test_readme_has_the_required_sections_and_the_pitch():
         assert heading in README, heading
     assert "ProofGate shows you the stolen data, and only accepts a fix that provably stops it" in README
     assert LIMITS_STATEMENT in README
-    assert "/plugin install proofgate@proofgate" in README and "pipx install proofgate" in README and "proofgate-mcp" in README
+    assert "/plugin install proofgate@proofgate" in README and "pipx install proofgate-ai" in README and "proofgate-mcp" in README
 
 
 def test_readme_layer_status_matches_what_is_built():

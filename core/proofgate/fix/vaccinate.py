@@ -32,7 +32,7 @@ BLOCK_TITLE = "## ProofGate security rules (added by verified fixes)"
 PY_TEST_FILE = "tests/test_proofgate_regressions.py"
 PY_HEADER = '''"""Regression tests written by ProofGate. Each one replays the attack behind a verified fix.
 
-Every test FAILS while the hole exists and PASSES once it is fixed. They need ProofGate importable (pip install proofgate);
+Every test FAILS while the hole exists and PASSES once it is fixed. They need ProofGate importable (pip install proofgate-ai);
 without it they are skipped, never silently green.
 """
 import asyncio

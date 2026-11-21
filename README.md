@@ -1,5 +1,7 @@
 # ProofGate
 
+<!-- mcp-name: io.github.Rudraksh-wq/proofgate -->
+
 **Other scanners show you warnings. ProofGate shows you the stolen data, and only accepts a fix that provably stops it.**
 
 ProofGate is a local security gate for the AI coding loop (Python/Flask, Next.js + Supabase). It runs nine layers of checks on what your AI
@@ -41,13 +43,21 @@ Reports always say which layers ran, which tools were skipped, and what was unte
 **Claude Code plugin** (hook + MCP server + 3 skills + 3 slash commands):
 
 ```
-pipx install proofgate
+pipx install proofgate-ai
 /plugin marketplace add Rudraksh-wq/Proofgate
 /plugin install proofgate@proofgate
 proofgate doctor
 ```
 
-**MCP server** (Claude Code, Cursor, Codex, Windsurf): after `pipx install proofgate`, point your agent at the stdio command `proofgate-mcp`:
+**MCP server** (Claude Code, Cursor, Codex, Windsurf): after `pipx install proofgate-ai`, point your agent at the stdio command `proofgate-mcp`.
+The package on PyPI is `proofgate-ai`; the commands it installs are `proofgate` and `proofgate-mcp`.
+
+```
+claude mcp add proofgate --scope user -- proofgate-mcp     # Claude Code, after pipx install proofgate-ai
+uvx --from proofgate-ai proofgate-mcp                      # run the server without installing it
+```
+
+Claude desktop (`claude_desktop_config.json`), Cursor and Windsurf:
 
 ```json
 {"mcpServers": {"proofgate": {"command": "proofgate-mcp", "args": []}}}
@@ -60,7 +70,7 @@ inputs; `project_dir` must be inside your workspace; everything it returns from 
 **Command line:**
 
 ```
-pipx install proofgate
+pipx install proofgate-ai
 proofgate init                 # detect the stack, draft the contract, write agent files
 proofgate scan .               # fast layers, writes .proofgate/report.json, report.html (and --format sarif)
 proofgate scan . --full        # also attack the app locally
@@ -122,7 +132,7 @@ The corpus is small and synthetic and was written by the same team as the rules.
 - **Supabase without Docker.** The live Supabase checks run against your own **hosted test project** (`--backend hosted`, the default when `SUPABASE_URL` is a
   hosted URL) or a local `supabase start` where Docker exists (`--backend local`; used by CI). Hosted mode sends **test traffic** (throwaway users, canary rows,
   the attacks) to that project and **no source code**. It refuses any project whose ref is not in `PROOFGATE_ALLOWED_PROJECT_REFS` and anything without
-  `--i-own-this`; the run is logged in the report. Migrations and RLS variants go over `SUPABASE_DB_URL` with psycopg (`pip install 'proofgate[supabase]'`):
+  `--i-own-this`; the run is logged in the report. Migrations and RLS variants go over `SUPABASE_DB_URL` with psycopg (`pip install 'proofgate-ai[supabase]'`):
   `make reset-demo VARIANT=A|B|C BACKEND=hosted I_OWN_THIS=1`. `proofgate doctor` shows which backends are available; an empty `.env` just says
   `hosted: not configured`.
 - External tools are pinned by version and SHA-256 in `tools.lock.json`; `proofgate doctor` refuses a binary that does not match.

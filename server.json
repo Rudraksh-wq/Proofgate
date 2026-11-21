@@ -1,0 +1,15 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Rudraksh-wq/proofgate",
+  "description": "Local security gate for AI-written apps: proves access-control bugs, verifies fixes.",
+  "repository": { "url": "https://github.com/Rudraksh-wq/Proofgate", "source": "github" },
+  "version": "0.0.1",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "proofgate-ai",
+      "version": "0.0.1",
+      "transport": { "type": "stdio" }
+    }
+  ]
+}

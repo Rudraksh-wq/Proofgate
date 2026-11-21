@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "proofgate"
+name = "proofgate-ai"
 version = "0.0.1"
 description = "Local security gate for the AI coding loop"
 license = { text = "MIT" }
