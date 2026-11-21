@@ -24,11 +24,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 1.42,
+     "seconds": 2.86,
      "tool_error": false,
      "unique": 0
     },
@@ -38,11 +40,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 1.44,
+     "seconds": 2.58,
      "tool_error": false,
      "unique": 0
     },
@@ -52,11 +56,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 1,
-     "seconds": 1.33,
+     "seconds": 2.79,
      "tool_error": false,
      "unique": 1
     },
@@ -66,7 +72,9 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 0,
@@ -80,11 +88,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 0.45,
+     "seconds": 0.42,
      "tool_error": false,
      "unique": 0
     },
@@ -94,11 +104,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 0.53,
+     "seconds": 0.42,
      "tool_error": false,
      "unique": 0
     },
@@ -108,11 +120,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 0.49,
+     "seconds": 0.42,
      "tool_error": false,
      "unique": 0
     },
@@ -122,11 +136,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 0.48,
+     "seconds": 0.41,
      "tool_error": false,
      "unique": 0
     },
@@ -136,11 +152,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 2,
-     "seconds": 0.5,
+     "seconds": 0.42,
      "tool_error": false,
      "unique": 1
     },
@@ -150,11 +168,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 2,
-     "seconds": 0.53,
+     "seconds": 0.39,
      "tool_error": false,
      "unique": 1
     },
@@ -164,11 +184,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 3,
-     "seconds": 0.51,
+     "seconds": 0.4,
      "tool_error": false,
      "unique": 2
     },
@@ -178,11 +200,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 3,
-     "seconds": 0.51,
+     "seconds": 0.41,
      "tool_error": false,
      "unique": 2
     },
@@ -192,11 +216,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 1,
-     "seconds": 0.55,
+     "seconds": 0.47,
      "tool_error": false,
      "unique": 1
     },
@@ -206,11 +232,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 1,
-     "seconds": 1.37,
+     "seconds": 1.44,
      "tool_error": false,
      "unique": 1
     },
@@ -220,11 +248,13 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 1,
-     "seconds": 1.17,
+     "seconds": 1.53,
      "tool_error": false,
      "unique": 1
     },
@@ -234,19 +264,21 @@
       2,
       3,
       4,
-      5
+      5,
+      6,
+      9
      ],
      "proven": 0,
      "raw": 4,
-     "seconds": 0.51,
+     "seconds": 0.47,
      "tool_error": false,
      "unique": 3
     }
    },
    "proven": 0,
    "raw": 18,
-   "seconds_max_per_app": 1.44,
-   "seconds_median_per_app": 0.522,
+   "seconds_max_per_app": 2.86,
+   "seconds_median_per_app": 0.424,
    "unique": 13
   },
   "proofgate_full": {
@@ -258,11 +290,14 @@
       3,
       4,
       5,
-      8
+      6,
+      7,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 2.25,
+     "seconds": 7.25,
      "tool_error": false,
      "unique": 0
     },
@@ -273,11 +308,309 @@
       3,
       4,
       5,
-      8
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 5,
+     "seconds": 6.91,
+     "tool_error": false,
+     "unique": 5
+    },
+    "c03_bait": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 6,
+     "seconds": 7.65,
+     "tool_error": false,
+     "unique": 6
+    },
+    "v01_idor_read": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 1,
+     "raw": 6,
+     "seconds": 1.8,
+     "tool_error": false,
+     "unique": 6
+    },
+    "v02_idor_write": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 1,
+     "raw": 6,
+     "seconds": 2.71,
+     "tool_error": false,
+     "unique": 6
+    },
+    "v03_idor_param": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 1,
+     "raw": 1,
+     "seconds": 1.86,
+     "tool_error": false,
+     "unique": 1
+    },
+    "v04_missing_role": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 1,
+     "raw": 6,
+     "seconds": 2.21,
+     "tool_error": false,
+     "unique": 6
+    },
+    "v05_unauth_admin": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 2,
+     "raw": 7,
+     "seconds": 1.91,
+     "tool_error": false,
+     "unique": 7
+    },
+    "v06_mass_assign": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 1,
+     "raw": 8,
+     "seconds": 2.14,
+     "tool_error": false,
+     "unique": 7
+    },
+    "v07_sqli": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 1,
+     "raw": 8,
+     "seconds": 1.85,
+     "tool_error": false,
+     "unique": 7
+    },
+    "v08_cmdi": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 1,
+     "raw": 9,
+     "seconds": 12.91,
+     "tool_error": false,
+     "unique": 7
+    },
+    "v09_hardcoded_keys": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 8,
+     "seconds": 11.87,
+     "tool_error": false,
+     "unique": 7
+    },
+    "v10_service_role_in_bundle": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 6,
+     "seconds": 12.09,
+     "tool_error": false,
+     "unique": 6
+    },
+    "v11_hallucinated_dep": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 6,
+     "seconds": 1.79,
+     "tool_error": false,
+     "unique": 6
+    },
+    "v12_outdated_dep": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 6,
+     "seconds": 1.75,
+     "tool_error": false,
+     "unique": 6
+    },
+    "v13_debug_tls": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 9,
+     "seconds": 1.78,
+     "tool_error": false,
+     "unique": 8
+    }
+   },
+   "proven": 9,
+   "raw": 97,
+   "seconds_max_per_app": 12.91,
+   "seconds_median_per_app": 2.175,
+   "unique": 91
+  },
+  "proofgate_full_no_dast": {
+   "per_app": {
+    "c01_clean": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 0,
-     "seconds": 1.77,
+     "seconds": 1.62,
+     "tool_error": false,
+     "unique": 0
+    },
+    "c02_clean_helper": {
+     "layers_run": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      9
+     ],
+     "proven": 0,
+     "raw": 0,
+     "seconds": 1.91,
      "tool_error": false,
      "unique": 0
     },
@@ -288,7 +621,9 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 1,
@@ -303,11 +638,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 1,
      "raw": 1,
-     "seconds": 1.8,
+     "seconds": 1.48,
      "tool_error": false,
      "unique": 1
     },
@@ -318,11 +655,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 1,
      "raw": 1,
-     "seconds": 2.26,
+     "seconds": 1.67,
      "tool_error": false,
      "unique": 1
     },
@@ -333,11 +672,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 1,
      "raw": 1,
-     "seconds": 1.89,
+     "seconds": 1.95,
      "tool_error": false,
      "unique": 1
     },
@@ -348,11 +689,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 1,
      "raw": 1,
-     "seconds": 1.72,
+     "seconds": 1.67,
      "tool_error": false,
      "unique": 1
     },
@@ -363,11 +706,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 2,
      "raw": 2,
-     "seconds": 1.73,
+     "seconds": 1.79,
      "tool_error": false,
      "unique": 2
     },
@@ -378,11 +723,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 1,
      "raw": 3,
-     "seconds": 1.87,
+     "seconds": 1.73,
      "tool_error": false,
      "unique": 2
     },
@@ -393,11 +740,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 1,
      "raw": 3,
-     "seconds": 1.7,
+     "seconds": 1.74,
      "tool_error": false,
      "unique": 2
     },
@@ -408,11 +757,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 1,
      "raw": 4,
-     "seconds": 1.95,
+     "seconds": 1.98,
      "tool_error": false,
      "unique": 2
     },
@@ -423,11 +774,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 3,
-     "seconds": 2.06,
+     "seconds": 2.09,
      "tool_error": false,
      "unique": 2
     },
@@ -438,11 +791,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 1,
-     "seconds": 2.22,
+     "seconds": 1.92,
      "tool_error": false,
      "unique": 1
     },
@@ -453,11 +808,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 1,
-     "seconds": 2.07,
+     "seconds": 1.81,
      "tool_error": false,
      "unique": 1
     },
@@ -468,11 +825,13 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 1,
-     "seconds": 2.02,
+     "seconds": 1.65,
      "tool_error": false,
      "unique": 1
     },
@@ -483,28 +842,31 @@
       3,
       4,
       5,
-      8
+      6,
+      8,
+      9
      ],
      "proven": 0,
      "raw": 4,
-     "seconds": 1.5,
+     "seconds": 1.65,
      "tool_error": false,
      "unique": 3
     }
    },
    "proven": 9,
    "raw": 27,
-   "seconds_max_per_app": 2.26,
-   "seconds_median_per_app": 1.919,
+   "seconds_max_per_app": 2.22,
+   "seconds_median_per_app": 1.764,
    "unique": 21
   }
  },
  "environment": {
-  "bench_seconds": 77.3,
+  "bench_seconds": 101.8,
   "network": true,
   "platform": "Windows-11-10.0.26300-SP0",
   "python": "3.15.0",
   "subset": null,
+  "supabase_backend": "none (the corpus is Flask: no Supabase layer is exercised here; see docs/VERIFICATION.md for the hosted-project runs)",
   "tolerance_lines": 12
  },
  "fix_verification": {
@@ -611,7 +973,7 @@
   "tournament_accuracy": 1.0,
   "tournament_correct": "12/12"
  },
- "generated_at": "2026-11-20T15:33:03+00:00",
+ "generated_at": "2026-11-20T21:47:41+00:00",
  "heldout": {
   "apps": 0,
   "note": "the sealed held-out set (plan 14) was not provided: demo-apps/heldout/ is empty, so no held-out number exists"
@@ -619,9 +981,9 @@
  "latency": {
   "files": 16,
   "hook_fail_open_count": 0,
-  "hook_pre_median_ms": 3.604,
-  "inline_check_median_ms_per_file": 3.176,
-  "inline_check_worst_median_ms": 3.525,
+  "hook_pre_median_ms": 3.465,
+  "inline_check_median_ms_per_file": 2.74,
+  "inline_check_worst_median_ms": 2.925,
   "runs_per_file": 50
  },
  "misses_and_false_positives": {
@@ -681,6 +1043,87 @@
    ]
   },
   "proofgate_full": {
+   "false_positives": [
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "c03_bait - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (proofgate.py-sql-injection) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported secrets at static/bundle.js:3 (supabase-service-role-key) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)"
+   ]
+  },
+  "proofgate_full_no_dast": {
    "false_positives": [
     "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
     "v06_mass_assign - reported injection at app.py:195 (proofgate.py-sql-injection) where the ground truth lists nothing",
@@ -1198,6 +1641,190 @@
      "recall": 1.0
     },
     "web": {
+     "f1": 0.028,
+     "false_positives": 70,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 0.014,
+     "recall": 1.0
+    }
+   },
+   "false_positives": [
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "c02_clean_helper - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "c03_bait - reported injection at app.py:119 (bandit-B608) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "c03_bait - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "c03_bait - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v01_idor_read - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v02_idor_write - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v04_missing_role - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v05_unauth_admin - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v06_mass_assign - reported injection at app.py:195 (proofgate.py-sql-injection) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v06_mass_assign - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v07_sqli - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v08_cmdi - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v09_hardcoded_keys - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported secrets at static/bundle.js:3 (supabase-service-role-key) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v10_service_role_in_bundle - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v11_hallucinated_dep - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v12_outdated_dep - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing",
+    "v13_debug_tls - reported injection at app.py:217 (bandit-B201) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:csp-missing) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:clickjacking) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:nosniff-missing) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [headers]:1 (dast-lite:referrer-policy-missing) where the ground truth lists nothing",
+    "v13_debug_tls - reported web at / [server]:1 (dast-lite:version-disclosure) where the ground truth lists nothing"
+   ],
+   "misses": [
+    "v10_service_role_in_bundle - no finding of category bundle within 12 lines of static/bundle.js:3 (service-role-key-in-frontend-bundle)"
+   ],
+   "overall": {
+    "f1": 0.311,
+    "false_positives": 74,
+    "items": 15,
+    "items_found": 14,
+    "items_missed": 1,
+    "matching_findings": 17,
+    "precision": 0.187,
+    "recall": 0.933
+   }
+  },
+  "proofgate_full_no_dast": {
+   "available": true,
+   "by_category": {
+    "access": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 6,
+     "items_found": 6,
+     "items_missed": 0,
+     "matching_findings": 7,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "bundle": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 0,
+     "items_missed": 1,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": 0.0
+    },
+    "config": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "database": {
+     "f1": null,
+     "false_positives": 0,
+     "items": 0,
+     "items_found": 0,
+     "items_missed": 0,
+     "matching_findings": 0,
+     "precision": null,
+     "recall": null
+    },
+    "deps": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "injection": {
+     "f1": 0.727,
+     "false_positives": 3,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 4,
+     "precision": 0.571,
+     "recall": 1.0
+    },
+    "secrets": {
+     "f1": 0.8,
+     "false_positives": 1,
+     "items": 2,
+     "items_found": 2,
+     "items_missed": 0,
+     "matching_findings": 2,
+     "precision": 0.667,
+     "recall": 1.0
+    },
+    "supply-chain": {
+     "f1": 1.0,
+     "false_positives": 0,
+     "items": 1,
+     "items_found": 1,
+     "items_missed": 0,
+     "matching_findings": 1,
+     "precision": 1.0,
+     "recall": 1.0
+    },
+    "web": {
      "f1": 1.0,
      "false_positives": 0,
      "items": 1,
@@ -1369,7 +1996,7 @@
    "target": 0.85
   },
   "inline_median_ms": {
-   "measured": 3.176,
+   "measured": 2.74,
    "met": true,
    "target": 200
   },
@@ -1407,9 +2034,9 @@
   },
   {
    "name": "checkov",
-   "path_name": null,
-   "sha256": null,
-   "status": "not installed"
+   "path_name": "checkov.CMD",
+   "sha256": "8e4c923429309b57644810bc7827eb233ebbc9d8932ad877c25b3dbd0311d249",
+   "status": "found"
   },
   {
    "name": "docker",

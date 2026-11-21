@@ -14,7 +14,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 BEGIN, END = "<!-- bench:begin -->", "<!-- bench:end -->"
 LABELS = {"bandit": "Bandit", "pip_audit": "pip-audit", "semgrep": "Semgrep", "betterleaks": "Betterleaks", "osv_scanner": "OSV-Scanner",
-          "splinter": "Splinter", "union": "Union of the available tools above", "proofgate_fast": "ProofGate fast", "proofgate_full": "ProofGate full"}
+          "splinter": "Splinter", "union": "Union of the available tools above", "proofgate_fast": "ProofGate fast", "proofgate_full": "ProofGate full (with layer 7 dast-lite)",
+          "proofgate_full_no_dast": "ProofGate full without layer 7"}
 
 
 def f2(x) -> str:

@@ -41,7 +41,8 @@ export const COLUMN_LABELS: Record<string, string> = {
   splinter: "Splinter",
   union: "Union of the tools above (what exists today)",
   proofgate_fast: "ProofGate fast",
-  proofgate_full: "ProofGate full",
+  proofgate_full: "ProofGate full (with layer 7 dast-lite)",
+  proofgate_full_no_dast: "ProofGate full without layer 7",
 };
 
 export const pct = (x: number | null | undefined) => (x === null || x === undefined ? "n/a" : x.toFixed(2));
