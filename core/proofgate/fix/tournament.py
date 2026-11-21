@@ -13,6 +13,7 @@ ProofGate trusts no author: a patch written by an AI agent, by a human, or by ou
 from __future__ import annotations
 
 import asyncio
+import os
 import subprocess
 import sys
 import tempfile
@@ -22,7 +23,7 @@ from pathlib import Path
 from ..inline import check_file
 from ..layers import l5_database as l5
 from ..layers.base import iter_files, read_text
-from ..models import Contract, Finding, FixResult, Gates, Rejected, Winner
+from ..models import Contract, Finding, FixBreakerResult, FixResult, Gates, Rejected, Winner
 from ..redact import redact
 from .live import current_live, live_applies, live_replay
 from .patching import PatchError, Stats, apply_patch, copy_project, diff_stats
@@ -66,7 +67,8 @@ class Evaluation:
     def accepted(self) -> bool:
         g = self.gates
         return all([g.exploit_blocked, g.feature_works, g.tests_pass, g.no_new_findings, g.diff_is_small]) \
-            and g.migrations_replayed is not False
+            and g.migrations_replayed is not False \
+            and (g.fix_breaker is None or (g.fix_breaker.ran and not g.fix_breaker.broken))
 
 
 # ------------------------------------------------------------------------------------ helpers
@@ -206,12 +208,66 @@ def _version_ok(copy: Path, finding: Finding) -> bool | None:
     return bool(m and _ge(m.group(1), finding.fixed_in))
 
 
-async def evaluate(project: Path, finding: Finding, cand: Candidate, contract: Contract, base: Baseline) -> Evaluation:
+async def _run_fix_breaker_gate(copy: Path, finding: Finding, contract: Contract) -> FixBreakerResult:
+    """Run Gate 6 only through the existing local Flask launcher and probe."""
+    from ..probe.discover import discover_routes
+    from ..probe.flask import FlaskProbe
+    from ..probe.launcher import AppProcess, find_entry
+    from .breaker import FlaskBreakerHandle, run_fix_breaker
+
+    if find_entry(copy) is None:
+        return FixBreakerResult(ran=False, generated=0, routable=0, survived=0, broken=[], duration_ms=0)
+
+    try:
+        async with AppProcess.start(copy) as app:
+            probe = FlaskProbe(copy, contract, app.url, db_path=app.db_path)
+            handle = FlaskBreakerHandle(probe, finding)
+            if not await handle.setup():
+                return FixBreakerResult(ran=False, generated=0, routable=0, survived=0, broken=[], duration_ms=0)
+
+            siblings: list[str] = []
+            try:
+                from ..probe import discover as discover_module
+                sibling_routes = getattr(discover_module, "sibling_routes", None)
+                if sibling_routes:
+                    siblings = [r.label for r in sibling_routes(copy)]
+            except Exception:
+                siblings = []
+            if not siblings:
+                siblings = [r.label for r in discover_routes(copy)]
+
+            route = getattr(getattr(finding, "location", None), "route", "") or ""
+            method = "GET"
+            path = route
+            evidence = getattr(finding, "evidence", None)
+            request = getattr(evidence, "request", "") if evidence else ""
+            if isinstance(request, str) and request:
+                pieces = request.split()
+                if len(pieces) >= 2:
+                    method = pieces[0].upper()
+                    path = pieces[1].split("?", 1)[0]
+            if "<" in path:
+                path = re.sub(r"<[^>]+>", handle.victim_id, path)
+            else:
+                path = re.sub(r"/\d+(?=/|$)", f"/{handle.victim_id}", path)
+
+            result = await run_fix_breaker(
+                handle,
+                {"method": method, "path": path, "victim_id": handle.victim_id},
+                siblings,
+            )
+            return FixBreakerResult(**result.to_dict())
+    except Exception:
+        return FixBreakerResult(ran=False, generated=0, routable=0, survived=0, broken=[], duration_ms=0)
+
+
+async def evaluate(project: Path, finding: Finding, cand: Candidate, contract: Contract, base: Baseline, *,
+                   break_fix: bool = False) -> Evaluation:
     """One candidate through the gates. With a live Supabase backend the database is put back to the original state afterwards, always."""
     live = current_live.get()
     ev = None
     try:
-        ev = await _evaluate(project, finding, cand, contract, base)
+        ev = await _evaluate(project, finding, cand, contract, base, break_fix=break_fix)
         return ev
     finally:
         if live_applies(project, live):
@@ -224,7 +280,8 @@ async def evaluate(project: Path, finding: Finding, cand: Candidate, contract: C
                 ev.notes.append(note)
 
 
-async def _evaluate(project: Path, finding: Finding, cand: Candidate, contract: Contract, base: Baseline) -> Evaluation:
+async def _evaluate(project: Path, finding: Finding, cand: Candidate, contract: Contract, base: Baseline, *,
+                    break_fix: bool = False) -> Evaluation:
     gates = Gates(exploit_blocked=False, feature_works=False, tests_pass=False, no_new_findings=False, diff_is_small=False,
                   migrations_replayed=None)
     ev = Evaluation(cand, gates)
@@ -327,16 +384,36 @@ async def _evaluate(project: Path, finding: Finding, cand: Candidate, contract: 
         ev.notes.append(msg)
         if not passed:
             ev.reasons.append(f"tests_pass=false: {msg}")
+
+        first_five_passed = gates.exploit_blocked and gates.feature_works and gates.tests_pass \
+            and gates.no_new_findings and gates.diff_is_small and gates.migrations_replayed is not False
+        if break_fix and first_five_passed:
+            gates.fix_breaker = await _run_fix_breaker_gate(copy, finding, contract)
+            result = gates.fix_breaker
+            if result is None or not result.ran:
+                ev.reasons.append("Fix Breaker: could not run a routable variant re-attack")
+            elif result.broken:
+                first = result.broken[0]
+                ev.reasons.append(
+                    f"Fix Breaker: {first['label']} still leaks "
+                    f"({len(result.broken)} of {result.routable} routable variants broke it)"
+                )
+            else:
+                ev.notes.append(
+                    f"Survived {result.survived} of {result.routable} routable variants "
+                    f"({result.generated} generated)"
+                )
     return ev
 
 
 async def run_tournament(project: str | Path, finding: Finding, candidates: list[Candidate], contract: Contract, *,
                          baseline: Baseline | None = None, learned_rule: str | None = None,
-                         pre_fix_commit: str | None = None) -> FixResult:
+                         pre_fix_commit: str | None = None, break_fix: bool = False) -> FixResult:
     """Evaluate every candidate; accept the smallest one that passes all gates, else `needs-human` with every reason."""
     project = Path(project).resolve()
     base = baseline or await compute_baseline(project, contract)
-    evals = [await evaluate(project, finding, c, contract, base) for c in candidates]
+    break_fix = break_fix or os.environ.get("PROOFGATE_FIX_BREAKER") == "1"
+    evals = [await evaluate(project, finding, c, contract, base, break_fix=break_fix) for c in candidates]
     winners = sorted((e for e in evals if e.accepted), key=lambda e: e.stats.changed_lines if e.stats else 0)
     win = winners[0] if winners else None
     rejected = [Rejected(reason=redact(f"{e.candidate.name or 'candidate'}: {e.reasons[0] if e.reasons else 'not the smallest passing diff'}"))

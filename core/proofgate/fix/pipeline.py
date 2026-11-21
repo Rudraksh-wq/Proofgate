@@ -63,7 +63,7 @@ def deterministic_candidates(project: Path, finding: Finding, contract: Contract
 
 
 async def fix_finding(project: str | Path, finding: Finding, contract: Contract, *, extra: list[Candidate] | None = None,
-                      baseline: Baseline | None = None, tier_c: bool = True, gemini=None) -> FixResult:
+                      baseline: Baseline | None = None, tier_c: bool = True, gemini=None, break_fix: bool = False) -> FixResult:
     """Deterministic candidates first; Tier C (Gemini, paid key, redacted) only when no template fits."""
     project = Path(project).resolve()
     cands, learned = deterministic_candidates(project, finding, contract)
@@ -85,11 +85,12 @@ async def fix_finding(project: str | Path, finding: Finding, contract: Contract,
             rejected=[{"reason": f"no deterministic fix exists for {finding.rule}: needs a human or Tier C"}],  # type: ignore[list-item]
             accepted=False, pre_fix_commit=pre_fix_commit(project), notes=notes)
     result = await run_tournament(project, finding, cands, contract, baseline=baseline, learned_rule=learned,
-                                  pre_fix_commit=pre_fix_commit(project))
+                                  pre_fix_commit=pre_fix_commit(project), break_fix=break_fix)
     return result.model_copy(update={"notes": sorted({*result.notes, *notes})}) if notes else result
 
 
-async def verify_patch(project: str | Path, finding: Finding, patch: str, contract: Contract, *, tier: str | None = None) -> FixResult:
+async def verify_patch(project: str | Path, finding: Finding, patch: str, contract: Contract, *, tier: str | None = None,
+                       break_fix: bool = False) -> FixResult:
     """Run somebody else's patch (the user's AI agent, a human) through the same gates."""
     project = Path(project).resolve()
     try:
@@ -97,4 +98,4 @@ async def verify_patch(project: str | Path, finding: Finding, patch: str, contra
     except PatchError:
         pass  # the tournament reports it as a rejected candidate
     return await run_tournament(project, finding, [Candidate(patch, tier or finding.fix_tier or "C", "submitted-patch")], contract,
-                                pre_fix_commit=pre_fix_commit(project))
+                                pre_fix_commit=pre_fix_commit(project), break_fix=break_fix)

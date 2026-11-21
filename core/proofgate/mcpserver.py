@@ -233,7 +233,7 @@ def build_server() -> FastMCP:
                            "tool_error": out.tool_error, "limits": r.limits_statement})
 
     @mcp.tool()
-    async def verify_fix(project_dir: str, finding_id: str, patch: str, ctx: Context) -> str:
+    async def verify_fix(project_dir: str, finding_id: str, patch: str, ctx: Context, break_fix: bool = False) -> str:
         """Run a patch you wrote through ProofGate's tournament: the same attack must fail, the owner's feature must still work,
         tests must pass, no new findings, small diff. The patch is applied ONLY in a temporary copy. Returns accept/reject with
         every reason. Never claims the app is secure."""
@@ -257,7 +257,7 @@ def build_server() -> FastMCP:
 
         token = current_live.set(live_from_env(root))  # only if the person opted in through the environment; never through a tool argument
         try:
-            res = await verify_patch(root, finding, patch, load_contract(root))
+            res = await verify_patch(root, finding, patch, load_contract(root), break_fix=break_fix)
         finally:
             current_live.reset(token)
         head = ("ACCEPTED: every gate passed." if res.accepted else "REJECTED: read the reasons, fix the cause, try again (max 3 times), "

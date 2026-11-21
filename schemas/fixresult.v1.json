@@ -1,5 +1,48 @@
 {
   "$defs": {
+    "FixBreakerResult": {
+      "additionalProperties": false,
+      "properties": {
+        "broken": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Broken",
+          "type": "array"
+        },
+        "duration_ms": {
+          "title": "Duration Ms",
+          "type": "integer"
+        },
+        "generated": {
+          "title": "Generated",
+          "type": "integer"
+        },
+        "ran": {
+          "title": "Ran",
+          "type": "boolean"
+        },
+        "routable": {
+          "title": "Routable",
+          "type": "integer"
+        },
+        "survived": {
+          "title": "Survived",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ran",
+        "generated",
+        "routable",
+        "survived",
+        "broken",
+        "duration_ms"
+      ],
+      "title": "FixBreakerResult",
+      "type": "object"
+    },
     "Gates": {
       "additionalProperties": false,
       "properties": {
@@ -14,6 +57,17 @@
         "feature_works": {
           "title": "Feature Works",
           "type": "boolean"
+        },
+        "fix_breaker": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FixBreakerResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "migrations_replayed": {
           "anyOf": [
