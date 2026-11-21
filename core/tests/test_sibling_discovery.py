@@ -4,7 +4,7 @@ from proofgate.probe.discover import sibling_routes
 
 
 ROOT = Path(__file__).resolve().parents[2]
-FB01 = ROOT / "demo-apps" / "flask-corpus" / "fb01_method"
+FB01 = ROOT / "demo-apps" / "fix-breaker" / "fb01_method"
 
 
 def test_fb01_sibling_routes_include_aliases_and_export():

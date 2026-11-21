@@ -1,5 +1,60 @@
 {
   "$defs": {
+    "FixBreaker": {
+      "additionalProperties": false,
+      "properties": {
+        "broken": {
+          "items": {
+            "$ref": "#/$defs/FixBreakerBreak"
+          },
+          "title": "Broken",
+          "type": "array"
+        },
+        "generated": {
+          "title": "Generated",
+          "type": "integer"
+        },
+        "ran": {
+          "title": "Ran",
+          "type": "boolean"
+        },
+        "routable": {
+          "title": "Routable",
+          "type": "integer"
+        },
+        "survived": {
+          "title": "Survived",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ran",
+        "generated",
+        "routable",
+        "survived"
+      ],
+      "title": "FixBreaker",
+      "type": "object"
+    },
+    "FixBreakerBreak": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "status"
+      ],
+      "title": "FixBreakerBreak",
+      "type": "object"
+    },
     "Gates": {
       "additionalProperties": false,
       "properties": {
@@ -14,6 +69,17 @@
         "feature_works": {
           "title": "Feature Works",
           "type": "boolean"
+        },
+        "fix_breaker": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FixBreaker"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "migrations_replayed": {
           "anyOf": [
