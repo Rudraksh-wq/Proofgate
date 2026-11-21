@@ -100,12 +100,13 @@ Measured on 2026-11-20 (`bench/results.json`; re-run with `make bench`) on 16 sm
 | OSV-Scanner | not measured: osv-scanner is not installed in this environment | | | |
 | pip-audit | 1.00 | 0.07 | 0.12 | 0.00 |
 | ProofGate fast | 0.69 | 0.53 | 0.60 | 0.00 |
-| ProofGate full | 0.81 | 0.93 | 0.87 | 1.00 |
+| ProofGate full (with layer 7 dast-lite) | 0.19 | 0.93 | 0.31 | 1.00 |
+| ProofGate full without layer 7 | 0.81 | 0.93 | 0.87 | 1.00 |
 | Semgrep | not measured: semgrep is not installed in this environment | | | |
 | Splinter | not measured: Splinter needs a live local Postgres (`supabase start`) | | | |
 | Union of the available tools above | 0.67 | 0.40 | 0.50 | 0.00 |
 
-Judging 12 candidate fixes: a re-scan-says-clean gate was right 0.42 of the time, the tournament 1.00 (12/12). Inline check: median 3.176 ms per file (50 runs).
+Judging 12 candidate fixes: a re-scan-says-clean gate was right 0.42 of the time, the tournament 1.00 (12/12). Inline check: median 2.74 ms per file (50 runs).
 <!-- bench:end -->
 
 The corpus is small and synthetic and was written by the same team as the rules. Methodology, every miss and false positive, and the tuning log:
