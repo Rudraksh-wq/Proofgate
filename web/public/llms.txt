@@ -7,8 +7,9 @@
 
 ## Install
 - [Claude Code plugin](https://<site>/install#claude-code): `/plugin marketplace add Rudraksh-wq/Proofgate` then `/plugin install proofgate@proofgate`
-- [MCP server config](https://<site>/install#mcp): `{"mcpServers":{"proofgate":{"command":"proofgate-mcp"}}}`
-- [CLI](https://<site>/install#cli): `pipx install proofgate && proofgate init`
+- [MCP server (Claude Code)](https://<site>/install#mcp): `pipx install proofgate-ai`, then `claude mcp add proofgate --scope user -- proofgate-mcp` (or `uvx --from proofgate-ai proofgate-mcp`)
+- [MCP server config, Claude desktop and others](https://<site>/install#mcp): `{"mcpServers":{"proofgate":{"command":"proofgate-mcp"}}}`
+- [CLI](https://<site>/install#cli): `pipx install proofgate-ai && proofgate init`
 
 ## For AI agents
 - [Agent workflow](https://<site>/docs/agent-workflow.md): get_contract → scan_project → prove → verify_fix
