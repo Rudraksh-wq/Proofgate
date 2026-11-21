@@ -233,7 +233,13 @@ def build_server() -> FastMCP:
                            "tool_error": out.tool_error, "limits": r.limits_statement})
 
     @mcp.tool()
-    async def verify_fix(project_dir: str, finding_id: str, patch: str, ctx: Context, break_fix: bool = False) -> str:
+    async def verify_fix(
+        project_dir: str,
+        finding_id: str,
+        patch: str,
+        ctx: Context,
+        break_fix: bool = False,
+    ) -> str:
         """Run a patch you wrote through ProofGate's tournament: the same attack must fail, the owner's feature must still work,
         tests must pass, no new findings, small diff. The patch is applied ONLY in a temporary copy. Returns accept/reject with
         every reason. Never claims the app is secure."""

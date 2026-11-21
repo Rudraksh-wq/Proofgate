@@ -181,12 +181,13 @@ async def run_fix_breaker(handle: Any, exploit: Any, siblings: list[str]) -> Bre
     routable = 0
     broken: list[dict[str, Any]] = []
 
-    for variant in sorted(variants, key=lambda v: (0 if v["method"] in ("GET", "HEAD") else (1 if v["method"] != "DELETE" else 2), v["label"])):
-        if time.monotonic() - started >= TOTAL_TIMEOUT_S:
+    for variant in sorted(variants, key=lambda v: (0 if v["method"] in ("GET", "HEAD") else (2 if v["method"] == "DELETE" else 1), v["label"])):
+        remaining = TOTAL_TIMEOUT_S - (time.monotonic() - started)
+        if remaining <= 0:
             break
         try:
             canary = new_canary("A")
-            await asyncio.wait_for(_reseed(handle, canary), REQUEST_TIMEOUT_S)
+            await asyncio.wait_for(_reseed(handle, canary), min(REQUEST_TIMEOUT_S, remaining))
 
             owner = await _request(handle, "a", variant["method"], variant["path"])
             owner_status, _ = _response_parts(owner)

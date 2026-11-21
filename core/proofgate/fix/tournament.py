@@ -68,7 +68,7 @@ class Evaluation:
         g = self.gates
         return all([g.exploit_blocked, g.feature_works, g.tests_pass, g.no_new_findings, g.diff_is_small]) \
             and g.migrations_replayed is not False \
-            and (g.fix_breaker is None or (g.fix_breaker.ran and not g.fix_breaker.broken))
+            and (g.fix_breaker is None or (g.fix_breaker.ran and g.fix_breaker.routable > 0 and not g.fix_breaker.broken))
 
 
 # ------------------------------------------------------------------------------------ helpers
@@ -227,10 +227,8 @@ async def _run_fix_breaker_gate(copy: Path, finding: Finding, contract: Contract
 
             siblings: list[str] = []
             try:
-                from ..probe import discover as discover_module
-                sibling_routes = getattr(discover_module, "sibling_routes", None)
-                if sibling_routes:
-                    siblings = [r.label for r in sibling_routes(copy)]
+                from ..probe.discover import sibling_routes
+                siblings = sibling_routes(copy, finding.location.route or "")
             except Exception:
                 siblings = []
             if not siblings:
@@ -392,6 +390,11 @@ async def _evaluate(project: Path, finding: Finding, cand: Candidate, contract: 
             result = gates.fix_breaker
             if result is None or not result.ran:
                 ev.reasons.append("Fix Breaker: could not run a routable variant re-attack")
+            elif result.routable == 0:
+                ev.reasons.append(
+                    f"Fix Breaker: no variants were routable "
+                    f"(0 of {result.generated} generated variants could be replayed)"
+                )
             elif result.broken:
                 first = result.broken[0]
                 ev.reasons.append(

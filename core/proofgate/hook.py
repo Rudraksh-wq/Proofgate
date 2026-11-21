@@ -25,7 +25,7 @@ from typing import Any
 from .models import Finding
 from .redact import redact
 
-HOOK_TIMEOUT_S = 0.5
+HOOK_TIMEOUT_S = 1.5
 MAX_MESSAGE_LINES = 20
 MAX_CONTENT_BYTES = 1_000_000
 WRITE_TOOLS = ("Write", "Edit", "MultiEdit")
