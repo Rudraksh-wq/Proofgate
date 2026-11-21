@@ -1,0 +1,36 @@
+{
+  "project": "Illustrative local report",
+  "scanned_at": "Illustrative timestamp — sample data, not a scan result",
+  "layers_run": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+  "raw_warning_count": 1,
+  "unique_count": 1,
+  "proven_count": 1,
+  "findings": [
+    {
+      "severity": "high",
+      "status": "open",
+      "proven": true,
+      "layer": 8,
+      "category": "access",
+      "title": "Cross-user read",
+      "plain_words": "Illustrative schema example only; replace with a finding from a real ProofGate report.",
+      "location": { "file": "example/route.py", "line": 1, "route": "GET /example/:id" },
+      "sources": ["illustrative"],
+      "evidence": {
+        "actor": "User B",
+        "victim": "User A",
+        "request": "Illustrative request omitted from sample",
+        "status": 200,
+        "response_excerpt": "PGCANARY_A_fixture-value"
+      }
+    }
+  ],
+  "fixes": [],
+  "receipt": { "rules_attacked": 0, "rules_held": 0, "commit": null, "report_hash": null },
+  "tested": { "tables": [], "routes": ["GET /example/:id"] },
+  "untested": ["Illustrative scope only; this is not a scan result."],
+  "tools": [{ "name": "Illustrative tool entry", "version": null, "sha256": null, "status": "skipped" }],
+  "limits_statement": "Passing ProofGate means our attacks failed on the routes and tables we tested. It doesn't mean your app is secure.",
+  "fail_open_count": 0,
+  "filters": { "layers": ["8"] }
+}
