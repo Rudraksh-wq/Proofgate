@@ -1,17 +1,17 @@
 {
   "schema": "proofgate.tools.lock/v1",
   "tools": {
-    "bandit": {"binary": "bandit", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
+    "bandit": {"binary": "bandit", "sha256": {"win32-AMD64": "2ac04964600de4278a0cbc6b062c316e539690cc6f5532d2ab09b7f26cfcd527"}, "verify": "sha256", "version": "bandit.EXE 1.9.4", "version_args": ["--version"]},
     "betterleaks": {"binary": "betterleaks", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["version"]},
     "checkov": {"binary": "checkov", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
     "docker": {"binary": "docker", "sha256": {}, "verify": "presence", "version": null, "version_args": ["--version"]},
-    "gitleaks": {"binary": "gitleaks", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["version"]},
+    "gitleaks": {"binary": "gitleaks", "sha256": {"win32-AMD64": "17157e2ee8b76fc8b1d8bee607a250e34b8a8023c8bc81822d4b5ee4d78fcb7c"}, "verify": "sha256", "version": "8.30.1", "version_args": ["version"]},
     "guarddog": {"binary": "guarddog", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
     "node": {"binary": "node", "sha256": {}, "verify": "presence", "version": null, "version_args": ["--version"]},
     "npm": {"binary": "npm", "sha256": {}, "verify": "presence", "version": null, "version_args": ["--version"]},
-    "osv-scanner": {"binary": "osv-scanner", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
+    "osv-scanner": {"binary": "osv-scanner", "sha256": {"win32-AMD64": "9964ed64ec9a387391eb4cc006ad5c531154821aef29b793e02c448de4686438"}, "verify": "sha256", "version": "osv-scanner version: 2.7.0", "version_args": ["--version"]},
     "pip-audit": {"binary": "pip-audit", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
-    "semgrep": {"binary": "semgrep", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
+    "semgrep": {"binary": "semgrep", "sha256": {"win32-AMD64": "c6ef3d83c0181917fcfce6bf39d939aeb919dbc758e86b9db8b4a1313a4c0b0d"}, "verify": "sha256", "version": "1.186.0", "version_args": ["--version"]},
     "supabase": {"binary": "supabase", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]},
     "trufflehog": {"binary": "trufflehog", "sha256": {}, "verify": "sha256", "version": null, "version_args": ["--version"]}
   }

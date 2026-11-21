@@ -25,13 +25,13 @@ rules:
       - pattern: |
           export async function $M($REQ, ...) { ... }
       - pattern-not: |
-          export async function $M($REQ, ...) { ... $X.auth.getUser(...) ... }
+          export async function $M($REQ, ...) { ... $X.auth.getUser(...); ... }
       - pattern-not: |
-          export async function $M($REQ, ...) { ... $X.auth.getSession(...) ... }
+          export async function $M($REQ, ...) { ... $X.auth.getSession(...); ... }
       - pattern-not: |
-          export async function $M($REQ, ...) { ... auth() ... }
+          export async function $M($REQ, ...) { ... auth(); ... }
       - pattern-not: |
-          export async function $M($REQ, ...) { ... getServerSession(...) ... }
+          export async function $M($REQ, ...) { ... getServerSession(...); ... }
       - metavariable-regex:
           metavariable: $M
           regex: ^(GET|POST|PUT|PATCH|DELETE)$
