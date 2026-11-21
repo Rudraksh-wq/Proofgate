@@ -1,7 +1,8 @@
 import asyncio
 
 from proofgate.fix.breaker import BreakResult, generate_variants, run_fix_breaker
-from proofgate.models import FixResult, Gates
+from proofgate.fix.tournament import Candidate, Evaluation
+from proofgate.models import FixBreaker, FixResult, Gates
 
 
 class FakeResp:
@@ -104,3 +105,23 @@ def test_flag_off_fix_result_serialization_is_unchanged():
     dumped = result.to_json_dict()
     assert "fix_breaker" not in dumped["gates"]
     assert "fix_breaker" not in result.to_json()
+
+
+def test_zero_routable_breaker_can_never_make_a_candidate_accepted():
+    gates = Gates(
+        exploit_blocked=True,
+        feature_works=True,
+        tests_pass=True,
+        no_new_findings=True,
+        diff_is_small=True,
+        fix_breaker=FixBreaker(
+            ran=True,
+            generated=6,
+            routable=0,
+            survived=0,
+            broken=[],
+            duration_ms=1,
+        ),
+    )
+    evaluation = Evaluation(Candidate("patch", "B"), gates)
+    assert not evaluation.accepted

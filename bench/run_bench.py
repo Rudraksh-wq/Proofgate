@@ -224,6 +224,15 @@ def tables(columns: dict[str, dict], truth: list[Truth], apps: list[Path]) -> di
     out = {}
     for name, col in columns.items():
         if not col.get("available"):
+            if name == "union":
+                s = score([], truth)
+                out[name] = {
+                    "available": False,
+                    "reason": col.get("reason", "no baseline tool was available"),
+                    "of": [],
+                    **s,
+                }
+                continue
             out[name] = {"available": False, "reason": col.get("reason", "")}
             continue
         s = score(col["rows"], truth)
