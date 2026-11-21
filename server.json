@@ -3,12 +3,12 @@
   "name": "io.github.Rudraksh-wq/proofgate",
   "description": "Local security gate for AI-written apps: proves access-control bugs, verifies fixes.",
   "repository": { "url": "https://github.com/Rudraksh-wq/Proofgate", "source": "github" },
-  "version": "0.0.1",
+  "version": "0.1.0",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "proofgate-ai",
-      "version": "0.0.1",
+      "version": "0.1.0",
       "transport": { "type": "stdio" }
     }
   ]
