@@ -40,6 +40,26 @@ Reports always say which layers ran, which tools were skipped, and what was unte
 
 ## Install
 
+**Fastest way: let your AI agent do it.** Open Claude Code (or Cursor, Codex, Windsurf, or any agent that can run shell commands) and paste this:
+
+```text
+Install ProofGate and connect its MCP server to you. Do exactly this, and nothing else:
+
+1. Run: pipx install proofgate-ai
+   (If pipx is missing, run: uv tool install proofgate-ai. If neither exists, tell me and stop.)
+2. Run: proofgate doctor   and show me the output.
+3. Connect the MCP server for the agent you are:
+   - Claude Code: claude mcp add proofgate --scope user -- proofgate-mcp
+   - Cursor, Codex or Windsurf: run  proofgate init --agent cursor|codex|windsurf  in my project folder
+   - Anything else: add {"mcpServers":{"proofgate":{"command":"proofgate-mcp","args":[]}}} to your MCP config
+4. Tell me to restart you (or reload MCP servers), then check that these six tools are listed:
+   get_contract, scan_file, scan_project, prove, verify_fix, explain_finding.
+
+Do not use sudo and do not edit any other file. ProofGate runs on this machine only; nothing is uploaded.
+```
+
+Prefer to do it by hand? The steps are below.
+
 **Claude Code plugin** (hook + MCP server + 3 skills + 3 slash commands):
 
 ```
