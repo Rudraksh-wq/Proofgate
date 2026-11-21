@@ -24,7 +24,7 @@
     "User B must never read or change User A's notes."
   ],
   "confirmed_by_user": false,
-  "source": "gemini",
+  "source": "fallback",
   "needs_confirmation": [
     "/api/export"
   ],

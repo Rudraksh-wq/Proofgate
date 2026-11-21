@@ -6,7 +6,7 @@ the SAME Supabase project, and calls those routes as user B with user A's row id
 PROVEN: it catches a route that checks "someone is signed in" and then uses the service-role client, which RLS can never stop.
 
 Routes that cannot be replayed (no dynamic id, no node_modules, the dev server did not start) are listed as UNTESTED, never as safe.
-The dev server gets ONLY the three Supabase variables the app reads; our own environment (Gemini keys, tokens) is not passed on.
+The dev server gets ONLY the three Supabase variables the app reads; unrelated environment secrets are not passed on.
 """
 from __future__ import annotations
 

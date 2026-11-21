@@ -90,10 +90,7 @@
       "type": "string"
     },
     "source": {
-      "enum": [
-        "gemini",
-        "fallback"
-      ],
+      "const": "fallback",
       "title": "Source",
       "type": "string"
     }

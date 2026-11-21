@@ -239,7 +239,6 @@ async def test_probe_cleans_up_the_process_and_the_throwaway_database():
 
 
 def test_the_app_runs_with_a_clean_environment(monkeypatch):
-    monkeypatch.setenv("GEMINI_API_KEY", "should-not-leak")
     monkeypatch.setenv("SUPABASE_SERVICE_ROLE_KEY", "should-not-leak")
     monkeypatch.setenv("MY_SECRET_TOKEN", "should-not-leak")
     env = clean_env(1234, Path("/tmp/x.db"))

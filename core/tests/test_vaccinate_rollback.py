@@ -207,8 +207,8 @@ async def test_rls_fix_vaccine_is_a_pgtap_file_and_says_it_was_not_run(tmp_path)
 async def test_llm_written_fixes_never_write_rules_into_agent_files(tmp_path):
     proj, out, findings = await probed("v01_idor_read", tmp_path)
     res = await fix_finding(proj, findings[0], out.contract)
-    tier_c_like = res.model_copy(update={"learned_rule": None, "tier": "C"})
-    vac = await build_vaccine(proj, findings[0], tier_c_like, out.contract, verify=False)
+    human_review = res.model_copy(update={"learned_rule": None, "tier": "C"})
+    vac = await build_vaccine(proj, findings[0], human_review, out.contract, verify=False)
     assert not {"CLAUDE.md", "AGENTS.md", ".cursor/rules/proofgate.mdc"} & set(vac.files)
     assert any("only ProofGate's own templates" in n for n in vac.notes) and PY_TEST_FILE in vac.files
 

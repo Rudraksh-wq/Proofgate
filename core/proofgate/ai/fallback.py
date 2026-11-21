@@ -1,4 +1,4 @@
-"""Deterministic draft Intent Contract (no LLM). The Gemini contract (feat/17) builds on this and this wins ties.
+"""Deterministic draft Intent Contract. Contract extraction uses this heuristic and keyword rules.
 
 Heuristic (plan 3.1): a table with an owner-looking column (`owner_id`, `user_id`, `author_id`, `created_by`) is an
 owned resource; routes under /admin are admin-only; login/signup routes are public. Everything is owner-only by

@@ -24,7 +24,7 @@ from ..runner import _kill_tree
 from .guard import ensure_temp_db
 
 ENTRY_CANDIDATES = ("app.py", "main.py", "server.py", "run.py", "wsgi.py")
-_SECRETISH = re.compile(r"KEY|TOKEN|SECRET|PASSW|GEMINI|SUPABASE|CREDENTIAL|AUTH", re.IGNORECASE)
+_SECRETISH = re.compile(r"KEY|TOKEN|SECRET|PASSW|SUPABASE|CREDENTIAL|AUTH", re.IGNORECASE)
 _KEEP = {"PATH", "SYSTEMROOT", "SYSTEMDRIVE", "WINDIR", "TEMP", "TMP", "TMPDIR", "HOME", "USERPROFILE", "APPDATA",
          "LOCALAPPDATA", "COMSPEC", "PATHEXT", "LANG", "LC_ALL", "PYTHONIOENCODING", "VIRTUAL_ENV", "PYTHONHOME"}
 

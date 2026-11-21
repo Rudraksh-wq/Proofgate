@@ -367,7 +367,7 @@ def test_no_template_means_needs_human(tmp_path, probes):
     assert not res.accepted and res.candidates == 0 and "needs a human" in res.rejected[0].reason
 
 
-def test_unknown_rules_are_tier_c():
+def test_unknown_rules_need_human_review():
     f = Finding.model_validate({"id": "f_1", "layer": 2, "category": "web", "rule": "proofgate.js-eval", "severity": "high", "title": "t",
                                 "plain_words": "p", "location": {"file": "a.ts", "line": 1}, "sources": ["x"]})
     assert classify(f) == "C"

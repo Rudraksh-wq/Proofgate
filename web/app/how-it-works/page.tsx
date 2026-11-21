@@ -52,11 +52,10 @@ export default function HowItWorks() {
       <h2>Where the Supabase checks run</h2>
       <p>Without Docker: either your own <b>hosted Supabase test project</b> (the default on a laptop) or, where Docker already exists such as a CI runner, a local <code>supabase start</code>. In hosted mode ProofGate sends <b>test traffic</b> to that project: it creates two throwaway users, plants canary rows, attacks as the second user, then deletes them. <b>No source code is sent.</b> A hosted project is used only if its ref is on <code>PROOFGATE_ALLOWED_PROJECT_REFS</code> and you pass <code>--i-own-this</code>; anything else is refused, and the run is recorded in the report. Use a project made for testing.</p>
 
-      <h2>What may be sent to Gemini</h2>
+      <h2>What stays on your machine</h2>
       <p>Nothing, unless you opt in with a paid-tier key (the free tier may use prompts to improve Google&apos;s products) and do not set <code>PROOFGATE_OFFLINE=1</code>. Then:</p>
       <ul>
         <li><b>Contract drafting:</b> your README prose, route names and table and column names, redacted.</li>
-        <li><b>Tier C fixes:</b> one redacted function of at most 60 lines, and a description of the problem. Never <code>.env</code>, never database rows, never the whole repository.</li>
         <li><b>Explanations:</b> the finding&apos;s text, redacted.</li>
       </ul>
       <p>Every answer is validated against a schema; a patch is a diff that must pass the tournament; a rule that makes data public needs your confirmation. Text found in your repository is treated as data, never as instructions, and a comment such as <code>// proofgate-ignore</code> does nothing.</p>

@@ -49,7 +49,7 @@ export default function Home() {
       <h2>Your code stays on your machine</h2>
       <p>
         Everything runs locally. The website you are reading does not scan, upload or store code, and has no backend. The only thing that can leave
-        your machine is an optional, redacted request to Gemini (a paid-tier key only), and it is off when you set <code>PROOFGATE_OFFLINE=1</code>.
+        your machine. ProofGate runs locally and does not send project data to an external model.
         <a href="/how-it-works/"> How it works</a> lists exactly what is and is not sent.
       </p>
     </>

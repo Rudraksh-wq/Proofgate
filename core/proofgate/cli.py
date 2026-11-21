@@ -80,8 +80,7 @@ def cmd_init(a) -> int:
 
 
 def cmd_contract(a) -> int:
-    """Build, show and confirm the Intent Contract. Gemini proposes (redacted, optional); a deterministic heuristic wins
-    ties; anything that would make data MORE public is listed in needs_confirmation and NOT applied until you name it
+    """Build, show and confirm the Intent Contract. Deterministic heuristics and keyword rules are used; anything that would make data MORE public is listed in needs_confirmation and NOT applied until you name it
     with --accept-public. Without --confirm the contract stays a draft ("against draft contract")."""
     import asyncio
 

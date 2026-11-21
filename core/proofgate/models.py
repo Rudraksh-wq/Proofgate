@@ -108,7 +108,7 @@ class Contract(_Versioned):
     public_routes: list[str]
     rules: list[str]
     confirmed_by_user: bool
-    source: Literal["gemini", "fallback"]
+    source: Literal["fallback"]
     needs_confirmation: list[str] = Field(default_factory=list)
     public_reads_confirmed: list[str] = Field(default_factory=list)
 

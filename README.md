@@ -113,8 +113,7 @@ The corpus is small and synthetic and was written by the same team as the rules.
 
 ## Privacy and safety
 
-- Nothing leaves your machine by default. An optional Gemini call (contract drafting, Tier C fixes, explanations) needs a **paid-tier** key
-  (`PROOFGATE_GEMINI_PAID=1`), sends redacted text only (never `.env`, rows or the repository) and is off with `PROOFGATE_OFFLINE=1`.
+- Everything runs locally and deterministically. ProofGate does not send project data to an external model.
 - Secrets are masked as `«SECRET:type:hash»` and canaries as `PGCANARY_A_«masked»` in every log line, hook message, tool reply and model prompt.
 - The probe only attacks `localhost`, `127.0.0.1`, a temporary SQLite file or a local `supabase start`; anything else is refused unless you pass
   `--target <url> --i-own-this`, which is logged in the report.

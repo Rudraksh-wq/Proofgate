@@ -116,7 +116,7 @@ def test_live_applies_only_to_supabase_projects_without_a_flask_entry(project, t
 # ------------------------------------------------------------------------------------------- the tournament
 async def test_the_rls_fix_is_accepted_when_the_replayed_database_holds_and_the_owner_still_works(project, fake):
     finding_ = finding(project)
-    result = await fix_finding(project, finding_, CONTRACT, tier_c=False)
+    result = await fix_finding(project, finding_, CONTRACT)
     g = result.gates
     assert result.accepted and g.exploit_blocked and g.feature_works and g.no_new_findings and g.diff_is_small and g.migrations_replayed
     assert any("live database restored" in n for n in result.notes)
@@ -137,7 +137,7 @@ async def test_a_fix_that_breaks_the_owner_is_rejected(project, monkeypatch):
     token = current_live.set(LIVE)
     try:
         # baseline runs on the original (A can read own notes), the patched copy cannot: that is "locked everybody out"
-        result = await fix_finding(project, finding(project), CONTRACT, tier_c=False)
+        result = await fix_finding(project, finding(project), CONTRACT)
     finally:
         current_live.reset(token)
     assert not result.accepted and "feature_works=false" in result.rejected[0].reason and "A can read own notes" in result.rejected[0].reason

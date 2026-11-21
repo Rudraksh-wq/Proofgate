@@ -1,6 +1,6 @@
 """classify -> Tier A codemod | Tier B contract template -> tournament (plan 4).
 
-Tier C (Gemini) arrives in feat/19. Nothing here applies a patch to the real project: the winning diff is returned and
+Nothing here applies a patch to the real project: the winning diff is returned and
 the caller (a human or the user's own AI agent) applies it. `verify_patch` runs a patch somebody else wrote through the
 very same gates.
 """
@@ -21,7 +21,7 @@ TIER_B_HINTS = ("cross-user-", "admin-route", "mass-assignment", "rls-disabled",
 
 
 def classify(finding: Finding) -> str:
-    """A: deterministic codemod. B: contract template. C: needs the LLM (or a human)."""
+    """A: deterministic codemod. B: contract template. C: needs a human."""
     if finding.layer == 1 or finding.layer == 3 or any(h in finding.rule for h in TIER_A_HINTS):
         return "A"
     if any(h in finding.rule for h in TIER_B_HINTS):
@@ -38,7 +38,7 @@ def pre_fix_commit(project: Path) -> str | None:
 
 
 def deterministic_candidates(project: Path, finding: Finding, contract: Contract) -> tuple[list[Candidate], str | None]:
-    """(candidates, learned rule). Empty list when no template fits: the finding is `needs-human` (or Tier C)."""
+    """(candidates, learned rule). Empty list when no template fits: the finding is `needs-human`."""
     tier = classify(finding)
     attempts = []
     if tier == "A":
@@ -63,26 +63,18 @@ def deterministic_candidates(project: Path, finding: Finding, contract: Contract
 
 
 async def fix_finding(project: str | Path, finding: Finding, contract: Contract, *, extra: list[Candidate] | None = None,
-                      baseline: Baseline | None = None, tier_c: bool = True, gemini=None, break_fix: bool = False) -> FixResult:
-    """Deterministic candidates first; Tier C (Gemini, paid key, redacted) only when no template fits."""
+                      baseline: Baseline | None = None, break_fix: bool = False) -> FixResult:
+    """Deterministic candidates first; findings without a template stay with a human."""
     project = Path(project).resolve()
     cands, learned = deterministic_candidates(project, finding, contract)
     cands += extra or []
     notes: list[str] = []
-    if not cands and tier_c:
-        from ..ai.tier_c import tier_c_candidates
-
-        tc = await tier_c_candidates(project, finding, contract, client=gemini)
-        cands += tc.candidates
-        notes += [f"tier C discarded an answer: {d}" for d in tc.discarded]
-        if tc.skipped:
-            notes.append(tc.skipped)
     if not cands:
         return FixResult(
             finding_id=finding.id, tier=classify(finding), candidates=0, winner=None,
             gates={"exploit_blocked": False, "feature_works": False, "tests_pass": False, "no_new_findings": False,  # type: ignore[arg-type]
                    "diff_is_small": False},
-            rejected=[{"reason": f"no deterministic fix exists for {finding.rule}: needs a human or Tier C"}],  # type: ignore[list-item]
+            rejected=[{"reason": f"no deterministic fix exists for {finding.rule}: needs a human"}],  # type: ignore[list-item]
             accepted=False, pre_fix_commit=pre_fix_commit(project), notes=notes)
     result = await run_tournament(project, finding, cands, contract, baseline=baseline, learned_rule=learned,
                                   pre_fix_commit=pre_fix_commit(project), break_fix=break_fix)

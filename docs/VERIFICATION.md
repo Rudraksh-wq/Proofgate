@@ -38,7 +38,6 @@ everything else is tested only against recorded or hand-written samples and is l
 | Local `supabase start` (`--backend local`) | needs Docker | `live-stack.yml` job `supabase-live` |
 | Betterleaks / Gitleaks, OSV-Scanner, GuardDog | not installed (a download of unverified binaries was not approved) | install them yourself, then `proofgate doctor --pin <tool>` and re-run the adapter tests |
 | Live fix verification on a `local` (Docker) backend | needs Docker | `live-stack.yml` (no fix step yet) |
-| Gemini (contract, Tier C, explanations) | no paid-tier key used yet | not scheduled |
 
 ## Tool versions and hashes seen (not committed to the lock)
 
